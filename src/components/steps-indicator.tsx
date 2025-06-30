@@ -5,8 +5,8 @@ interface StepsIndicatorProps {
 
 const steps = [
   "Modelo do Copo",
-  "Descrição do Evento",
-  "Criação da Arte",
+  "Personalize a Arte",
+  "Revisão da Arte",
   "Orçamento e Compra",
 ];
 

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { handleArtRefinement } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2 } from 'lucide-react';
+import { Loader2, Wand2, ArrowLeft } from 'lucide-react';
 import type { GeneratedArt, CupModel } from '@/lib/types';
 import { Label } from './ui/label';
 
@@ -22,13 +22,15 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
   const [refinementInput, setRefinementInput] = useState('');
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  
+  const isAIArt = initialArt.prompt !== "Arte enviada pelo usuário";
 
   const handleRefine = async () => {
     if (!refinementInput) return;
     startTransition(async () => {
       const result = await handleArtRefinement(currentArt.imageUrl, refinementInput);
       if (result.success) {
-        setCurrentArt({ imageUrl: result.imageUrl, prompt: currentArt.prompt });
+        setCurrentArt({ imageUrl: result.imageUrl, prompt: initialArt.prompt });
         setRefinementInput('');
         toast({ title: "Arte refinada!", description: "Sua arte foi atualizada com sucesso." });
       } else {
@@ -44,15 +46,15 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-3xl">3. Escolha sua Arte Favorita</CardTitle>
+        <CardTitle className="font-headline text-3xl">3. Revise sua Arte</CardTitle>
         <CardDescription>
-          Esta foi a arte gerada pela nossa IA. Você pode refinar ou pedir uma nova versão.
+          Esta é a arte para o seu copo. Você pode fazer ajustes ou voltar para escolher outra.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         <div className="flex flex-col items-center gap-4">
           <div className="relative w-full aspect-square rounded-lg overflow-hidden border bg-secondary/50 shadow-inner">
-            <Image src={currentArt.imageUrl} alt="Arte gerada por IA" fill className="object-contain p-4" />
+            <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain p-4" />
             <div 
               className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none"
               style={{ backgroundImage: `url(${cup.imageUrl})`}}
@@ -64,24 +66,27 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
         </div>
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="refine" className="font-bold">Refinar a arte</Label>
+            <Label htmlFor="refine" className="font-bold">Fazer um ajuste fino na arte</Label>
             <Textarea
               id="refine"
-              placeholder="Ex: 'Adicione mais estrelas', 'Mude a cor do texto para dourado', 'Deixe o design mais minimalista'..."
+              placeholder="Ex: 'Adicione mais estrelas', 'Mude a cor do texto para dourado', 'Remova o fundo'..."
               value={refinementInput}
               onChange={(e) => setRefinementInput(e.target.value)}
               rows={4}
             />
             <Button onClick={handleRefine} disabled={isPending} className="w-full">
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Refinar
+              Refinar com IA
             </Button>
           </div>
           <div className="space-y-2">
             <p className="font-bold">Não gostou do resultado?</p>
             <Button onClick={onRegenerate} variant="outline" className="w-full">
-              <Wand2 className="mr-2 h-4 w-4" />
-              Gerar uma nova arte do zero
+                {isAIArt ? (
+                    <><Wand2 className="mr-2 h-4 w-4" /> Gerar uma nova arte do zero</>
+                ) : (
+                    <><ArrowLeft className="mr-2 h-4 w-4" /> Voltar e enviar outra arte</>
+                )}
             </Button>
           </div>
         </div>

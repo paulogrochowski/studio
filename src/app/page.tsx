@@ -16,7 +16,6 @@ const TOTAL_STEPS = 4;
 
 export default function Home() {
   const [step, setStep] = useState(1);
-  const [isGenerating, startGenerationTransition] = useTransition();
   const [isAnalyzing, startAnalysisTransition] = useTransition();
   const { toast } = useToast();
 
@@ -31,7 +30,7 @@ export default function Home() {
     setStep(2);
   };
 
-  const handleArtGenerated = (imageUrl: string, prompt: string) => {
+  const handleArtReady = (imageUrl: string, prompt: string) => {
     setGeneratedArt({ imageUrl, prompt });
     setEventDescription(prompt);
     setStep(3);
@@ -83,7 +82,7 @@ export default function Home() {
         return <CupSelector onSelect={handleCupSelect} />;
       case 2:
         if (!selectedCup) return null; // Should not happen
-        return <EventForm cup={selectedCup} onArtGenerated={handleArtGenerated} />;
+        return <EventForm cup={selectedCup} onArtReady={handleArtReady} />;
       case 3:
         if (!generatedArt || !selectedCup) return null; // Should not happen
         return <ArtGallery initialArt={generatedArt} cup={selectedCup} onSelectArt={handleSelectArt} onRegenerate={handleRegenerate} />;

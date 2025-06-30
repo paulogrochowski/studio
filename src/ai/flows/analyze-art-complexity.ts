@@ -17,7 +17,11 @@ const AnalyzeArtComplexityInputSchema = z.object({
     .describe(
       "The art image as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
-  description: z.string().describe('The description of the event style.'),
+  description: z
+    .string()
+    .describe(
+      'The description of the event style, or an indication that the user uploaded it.'
+    ),
 });
 
 export type AnalyzeArtComplexityInput = z.infer<
@@ -54,6 +58,7 @@ const analyzeArtComplexityPrompt = ai.definePrompt({
   prompt: `You are an expert art critic specializing in evaluating the complexity of digital art.
 
 You will analyze the provided art image and its description to determine a complexity score.
+If the description indicates the user uploaded the art (e.g., 'Arte enviada pelo usuário'), focus your analysis solely on the image content.
 Consider factors such as the number of colors, level of detail, and image resolution.
 Provide a reasoning for the assigned score.
 
