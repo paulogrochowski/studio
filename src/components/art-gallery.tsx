@@ -203,7 +203,7 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
     <TooltipProvider>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-3xl">3. Revise e Edite sua Arte</CardTitle>
+          <CardTitle className="font-headline text-3xl">4. Revise e Edite sua Arte</CardTitle>
           <CardDescription>
             Esta é a arte para o seu copo. Você pode fazer ajustes, adicionar textos ou voltar para escolher outra.
           </CardDescription>

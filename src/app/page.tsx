@@ -11,8 +11,9 @@ import { CheckoutView } from '@/components/checkout-view';
 import { Loader } from '@/components/loader';
 import { useToast } from '@/hooks/use-toast';
 import { handleArtAnalysis } from './actions';
+import { ArtMethodSelector } from '@/components/art-method-selector';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 export default function Home() {
   const [step, setStep] = useState(1);
@@ -20,6 +21,7 @@ export default function Home() {
   const { toast } = useToast();
 
   const [selectedCup, setSelectedCup] = useState<CupModel | null>(null);
+  const [artMethod, setArtMethod] = useState<'ai' | 'upload' | 'draw' | null>(null);
   const [eventDescription, setEventDescription] = useState<string>('');
   const [generatedArt, setGeneratedArt] = useState<GeneratedArt | null>(null);
   const [finalOrder, setFinalOrder] = useState<OrderDetails | null>(null);
@@ -31,10 +33,12 @@ export default function Home() {
       case 1:
         return !!selectedCup;
       case 2:
-        return !!generatedArt;
+        return !!artMethod;
       case 3:
-        return !!artComplexity;
+        return !!generatedArt;
       case 4:
+        return !!artComplexity;
+      case 5:
         return !!finalOrder;
       default:
         return false;
@@ -44,6 +48,7 @@ export default function Home() {
   const handleCupSelect = (cup: CupModel) => {
     // If the user selects a different cup, invalidate the subsequent steps' state.
     if (selectedCup?.id !== cup.id) {
+      setArtMethod(null);
       setEventDescription('');
       setGeneratedArt(null);
       setArtComplexity(null);
@@ -53,20 +58,29 @@ export default function Home() {
     setStep(2);
   };
 
+  const handleArtMethodSelect = (method: 'ai' | 'upload' | 'draw') => {
+    setArtMethod(method);
+    // Reset subsequent steps when method changes
+    setGeneratedArt(null);
+    setArtComplexity(null);
+    setFinalOrder(null);
+    setStep(3);
+  };
+
   const handleArtReady = (imageUrl: string, prompt: string) => {
     // When new art is ready, invalidate the steps that depend on it.
     setGeneratedArt({ id: `art-${Date.now()}`, imageUrl, prompt });
     setEventDescription(prompt);
     setArtComplexity(null);
     setFinalOrder(null);
-    setStep(3);
+    setStep(4);
   };
 
   const handleRegenerate = () => {
     setGeneratedArt(null);
     setArtComplexity(null);
     setFinalOrder(null);
-    setStep(2);
+    setStep(3);
   };
   
   const handleSelectArt = (art: GeneratedArt) => {
@@ -75,7 +89,7 @@ export default function Home() {
       const result = await handleArtAnalysis(art.imageUrl, eventDescription);
       if (result.success) {
         setArtComplexity({ score: result.complexityScore, reasoning: result.reasoning });
-        setStep(4);
+        setStep(5);
       } else {
         toast({
           variant: "destructive",
@@ -88,12 +102,13 @@ export default function Home() {
 
   const handleFinalizeOrder = (details: OrderDetails) => {
     setFinalOrder(details);
-    setStep(5); // Checkout view
+    setStep(6); // Checkout view
   }
 
   const handleStartNewOrder = () => {
     setStep(1);
     setSelectedCup(null);
+    setArtMethod(null);
     setEventDescription('');
     setGeneratedArt(null);
     setArtComplexity(null);
@@ -122,12 +137,14 @@ export default function Home() {
       case 1:
         return <CupSelector onSelect={handleCupSelect} />;
       case 2:
-        if (!selectedCup) return null; // Should not happen
-        return <EventForm cup={selectedCup} onArtReady={handleArtReady} onGoBack={handleGoBack} />;
+        return <ArtMethodSelector onSelect={handleArtMethodSelect} onGoBack={handleGoBack} />;
       case 3:
+        if (!selectedCup || !artMethod) return null; // Should not happen
+        return <EventForm cup={selectedCup} onArtReady={handleArtReady} onGoBack={handleGoBack} initialTab={artMethod} />;
+      case 4:
         if (!generatedArt || !selectedCup) return null; // Should not happen
         return <ArtGallery initialArt={generatedArt} cup={selectedCup} onSelectArt={handleSelectArt} onRegenerate={handleRegenerate} onGoBack={handleGoBack} />;
-      case 4:
+      case 5:
         if (!selectedCup || !generatedArt || !artComplexity) return null; // Should not happen
         return <QuoteSummary 
           initialDetails={{
@@ -139,7 +156,7 @@ export default function Home() {
           onFinalize={handleFinalizeOrder}
           onGoBack={handleGoBack}
         />;
-      case 5:
+      case 6:
         if (!finalOrder) return null;
         return <CheckoutView orderDetails={finalOrder} onStartNewOrder={handleStartNewOrder} />;
       default:

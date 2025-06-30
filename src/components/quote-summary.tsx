@@ -46,7 +46,7 @@ export function QuoteSummary({ initialDetails, onFinalize, onGoBack }: QuoteSumm
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-3xl">4. Orçamento e Compra</CardTitle>
+        <CardTitle className="font-headline text-3xl">5. Orçamento e Compra</CardTitle>
         <CardDescription>Revise os detalhes do seu pedido e finalize a compra.</CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8">

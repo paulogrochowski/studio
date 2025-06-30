@@ -9,7 +9,8 @@ interface StepsIndicatorProps {
 
 const steps = [
   "Modelo do Copo",
-  "Personalize a Arte",
+  "Método de Criação",
+  "Criação da Arte",
   "Revisão da Arte",
   "Orçamento e Compra",
 ];
@@ -17,7 +18,7 @@ const steps = [
 export function StepsIndicator({ currentStep, onStepClick, isStepCompleted }: StepsIndicatorProps) {
   return (
     <div className="w-full mb-8">
-      <ol className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <ol className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
         {steps.map((label, index) => {
           const stepNumber = index + 1;
           const isCurrent = currentStep === stepNumber;

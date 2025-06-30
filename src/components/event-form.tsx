@@ -19,6 +19,7 @@ interface EventFormProps {
   cup: CupModel;
   onArtReady: (imageUrl: string, prompt: string) => void;
   onGoBack: () => void;
+  initialTab: 'ai' | 'upload' | 'draw';
 }
 
 function SubmitButton() {
@@ -31,7 +32,7 @@ function SubmitButton() {
   );
 }
 
-export function EventForm({ cup, onArtReady, onGoBack }: EventFormProps) {
+export function EventForm({ cup, onArtReady, onGoBack, initialTab }: EventFormProps) {
   const { toast } = useToast();
   const [state, formAction] = useActionState(handleArtGeneration.bind(null, cup.name), null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -115,9 +116,9 @@ export function EventForm({ cup, onArtReady, onGoBack }: EventFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-3xl">2. Personalize seu Copo</CardTitle>
+        <CardTitle className="font-headline text-3xl">3. Crie sua Arte</CardTitle>
         <CardDescription>
-          Você pode gerar uma arte com nossa IA, enviar a sua própria imagem, ou desenhar na hora.
+          Siga as instruções para a opção escolhida. Use a IA, envie seu arquivo ou desenhe.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -130,7 +131,7 @@ export function EventForm({ cup, onArtReady, onGoBack }: EventFormProps) {
                 <p className="text-sm text-muted-foreground mt-2">Modelo selecionado</p>
             </div>
             <div className="md:col-span-2 space-y-4">
-                <Tabs defaultValue="ai" className="w-full">
+                <Tabs defaultValue={initialTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="ai"><Wand2 className="mr-2 h-4 w-4"/>Gerar com IA</TabsTrigger>
                     <TabsTrigger value="upload"><UploadCloud className="mr-2 h-4 w-4"/>Enviar Arte</TabsTrigger>
@@ -205,7 +206,7 @@ export function EventForm({ cup, onArtReady, onGoBack }: EventFormProps) {
       <CardFooter>
         <Button variant="outline" onClick={onGoBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para Seleção de Copo
+          Voltar para Métodos
         </Button>
       </CardFooter>
     </Card>
