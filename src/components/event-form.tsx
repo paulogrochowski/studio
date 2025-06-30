@@ -3,12 +3,12 @@
 import { useFormStatus } from 'react-dom';
 import { handleArtGeneration, handleImageValidation } from '@/app/actions';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState, useRef, useActionState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Brush, Loader2, UploadCloud, Wand2 } from 'lucide-react';
+import { ArrowLeft, Brush, Loader2, UploadCloud, Wand2 } from 'lucide-react';
 import type { CupModel } from '@/lib/types';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +18,7 @@ import { DrawingCanvas } from './drawing-canvas';
 interface EventFormProps {
   cup: CupModel;
   onArtReady: (imageUrl: string, prompt: string) => void;
+  onGoBack: () => void;
 }
 
 function SubmitButton() {
@@ -30,7 +31,7 @@ function SubmitButton() {
   );
 }
 
-export function EventForm({ cup, onArtReady }: EventFormProps) {
+export function EventForm({ cup, onArtReady, onGoBack }: EventFormProps) {
   const { toast } = useToast();
   const [state, formAction] = useActionState(handleArtGeneration.bind(null, cup.name), null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -201,6 +202,12 @@ export function EventForm({ cup, onArtReady }: EventFormProps) {
             </div>
         </div>
       </CardContent>
+      <CardFooter>
+        <Button variant="outline" onClick={onGoBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar para Seleção de Copo
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

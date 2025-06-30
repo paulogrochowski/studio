@@ -31,7 +31,7 @@ export default function Home() {
   };
 
   const handleArtReady = (imageUrl: string, prompt: string) => {
-    setGeneratedArt({ imageUrl, prompt });
+    setGeneratedArt({ id: `art-${Date.now()}`, imageUrl, prompt });
     setEventDescription(prompt);
     setStep(3);
   };
@@ -72,6 +72,16 @@ export default function Home() {
     setFinalOrder(null);
   }
 
+  const handleGoBack = () => {
+    setStep(prev => (prev > 1 ? prev - 1 : 1));
+  };
+
+  const handleStepClick = (stepNumber: number) => {
+    if (stepNumber < step) {
+      setStep(stepNumber);
+    }
+  };
+
   const renderStep = () => {
     if(isAnalyzing) {
       return <Loader message="Analisando a complexidade da sua arte..." />
@@ -82,10 +92,10 @@ export default function Home() {
         return <CupSelector onSelect={handleCupSelect} />;
       case 2:
         if (!selectedCup) return null; // Should not happen
-        return <EventForm cup={selectedCup} onArtReady={handleArtReady} />;
+        return <EventForm cup={selectedCup} onArtReady={handleArtReady} onGoBack={handleGoBack} />;
       case 3:
         if (!generatedArt || !selectedCup) return null; // Should not happen
-        return <ArtGallery initialArt={generatedArt} cup={selectedCup} onSelectArt={handleSelectArt} onRegenerate={handleRegenerate} />;
+        return <ArtGallery initialArt={generatedArt} cup={selectedCup} onSelectArt={handleSelectArt} onRegenerate={handleRegenerate} onGoBack={handleGoBack} />;
       case 4:
         if (!selectedCup || !generatedArt || !artComplexity) return null; // Should not happen
         return <QuoteSummary 
@@ -96,6 +106,7 @@ export default function Home() {
             artComplexity: artComplexity,
           }}
           onFinalize={handleFinalizeOrder}
+          onGoBack={handleGoBack}
         />;
       case 5:
         if (!finalOrder) return null;
@@ -109,7 +120,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1 container mx-auto py-8 px-4">
-        {step <= TOTAL_STEPS && <StepsIndicator currentStep={step} totalSteps={TOTAL_STEPS} />}
+        {step <= TOTAL_STEPS && <StepsIndicator currentStep={step} totalSteps={TOTAL_STEPS} onStepClick={handleStepClick} />}
         {renderStep()}
       </main>
       <footer className="text-center py-4 text-sm text-muted-foreground border-t">

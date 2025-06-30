@@ -1,6 +1,9 @@
+import { cn } from "@/lib/utils";
+
 interface StepsIndicatorProps {
   currentStep: number;
   totalSteps: number;
+  onStepClick?: (step: number) => void;
 }
 
 const steps = [
@@ -10,7 +13,7 @@ const steps = [
   "Orçamento e Compra",
 ];
 
-export function StepsIndicator({ currentStep }: StepsIndicatorProps) {
+export function StepsIndicator({ currentStep, onStepClick }: StepsIndicatorProps) {
   return (
     <div className="w-full mb-8">
       <ol className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -20,7 +23,14 @@ export function StepsIndicator({ currentStep }: StepsIndicatorProps) {
           const isCurrent = currentStep === stepNumber;
 
           return (
-            <li key={label} className="flex items-center gap-3">
+            <li 
+              key={label} 
+              className={cn(
+                "flex items-center gap-3",
+                isCompleted && onStepClick && "cursor-pointer transition-opacity hover:opacity-80"
+              )}
+              onClick={() => isCompleted && onStepClick?.(stepNumber)}
+            >
               <span
                 className={`flex items-center justify-center w-8 h-8 rounded-full text-lg font-bold shrink-0
                   ${isCompleted ? 'bg-primary text-primary-foreground' : ''}

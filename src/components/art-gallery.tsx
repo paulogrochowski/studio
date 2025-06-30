@@ -1,24 +1,27 @@
 'use client';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { handleArtRefinement } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2, ArrowLeft, Type, Download, Trash2, Palette, Move, RotateCw, Scaling } from 'lucide-react';
+import { Loader2, Wand2, ArrowLeft, Type, Download, Trash2, Palette, Move, RotateCw, Scaling, Box, UploadCloud } from 'lucide-react';
 import type { GeneratedArt, CupModel } from '@/lib/types';
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Input } from './ui/input';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
+import { ScrollArea, ScrollBar } from './ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface ArtGalleryProps {
   initialArt: GeneratedArt;
   cup: CupModel;
   onSelectArt: (art: GeneratedArt) => void;
   onRegenerate: () => void;
+  onGoBack: () => void;
 }
 
 interface TextOverlay {
@@ -28,8 +31,11 @@ interface TextOverlay {
   size: number;
 }
 
-export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGalleryProps) {
-  const [currentArt, setCurrentArt] = useState(initialArt);
+export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBack }: ArtGalleryProps) {
+  const [history, setHistory] = useState<GeneratedArt[]>([initialArt]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const currentArt = useMemo(() => history[selectedIndex], [history, selectedIndex]);
+  
   const [refinementInput, setRefinementInput] = useState('');
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -39,14 +45,26 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
   const [textColor, setTextColor] = useState('#000000');
   const [textSize, setTextSize] = useState(48);
 
-  const isAIArt = !["Arte enviada pelo usuário", "Arte desenhada pelo usuário"].includes(initialArt.prompt);
+  const isAIArt = !["Arte enviada pelo usuário", "Arte desenhada pelo usuário"].includes(currentArt.prompt);
+
+  const selectArtFromHistory = (index: number) => {
+    setSelectedIndex(index);
+    setTexts([]);
+  };
 
   const handleRefine = () => {
     if (!refinementInput) return;
     startTransition(async () => {
       const result = await handleArtRefinement(currentArt.imageUrl, refinementInput);
       if (result.success) {
-        setCurrentArt({ imageUrl: result.imageUrl, prompt: initialArt.prompt });
+        const newArt: GeneratedArt = {
+            id: `art-${Date.now()}`,
+            imageUrl: result.imageUrl,
+            prompt: currentArt.prompt,
+        };
+        const newHistory = [...history, newArt];
+        setHistory(newHistory);
+        setSelectedIndex(newHistory.length - 1);
         setRefinementInput('');
         toast({ title: "Arte refinada!", description: "Sua arte foi atualizada com sucesso." });
       } else {
@@ -89,7 +107,6 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           
-          // Position texts vertically in the center
           const yPos = canvas.height / 2 + (index - (texts.length - 1) / 2) * (scaledSize * 1.2);
           ctx.fillText(text.text, canvas.width / 2, yPos);
         });
@@ -120,7 +137,7 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
     startTransition(async () => {
       try {
         const finalImageUrl = texts.length > 0 ? await createCompositeImage() : currentArt.imageUrl;
-        onSelectArt({ imageUrl: finalImageUrl, prompt: currentArt.prompt });
+        onSelectArt({ ...currentArt, imageUrl: finalImageUrl });
       } catch (error: any) {
         toast({ variant: 'destructive', title: 'Erro ao processar a arte', description: error.message });
       }
@@ -144,17 +161,34 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
               style={{ backgroundImage: `url(${cup.imageUrl})`}}
             ></div>
           </div>
-          <Button onClick={handleSelectCompositeArt} size="lg" className="w-full" disabled={isPending}>
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Gostei, usar esta arte!
-          </Button>
+           <div className="space-y-2 w-full">
+            <Label>Histórico de Versões</Label>
+            <ScrollArea className="w-full whitespace-nowrap rounded-lg border">
+              <div className="flex space-x-2 p-2">
+                {history.map((art, index) => (
+                  <button
+                    key={art.id}
+                    onClick={() => selectArtFromHistory(index)}
+                    className={cn(
+                        "relative h-20 w-20 shrink-0 cursor-pointer rounded-md overflow-hidden ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        selectedIndex === index && "ring-2 ring-primary"
+                    )}
+                  >
+                    <Image src={art.imageUrl} alt={`Versão ${index + 1}`} fill className="object-contain bg-white p-1" />
+                  </button>
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </div>
         </div>
         <div className="space-y-6">
           <Tabs defaultValue="refine" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="refine"><Wand2 /> Ajuste Fino</TabsTrigger>
               <TabsTrigger value="text"><Type /> Texto</TabsTrigger>
               <TabsTrigger value="tools" disabled><Move /> Ferramentas</TabsTrigger>
+              <TabsTrigger value="3d" disabled><Box /> Visualizar 3D</TabsTrigger>
             </TabsList>
             <TabsContent value="refine" className="mt-4 border rounded-lg p-4">
               <div className="space-y-2">
@@ -201,13 +235,20 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
                 {texts.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Nenhum texto adicionado.</p>}
               </div>
             </TabsContent>
-            <TabsContent value="tools" className="mt-4 border rounded-lg p-4">
+             <TabsContent value="tools" className="mt-4 border rounded-lg p-4">
                 <div className="text-center p-8 text-muted-foreground flex flex-col items-center gap-4">
                     <div className="flex gap-4">
                         <Move /> <RotateCw /> <Scaling />
                     </div>
                     <p className="font-bold">Em breve!</p>
                     <p className="text-xs">Ferramentas para mover, girar e ajustar o tamanho da sua arte.</p>
+                </div>
+            </TabsContent>
+            <TabsContent value="3d" className="mt-4 border rounded-lg p-4">
+                <div className="text-center p-8 text-muted-foreground flex flex-col items-center gap-4">
+                    <Box size={32}/>
+                    <p className="font-bold">Em breve!</p>
+                    <p className="text-xs">Visualize sua arte aplicada diretamente no modelo 3D do copo.</p>
                 </div>
             </TabsContent>
           </Tabs>
@@ -221,7 +262,7 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
                     {isAIArt ? (
                         <><Wand2 /> Gerar outra</>
                     ) : (
-                        <><ArrowLeft/> Voltar</>
+                        <><UploadCloud/> Trocar Arte</>
                     )}
                 </Button>
                 <Button onClick={handleDownload} variant="outline" className="w-full">
@@ -231,6 +272,16 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
           </div>
         </div>
       </CardContent>
+      <CardFooter className="flex justify-between items-center">
+         <Button variant="outline" onClick={onGoBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar
+        </Button>
+        <Button onClick={handleSelectCompositeArt} size="lg" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Gostei, usar esta arte!
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

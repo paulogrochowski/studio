@@ -7,6 +7,7 @@ export interface CupModel {
 }
 
 export interface GeneratedArt {
+  id: string;
   imageUrl: string;
   prompt: string;
 }

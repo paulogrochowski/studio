@@ -8,17 +8,19 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import type { OrderDetails } from '@/lib/types';
 import Image from 'next/image';
+import { ArrowLeft } from 'lucide-react';
 
 interface QuoteSummaryProps {
   initialDetails: Omit<OrderDetails, 'quantity' | 'isUrgent' | 'total'>;
   onFinalize: (details: OrderDetails) => void;
+  onGoBack: () => void;
 }
 
 const URGENCY_MULTIPLIER = 1.25;
 const COMPLEXITY_PRICE_PER_POINT = 0.15;
 const SHIPPING_COST = 15.0;
 
-export function QuoteSummary({ initialDetails, onFinalize }: QuoteSummaryProps) {
+export function QuoteSummary({ initialDetails, onFinalize, onGoBack }: QuoteSummaryProps) {
   const [quantity, setQuantity] = useState(100);
   const [isUrgent, setIsUrgent] = useState(false);
   const [total, setTotal] = useState(0);
@@ -105,8 +107,12 @@ export function QuoteSummary({ initialDetails, onFinalize }: QuoteSummaryProps) 
            </div>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button onClick={handleFinalize} size="lg" className="w-full">
+      <CardFooter className="flex justify-between items-center">
+        <Button variant="outline" onClick={onGoBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar e Editar Arte
+        </Button>
+        <Button onClick={handleFinalize} size="lg">
           Finalizar Compra
         </Button>
       </CardFooter>
