@@ -196,6 +196,73 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
         );
     }
     
+    const PreviewCard = () => (
+         <Card>
+            <CardHeader>
+                <CardTitle>Pré-visualização</CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center justify-center p-4 min-h-[500px] bg-muted/50 rounded-lg">
+                 <div className="relative w-64 h-64">
+                     {/* Cup Render */}
+                     <div
+                        className="absolute inset-0"
+                        style={{
+                          backgroundColor: activeCupModel.colorHex,
+                          opacity: activeCupModel.opacityType === 'Translúcido' ? 0.75 : 1.0,
+                          WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
+                          maskImage: `url(${activeCupModel.imageUrl})`,
+                          WebkitMaskSize: 'contain',
+                          maskSize: 'contain',
+                          WebkitMaskRepeat: 'no-repeat',
+                          maskRepeat: 'no-repeat',
+                          WebkitMaskPosition: 'center',
+                          maskPosition: 'center',
+                        }}
+                      />
+                      {activeCupModel.rimColor !== 'Nenhuma' && (
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              borderColor: activeCupModel.rimColor === 'Dourada' ? '#FFD700' : '#C0C0C0',
+                              borderTopWidth: '8px',
+                              WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
+                              maskImage: `url(${activeCupModel.imageUrl})`,
+                              WebkitMaskSize: 'contain',
+                              maskSize: 'contain',
+                              WebkitMaskRepeat: 'no-repeat',
+                              maskRepeat: 'no-repeat',
+                              WebkitMaskPosition: 'center',
+                              maskPosition: 'center',
+                            }}
+                          />
+                      )}
+                      {/* Art Render */}
+                      {art && (
+                        <div
+                          className="absolute w-full h-full"
+                          style={{
+                            top: `${art.y}%`,
+                            left: `${art.x}%`,
+                            transform: `translate(-50%, -50%) scale(${art.scale}) rotate(${art.rotation}deg)`,
+                            width: '100%',
+                            height: '100%',
+                          }}
+                        >
+                            <div className="relative w-full h-full flex items-center justify-center">
+                                <Image src={art.imageUrl} alt="Arte gerada" fill className="object-contain" />
+                            </div>
+                        </div>
+                      )}
+                 </div>
+            </CardContent>
+            <CardFooter>
+                <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art}>
+                     Aprovar Arte e ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
+                </Button>
+            </CardFooter>
+         </Card>
+    );
+
     return (
         <div>
             <div className="flex items-center gap-4 mb-8">
@@ -264,6 +331,11 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                          </CardContent>
                     </Card>
                     
+                    {/* Mobile-only Preview */}
+                    <div className="lg:hidden">
+                        <PreviewCard />
+                    </div>
+
                     {/* Toolbar */}
                     {art && (
                        <Card>
@@ -290,72 +362,9 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
 
                 </div>
 
-                {/* Right Panel: Preview */}
-                <div className="lg:col-span-2 sticky top-24">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Pré-visualização</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex items-center justify-center p-4 min-h-[500px] bg-muted/50 rounded-lg">
-                             <div className="relative w-64 h-64">
-                                 {/* Cup Render */}
-                                 <div
-                                    className="absolute inset-0"
-                                    style={{
-                                      backgroundColor: activeCupModel.colorHex,
-                                      opacity: activeCupModel.opacityType === 'Translúcido' ? 0.75 : 1.0,
-                                      WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
-                                      maskImage: `url(${activeCupModel.imageUrl})`,
-                                      WebkitMaskSize: 'contain',
-                                      maskSize: 'contain',
-                                      WebkitMaskRepeat: 'no-repeat',
-                                      maskRepeat: 'no-repeat',
-                                      WebkitMaskPosition: 'center',
-                                      maskPosition: 'center',
-                                    }}
-                                  />
-                                  {activeCupModel.rimColor !== 'Nenhuma' && (
-                                      <div
-                                        className="absolute inset-0"
-                                        style={{
-                                          borderColor: activeCupModel.rimColor === 'Dourada' ? '#FFD700' : '#C0C0C0',
-                                          borderTopWidth: '8px',
-                                          WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
-                                          maskImage: `url(${activeCupModel.imageUrl})`,
-                                          WebkitMaskSize: 'contain',
-                                          maskSize: 'contain',
-                                          WebkitMaskRepeat: 'no-repeat',
-                                          maskRepeat: 'no-repeat',
-                                          WebkitMaskPosition: 'center',
-                                          maskPosition: 'center',
-                                        }}
-                                      />
-                                  )}
-                                  {/* Art Render */}
-                                  {art && (
-                                    <div
-                                      className="absolute w-full h-full"
-                                      style={{
-                                        top: `${art.y}%`,
-                                        left: `${art.x}%`,
-                                        transform: `translate(-50%, -50%) scale(${art.scale}) rotate(${art.rotation}deg)`,
-                                        width: '100%',
-                                        height: '100%',
-                                      }}
-                                    >
-                                        <div className="relative w-full h-full flex items-center justify-center">
-                                            <Image src={art.imageUrl} alt="Arte gerada" fill className="object-contain" />
-                                        </div>
-                                    </div>
-                                  )}
-                             </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art}>
-                                 Aprovar Arte e ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
-                            </Button>
-                        </CardFooter>
-                     </Card>
+                {/* Desktop-only Right Panel: Preview */}
+                <div className="lg:col-span-2 sticky top-24 hidden lg:block">
+                     <PreviewCard />
                 </div>
             </div>
         </div>
