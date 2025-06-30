@@ -1,12 +1,12 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { handleArtGeneration } from '@/app/actions';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useActionState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, UploadCloud, Wand2 } from 'lucide-react';
 import type { CupModel } from '@/lib/types';
@@ -31,7 +31,7 @@ function SubmitButton() {
 
 export function EventForm({ cup, onArtReady }: EventFormProps) {
   const { toast } = useToast();
-  const [state, formAction] = useFormState(handleArtGeneration.bind(null, cup.name), null);
+  const [state, formAction] = useActionState(handleArtGeneration.bind(null, cup.name), null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
