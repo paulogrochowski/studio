@@ -49,12 +49,22 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
   const [selectedTextId, setSelectedTextId] = useState<number | null>(null);
   const selectedText = useMemo(() => texts.find(t => t.id === selectedTextId), [texts, selectedTextId]);
 
+  const [activeTab, setActiveTab] = useState('refine');
+
   const [newText, setNewText] = useState('');
   const [textColor, setTextColor] = useState('#000000');
   const [textSize, setTextSize] = useState(48);
   
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [previewWidth, setPreviewWidth] = useState(500);
+
+  useEffect(() => {
+    // When the selected text is cleared, if the 'tools' tab is active,
+    // switch to the 'refine' tab to avoid being on a disabled tab.
+    if (activeTab === 'tools' && !selectedText) {
+      setActiveTab('refine');
+    }
+  }, [selectedText, activeTab]);
 
   useEffect(() => {
     const container = previewContainerRef.current;
@@ -204,7 +214,7 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start p-0">
           {/* Coluna da Esquerda: Controles de Edição */}
           <div className="space-y-6">
-            <Tabs defaultValue="refine" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-4">
                 <Tooltip><TooltipTrigger asChild><TabsTrigger value="refine"><Wand2 /></TabsTrigger></TooltipTrigger><TooltipContent><p>Ajuste Fino com IA</p></TooltipContent></Tooltip>
                 <Tooltip><TooltipTrigger asChild><TabsTrigger value="text"><Type /></TabsTrigger></TooltipTrigger><TooltipContent><p>Adicionar/Remover Texto</p></TooltipContent></Tooltip>
