@@ -3,6 +3,7 @@
 import { generateCupArt } from '@/ai/flows/generate-cup-art';
 import { analyzeArtComplexity } from '@/ai/flows/analyze-art-complexity';
 import { refineCupArt } from '@/ai/flows/refine-cup-art';
+import { validateImageBackground } from '@/ai/flows/validate-image-background';
 import { z } from 'zod';
 
 const eventFormSchema = z.object({
@@ -89,5 +90,28 @@ export async function handleArtAnalysis(artDataUri: string, description: string)
   } catch (error) {
     console.error(error);
     return { success: false, error: "Ocorreu um erro ao analisar a arte." };
+  }
+}
+
+type ImageValidationResult = {
+  success: true;
+  isValid: boolean;
+  reasoning: string;
+} | {
+  success: false;
+  error: string;
+};
+
+export async function handleImageValidation(imageDataUri: string): Promise<ImageValidationResult> {
+  if (!imageDataUri) {
+    return { success: false, error: "Nenhuma imagem para validar." };
+  }
+  
+  try {
+    const result = await validateImageBackground({ imageDataUri });
+    return { success: true, isValid: result.hasValidBackground, reasoning: result.reasoning };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Ocorreu um erro ao validar a imagem." };
   }
 }

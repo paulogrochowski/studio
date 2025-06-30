@@ -23,7 +23,7 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   
-  const isAIArt = initialArt.prompt !== "Arte enviada pelo usuário";
+  const isAIArt = !["Arte enviada pelo usuário", "Arte desenhada pelo usuário"].includes(initialArt.prompt);
 
   const handleRefine = async () => {
     if (!refinementInput) return;
@@ -74,10 +74,11 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
               onChange={(e) => setRefinementInput(e.target.value)}
               rows={4}
             />
-            <Button onClick={handleRefine} disabled={isPending} className="w-full">
+            <Button onClick={handleRefine} disabled={isPending || !isAIArt} className="w-full">
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Refinar com IA
             </Button>
+            {!isAIArt && <p className="text-xs text-muted-foreground text-center">O refinamento com IA só está disponível para artes geradas pela IA.</p>}
           </div>
           <div className="space-y-2">
             <p className="font-bold">Não gostou do resultado?</p>
@@ -85,7 +86,7 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
                 {isAIArt ? (
                     <><Wand2 className="mr-2 h-4 w-4" /> Gerar uma nova arte do zero</>
                 ) : (
-                    <><ArrowLeft className="mr-2 h-4 w-4" /> Voltar e enviar outra arte</>
+                    <><ArrowLeft className="mr-2 h-4 w-4" /> Voltar e criar outra arte</>
                 )}
             </Button>
           </div>
