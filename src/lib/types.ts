@@ -1,0 +1,25 @@
+
+export interface CupModel {
+  id: string;
+  name: string;
+  imageUrl: string;
+  basePrice: number;
+}
+
+export interface GeneratedArt {
+  imageUrl: string;
+  prompt: string;
+}
+
+export interface OrderDetails {
+  cupModel: CupModel;
+  eventDescription: string;
+  art: GeneratedArt;
+  artComplexity: {
+    score: number;
+    reasoning: string;
+  };
+  quantity: number;
+  isUrgent: boolean;
+  total: number;
+}
