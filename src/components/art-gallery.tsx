@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { handleArtRefinement } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2, ArrowLeft, Type, Download, Trash2, Palette, Move, RotateCw, Scaling, Box, UploadCloud } from 'lucide-react';
+import { Loader2, Wand2, ArrowLeft, Type, Download, Trash2, Palette, Box, UploadCloud, Settings2 } from 'lucide-react';
 import type { GeneratedArt, CupModel } from '@/lib/types';
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -29,6 +29,10 @@ interface TextOverlay {
   text: string;
   color: string;
   size: number;
+  x: number; // percentage
+  y: number; // percentage
+  rotation: number; // degrees
+  scale: number; // multiplier
 }
 
 export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBack }: ArtGalleryProps) {
@@ -41,6 +45,9 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
   const { toast } = useToast();
   
   const [texts, setTexts] = useState<TextOverlay[]>([]);
+  const [selectedTextId, setSelectedTextId] = useState<number | null>(null);
+  const selectedText = useMemo(() => texts.find(t => t.id === selectedTextId), [texts, selectedTextId]);
+
   const [newText, setNewText] = useState('');
   const [textColor, setTextColor] = useState('#000000');
   const [textSize, setTextSize] = useState(48);
@@ -66,6 +73,7 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
   const selectArtFromHistory = (index: number) => {
     setSelectedIndex(index);
     setTexts([]);
+    setSelectedTextId(null);
   };
 
   const handleRefine = () => {
@@ -95,12 +103,32 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
 
   const handleAddText = () => {
     if (newText.trim() === '') return;
-    setTexts(prev => [...prev, { id: Date.now(), text: newText, color: textColor, size: textSize }]);
+    const newId = Date.now();
+    const newTextObject: TextOverlay = { 
+      id: newId, 
+      text: newText, 
+      color: textColor, 
+      size: textSize,
+      x: 50,
+      y: 50,
+      rotation: 0,
+      scale: 1,
+    };
+    setTexts(prev => [...prev, newTextObject]);
     setNewText('');
+    setSelectedTextId(newId);
   };
 
   const removeText = (id: number) => {
+    if (selectedTextId === id) {
+      setSelectedTextId(null);
+    }
     setTexts(prev => prev.filter(t => t.id !== id));
+  };
+  
+  const updateSelectedText = (props: Partial<TextOverlay>) => {
+    if (!selectedTextId) return;
+    setTexts(prev => prev.map(t => t.id === selectedTextId ? { ...t, ...props } : t));
   };
 
   const createCompositeImage = (): Promise<string> => {
@@ -116,15 +144,24 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
         canvas.height = image.naturalHeight;
         ctx.drawImage(image, 0, 0);
 
-        texts.forEach((text, index) => {
-          const scaledSize = text.size * (canvas.width / 500); // Scale font based on original image width
+        texts.forEach(text => {
+          ctx.save();
+          
+          const centerX = canvas.width * (text.x / 100);
+          const centerY = canvas.height * (text.y / 100);
+          ctx.translate(centerX, centerY);
+          ctx.rotate(text.rotation * Math.PI / 180);
+          ctx.scale(text.scale, text.scale);
+
+          const scaledSize = text.size * (canvas.width / 500);
           ctx.fillStyle = text.color;
           ctx.font = `bold ${scaledSize}px Alegreya`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           
-          const yPos = canvas.height / 2 + (index - (texts.length - 1) / 2) * (scaledSize * 1.2);
-          ctx.fillText(text.text, canvas.width / 2, yPos);
+          ctx.fillText(text.text, 0, 0);
+
+          ctx.restore();
         });
 
         resolve(canvas.toDataURL('image/png'));
@@ -173,22 +210,37 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-secondary/50 shadow-inner">
             <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain p-4" />
             
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 pointer-events-none text-center">
+            <div className="absolute inset-0 p-4">
               {texts.map(text => {
                 const scaledSize = text.size * (previewWidth / 500);
                 return (
-                  <div
-                    key={text.id}
-                    style={{
-                      color: text.color,
-                      fontSize: `${scaledSize}px`,
-                      lineHeight: 1.2,
-                      fontFamily: 'Alegreya, serif',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    {text.text}
-                  </div>
+                   <div
+                      key={text.id}
+                      className={cn(
+                        "absolute pointer-events-auto cursor-pointer p-1 border border-transparent hover:border-dashed hover:border-primary/50",
+                        selectedTextId === text.id && "border-primary border-dashed"
+                      )}
+                      style={{
+                        top: `${text.y}%`,
+                        left: `${text.x}%`,
+                        transform: `translate(-50%, -50%) rotate(${text.rotation}deg) scale(${text.scale})`,
+                      }}
+                      onClick={() => setSelectedTextId(text.id)}
+                    >
+                      <div
+                        className="pointer-events-none"
+                        style={{
+                          color: text.color,
+                          fontSize: `${scaledSize}px`,
+                          lineHeight: 1.2,
+                          fontFamily: 'Alegreya, serif',
+                          fontWeight: 'bold',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {text.text}
+                      </div>
+                    </div>
                 );
               })}
             </div>
@@ -220,11 +272,11 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
           </div>
         </div>
         <div className="space-y-6">
-          <Tabs defaultValue="refine" className="w-full">
+          <Tabs defaultValue="text" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="refine"><Wand2 /> Ajuste Fino</TabsTrigger>
               <TabsTrigger value="text"><Type /> Texto</TabsTrigger>
-              <TabsTrigger value="tools" disabled><Move /> Ferramentas</TabsTrigger>
+              <TabsTrigger value="tools" disabled={!selectedText}><Settings2 /> Ferramentas</TabsTrigger>
               <TabsTrigger value="3d" disabled><Box /> Visualizar 3D</TabsTrigger>
             </TabsList>
             <TabsContent value="refine" className="mt-4 border rounded-lg p-4">
@@ -272,14 +324,34 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
                 {texts.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Nenhum texto adicionado.</p>}
               </div>
             </TabsContent>
-             <TabsContent value="tools" className="mt-4 border rounded-lg p-4">
+             <TabsContent value="tools" className="mt-4 border rounded-lg p-4 space-y-4">
+              {selectedText ? (
+                <>
+                  <p className="text-sm font-bold text-center text-primary truncate">Editando: "{selectedText.text}"</p>
+                  <div className="space-y-2">
+                    <Label>Posição X: {selectedText.x}%</Label>
+                    <Slider value={[selectedText.x]} onValueChange={(v) => updateSelectedText({ x: v[0] })} min={0} max={100} step={1} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Posição Y: {selectedText.y}%</Label>
+                    <Slider value={[selectedText.y]} onValueChange={(v) => updateSelectedText({ y: v[0] })} min={0} max={100} step={1} />
+                  </div>
+                   <div className="space-y-2">
+                    <Label>Rotação: {selectedText.rotation}°</Label>
+                    <Slider value={[selectedText.rotation]} onValueChange={(v) => updateSelectedText({ rotation: v[0] })} min={-180} max={180} step={1} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Escala: {selectedText.scale.toFixed(2)}x</Label>
+                    <Slider value={[selectedText.scale]} onValueChange={(v) => updateSelectedText({ scale: v[0] })} min={0.5} max={3} step={0.05} />
+                  </div>
+                </>
+              ) : (
                 <div className="text-center p-8 text-muted-foreground flex flex-col items-center gap-4">
-                    <div className="flex gap-4">
-                        <Move /> <RotateCw /> <Scaling />
-                    </div>
-                    <p className="font-bold">Em breve!</p>
-                    <p className="text-xs">Ferramentas para mover, girar e ajustar o tamanho da sua arte.</p>
+                  <Settings2 />
+                  <p className="font-bold">Selecione um texto</p>
+                  <p className="text-xs">Clique em um texto na arte para editar suas propriedades aqui.</p>
                 </div>
+              )}
             </TabsContent>
             <TabsContent value="3d" className="mt-4 border rounded-lg p-4">
                 <div className="text-center p-8 text-muted-foreground flex flex-col items-center gap-4">
