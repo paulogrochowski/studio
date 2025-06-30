@@ -341,23 +341,44 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* === PREVIEW PANE (Mobile Top, Desktop Right) === */}
         <div className="lg:sticky lg:top-24 flex flex-col items-center gap-4 lg:order-2">
-            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-background shadow-inner">
-              <div 
+            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-card shadow-inner">
+               {/* Cup color and shape using a mask */}
+              <div
                 className="absolute inset-0 transition-colors"
                 style={{
                   backgroundColor: selectedCup.colorHex,
-                  opacity: selectedCup.opacityType === 'Translúcido' ? 0.6 : 1.0,
+                  opacity: selectedCup.opacityType === 'Translúcido' ? 0.75 : 1.0,
+                  WebkitMaskImage: `url(${selectedCup.imageUrl})`,
+                  maskImage: `url(${selectedCup.imageUrl})`,
+                  WebkitMaskSize: 'contain',
+                  maskSize: 'contain',
+                  WebkitMaskRepeat: 'no-repeat',
+                  maskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center',
+                  maskPosition: 'center',
                 }}
               />
-              
-              <div className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none" style={{ backgroundImage: `url(${selectedCup.imageUrl})`}}></div>
 
-              {currentArt && <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain p-4" />}
+              {/* The art, constrained to the printable area */}
+              {currentArt && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div
+                          className="relative"
+                          style={{
+                              width: `${selectedCup.printableArea.widthPercent}%`,
+                              height: `${selectedCup.printableArea.heightPercent}%`,
+                          }}
+                      >
+                          <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain" />
+                      </div>
+                  </div>
+              )}
               
+              {/* Printable area guideline */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="relative border-2 border-dashed border-primary/50" style={{ width: `${selectedCup.printableArea?.widthPercent ?? 90}%`, height: `${selectedCup.printableArea?.heightPercent ?? 90}%`}}>
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-background px-1 text-xs text-muted-foreground">{selectedCup.printableArea?.width_mm}mm</div>
-                    <div className="absolute -left-8 top-1/2 -translate-y-1/2 rotate-[-90deg] bg-background px-1 text-xs text-muted-foreground">{selectedCup.printableArea?.height_mm}mm</div>
+                  <div className="relative border-2 border-dashed border-primary/50" style={{ width: `${selectedCup.printableArea.widthPercent}%`, height: `${selectedCup.printableArea.heightPercent}%`}}>
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card px-1 text-xs text-muted-foreground">{selectedCup.printableArea.width_mm}mm</div>
+                    <div className="absolute -left-10 top-1/2 -translate-y-1/2 rotate-[-90deg] bg-card px-1 text-xs text-muted-foreground">{selectedCup.printableArea.height_mm}mm</div>
                   </div>
               </div>
               
@@ -387,9 +408,43 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
                  </div>
                  <div className="space-y-2">
                     <Label className="font-semibold">Acabamento</Label>
-                    <RadioGroup value={selectedCup.opacityType} onValueChange={(v) => handleCupOptionChange(undefined, v)} className="flex gap-4">
-                      {cupOptions.uniqueOpacities.map(o => <div key={o} className="flex items-center space-x-2"><RadioGroupItem value={o} id={`op-${o}`}/><Label htmlFor={`op-${o}`} className="font-normal">{o}</Label></div>)}
-                    </RadioGroup>
+                    <div className="flex flex-wrap gap-3">
+                      {cupOptions.uniqueOpacities.map((opacity) => (
+                        <TooltipProvider key={opacity}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => handleCupOptionChange(undefined, opacity)}
+                                aria-label={opacity}
+                                className={cn(
+                                  'relative h-10 w-10 rounded-full border-2 flex items-center justify-center transition-transform hover:scale-105 overflow-hidden',
+                                  selectedCup.opacityType === opacity
+                                    ? 'ring-2 ring-offset-2 ring-primary'
+                                    : 'border-input'
+                                )}
+                              >
+                                {opacity === 'Translúcido' && (
+                                  <div
+                                    className="absolute inset-0 checkerboard"
+                                  />
+                                )}
+                                <div
+                                  className="relative h-7 w-7 rounded-full"
+                                  style={{
+                                    backgroundColor: selectedCup.colorHex,
+                                    opacity: opacity === 'Translúcido' ? 0.7 : 1,
+                                    border: selectedCup.colorHex === '#FFFFFF' ? '1px solid #CCC' : 'none'
+                                  }}
+                                />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{opacity}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ))}
+                    </div>
                  </div>
                  <div className="space-y-2">
                     <Label className="font-semibold">Borda</Label>
