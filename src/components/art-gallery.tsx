@@ -6,9 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { handleArtRefinement } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2, ArrowLeft } from 'lucide-react';
+import { Loader2, Wand2, ArrowLeft, Type, Download, Trash2, Palette, Move, RotateCw, Scaling } from 'lucide-react';
 import type { GeneratedArt, CupModel } from '@/lib/types';
 import { Label } from './ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Input } from './ui/input';
+import { Slider } from './ui/slider';
+import { Separator } from './ui/separator';
 
 interface ArtGalleryProps {
   initialArt: GeneratedArt;
@@ -17,15 +21,27 @@ interface ArtGalleryProps {
   onRegenerate: () => void;
 }
 
+interface TextOverlay {
+  id: number;
+  text: string;
+  color: string;
+  size: number;
+}
+
 export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGalleryProps) {
   const [currentArt, setCurrentArt] = useState(initialArt);
   const [refinementInput, setRefinementInput] = useState('');
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   
+  const [texts, setTexts] = useState<TextOverlay[]>([]);
+  const [newText, setNewText] = useState('');
+  const [textColor, setTextColor] = useState('#000000');
+  const [textSize, setTextSize] = useState(48);
+
   const isAIArt = !["Arte enviada pelo usuário", "Arte desenhada pelo usuário"].includes(initialArt.prompt);
 
-  const handleRefine = async () => {
+  const handleRefine = () => {
     if (!refinementInput) return;
     startTransition(async () => {
       const result = await handleArtRefinement(currentArt.imageUrl, refinementInput);
@@ -43,12 +59,80 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
     });
   };
 
+  const handleAddText = () => {
+    if (newText.trim() === '') return;
+    setTexts(prev => [...prev, { id: Date.now(), text: newText, color: textColor, size: textSize }]);
+    setNewText('');
+  };
+
+  const removeText = (id: number) => {
+    setTexts(prev => prev.filter(t => t.id !== id));
+  };
+
+  const createCompositeImage = (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error("Não foi possível criar o contexto do canvas."));
+
+      const image = new window.Image();
+      image.crossOrigin = 'Anonymous';
+      image.onload = () => {
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        ctx.drawImage(image, 0, 0);
+
+        texts.forEach((text, index) => {
+          const scaledSize = text.size * (canvas.width / 500); // Scale font based on original image width
+          ctx.fillStyle = text.color;
+          ctx.font = `bold ${scaledSize}px Alegreya`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          // Position texts vertically in the center
+          const yPos = canvas.height / 2 + (index - (texts.length - 1) / 2) * (scaledSize * 1.2);
+          ctx.fillText(text.text, canvas.width / 2, yPos);
+        });
+
+        resolve(canvas.toDataURL('image/png'));
+      };
+      image.onerror = () => reject(new Error('Falha ao carregar a imagem base.'));
+      image.src = currentArt.imageUrl;
+    });
+  };
+
+  const handleDownload = async () => {
+    toast({title: 'Preparando seu download...'});
+    try {
+      const compositeImageUrl = await createCompositeImage();
+      const link = document.createElement('a');
+      link.href = compositeImageUrl;
+      link.download = 'cup-vision-art.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Erro no Download', description: error.message });
+    }
+  };
+
+  const handleSelectCompositeArt = () => {
+    startTransition(async () => {
+      try {
+        const finalImageUrl = texts.length > 0 ? await createCompositeImage() : currentArt.imageUrl;
+        onSelectArt({ imageUrl: finalImageUrl, prompt: currentArt.prompt });
+      } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Erro ao processar a arte', description: error.message });
+      }
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-3xl">3. Revise sua Arte</CardTitle>
+        <CardTitle className="font-headline text-3xl">3. Revise e Edite sua Arte</CardTitle>
         <CardDescription>
-          Esta é a arte para o seu copo. Você pode fazer ajustes ou voltar para escolher outra.
+          Esta é a arte para o seu copo. Você pode fazer ajustes, adicionar textos ou voltar para escolher outra.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
@@ -60,35 +144,90 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGa
               style={{ backgroundImage: `url(${cup.imageUrl})`}}
             ></div>
           </div>
-          <Button onClick={() => onSelectArt(currentArt)} size="lg" className="w-full">
+          <Button onClick={handleSelectCompositeArt} size="lg" className="w-full" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Gostei, usar esta arte!
           </Button>
         </div>
         <div className="space-y-6">
+          <Tabs defaultValue="refine" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="refine"><Wand2 /> Ajuste Fino</TabsTrigger>
+              <TabsTrigger value="text"><Type /> Texto</TabsTrigger>
+              <TabsTrigger value="tools" disabled><Move /> Ferramentas</TabsTrigger>
+            </TabsList>
+            <TabsContent value="refine" className="mt-4 border rounded-lg p-4">
+              <div className="space-y-2">
+                <Label htmlFor="refine" className="font-bold">Ajuste com IA</Label>
+                <Textarea
+                  id="refine"
+                  placeholder="Ex: 'Adicione mais estrelas', 'Mude a cor do texto para dourado', 'Remova o fundo'..."
+                  value={refinementInput}
+                  onChange={(e) => setRefinementInput(e.target.value)}
+                  rows={3}
+                />
+                <Button onClick={handleRefine} disabled={isPending || !isAIArt} className="w-full">
+                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Refinar com IA
+                </Button>
+                {!isAIArt && <p className="text-xs text-muted-foreground text-center">O refinamento com IA só está disponível para artes geradas pela IA.</p>}
+              </div>
+            </TabsContent>
+            <TabsContent value="text" className="mt-4 border rounded-lg p-4 space-y-4">
+               <div className="space-y-2">
+                <Label htmlFor="text-input">Adicionar Texto</Label>
+                <div className="flex gap-2">
+                  <Input id="text-input" value={newText} onChange={e => setNewText(e.target.value)} placeholder="Sua frase aqui..." />
+                  <Button onClick={handleAddText}>Adicionar</Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="text-color" className="flex items-center gap-2"><Palette className="w-4 h-4" /> Cor</Label>
+                  <Input id="text-color" type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="p-1 h-10" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tamanho: {textSize}pt</Label>
+                  <Slider value={[textSize]} onValueChange={(v) => setTextSize(v[0])} min={12} max={120} step={1} />
+                </div>
+              </div>
+              <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
+                {texts.map(t => (
+                  <div key={t.id} className="flex items-center justify-between bg-secondary/50 p-2 rounded-md text-sm">
+                    <span style={{color: t.color}} className="font-bold font-body truncate">{t.text}</span>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeText(t.id)}><Trash2 className="w-4 h-4" /></Button>
+                  </div>
+                ))}
+                {texts.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Nenhum texto adicionado.</p>}
+              </div>
+            </TabsContent>
+            <TabsContent value="tools" className="mt-4 border rounded-lg p-4">
+                <div className="text-center p-8 text-muted-foreground flex flex-col items-center gap-4">
+                    <div className="flex gap-4">
+                        <Move /> <RotateCw /> <Scaling />
+                    </div>
+                    <p className="font-bold">Em breve!</p>
+                    <p className="text-xs">Ferramentas para mover, girar e ajustar o tamanho da sua arte.</p>
+                </div>
+            </TabsContent>
+          </Tabs>
+          
+          <Separator />
+
           <div className="space-y-2">
-            <Label htmlFor="refine" className="font-bold">Fazer um ajuste fino na arte</Label>
-            <Textarea
-              id="refine"
-              placeholder="Ex: 'Adicione mais estrelas', 'Mude a cor do texto para dourado', 'Remova o fundo'..."
-              value={refinementInput}
-              onChange={(e) => setRefinementInput(e.target.value)}
-              rows={4}
-            />
-            <Button onClick={handleRefine} disabled={isPending || !isAIArt} className="w-full">
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Refinar com IA
-            </Button>
-            {!isAIArt && <p className="text-xs text-muted-foreground text-center">O refinamento com IA só está disponível para artes geradas pela IA.</p>}
-          </div>
-          <div className="space-y-2">
-            <p className="font-bold">Não gostou do resultado?</p>
-            <Button onClick={onRegenerate} variant="outline" className="w-full">
-                {isAIArt ? (
-                    <><Wand2 className="mr-2 h-4 w-4" /> Gerar uma nova arte do zero</>
-                ) : (
-                    <><ArrowLeft className="mr-2 h-4 w-4" /> Voltar e criar outra arte</>
-                )}
-            </Button>
+            <p className="font-bold text-center">Outras Opções</p>
+            <div className="grid grid-cols-2 gap-2">
+                <Button onClick={onRegenerate} variant="outline" className="w-full">
+                    {isAIArt ? (
+                        <><Wand2 /> Gerar outra</>
+                    ) : (
+                        <><ArrowLeft/> Voltar</>
+                    )}
+                </Button>
+                <Button onClick={handleDownload} variant="outline" className="w-full">
+                    <Download/> Baixar Arte
+                </Button>
+            </div>
           </div>
         </div>
       </CardContent>
