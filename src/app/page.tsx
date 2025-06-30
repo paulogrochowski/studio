@@ -187,7 +187,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1 container mx-auto py-8 px-4">
-        {step <= TOTAL_STEPS && <StepsIndicator currentStep={step} totalSteps={TOTAL_STEPS} onStepClick={handleStepClick} isStepCompleted={isStepCompleted} />}
+        {step <= TOTAL_STEPS && <StepsIndicator currentStep={step} onStepClick={handleStepClick} isStepCompleted={isStepCompleted} />}
         {renderStep()}
       </main>
       <footer className="text-center py-4 text-sm text-muted-foreground border-t">
