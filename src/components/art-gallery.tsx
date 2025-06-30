@@ -15,7 +15,6 @@ import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { DrawingCanvas } from './drawing-canvas';
 import { QuoteSummary } from './quote-summary';
@@ -516,128 +515,140 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
         </div>
 
         {/* === CONTROLS PANE (Mobile Bottom, Desktop Left) === */}
-        <div className="space-y-4 lg:order-1">
-          <Accordion type="multiple" defaultValue={['cup', 'art']} className="w-full space-y-4">
-            <AccordionItem value="cup" className="border-b-0 rounded-lg bg-card border shadow-sm">
-              <AccordionTrigger className="px-4 py-3 text-base">Personalize o Copo</AccordionTrigger>
-              <AccordionContent className="p-4 space-y-4">
-                 <div className="space-y-2">
-                    <Label>Cor: <span className="font-normal text-muted-foreground">{selectedCup.colorName}</span></Label>
-                    <div className="flex flex-wrap gap-2">
-                    {cupOptions.uniqueColors.map(color => (
-                        <button key={color.colorName} title={color.colorName} onClick={() => handleCupOptionChange(color.colorName)}
-                            className={cn("w-7 h-7 rounded-full border-2 transition-transform hover:scale-110", selectedCup.colorName === color.colorName ? 'ring-2 ring-offset-2 ring-primary' : 'border-card', color.colorHex === '#FFFFFF' && 'border-gray-300')}
-                            style={{ backgroundColor: color.colorHex }} />
-                    ))}
-                    </div>
-                 </div>
-                 <div className="space-y-2">
-                    <Label className="font-semibold">Acabamento</Label>
-                    <div className="flex flex-wrap gap-3">
-                      {cupOptions.uniqueOpacities.map((opacity) => (
-                        <TooltipProvider key={opacity}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={() => handleCupOptionChange(undefined, opacity)}
-                                aria-label={opacity}
-                                className={cn(
-                                  'relative h-10 w-10 rounded-full border-2 flex items-center justify-center transition-transform hover:scale-105 overflow-hidden',
-                                  selectedCup.opacityType === opacity
-                                    ? 'ring-2 ring-offset-2 ring-primary'
-                                    : 'border-input'
-                                )}
-                              >
-                                {opacity === 'Translúcido' && (
-                                  <div
-                                    className="absolute inset-0 checkerboard"
-                                  />
-                                )}
-                                <div
-                                  className="relative h-7 w-7 rounded-full"
-                                  style={{
-                                    backgroundColor: selectedCup.colorHex,
-                                    opacity: opacity === 'Translúcido' ? 0.7 : 1,
-                                    border: selectedCup.colorHex === '#FFFFFF' ? '1px solid #CCC' : 'none'
-                                  }}
-                                />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{opacity}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+        <div className="lg:order-1">
+          <Card className="w-full">
+            <CardContent className="p-4 sm:p-6 space-y-6">
+              {/* Section 1: Customize Cup */}
+              <div>
+                <h3 className="font-semibold text-lg mb-4">1. Personalize o Copo</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                      <Label>Cor: <span className="font-normal text-muted-foreground">{selectedCup.colorName}</span></Label>
+                      <div className="flex flex-wrap gap-2">
+                      {cupOptions.uniqueColors.map(color => (
+                          <button key={color.colorName} title={color.colorName} onClick={() => handleCupOptionChange(color.colorName)}
+                              className={cn("w-7 h-7 rounded-full border-2 transition-transform hover:scale-110", selectedCup.colorName === color.colorName ? 'ring-2 ring-offset-2 ring-primary' : 'border-card', color.colorHex === '#FFFFFF' && 'border-gray-300')}
+                              style={{ backgroundColor: color.colorHex }} />
                       ))}
-                    </div>
-                 </div>
-                 <div className="space-y-2">
-                    <Label className="font-semibold">Borda</Label>
-                    <RadioGroup value={selectedCup.rimColor} onValueChange={(v) => handleCupOptionChange(undefined, undefined, v as any)} className="flex gap-4">
-                      {cupOptions.uniqueRimColors.map(r => <div key={r} className="flex items-center space-x-2"><RadioGroupItem value={r} id={`rim-${r}`}/><Label htmlFor={`rim-${r}`} className="font-normal">{r}</Label></div>)}
-                    </RadioGroup>
-                 </div>
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="art" className="border-b-0 rounded-lg bg-card border shadow-sm">
-                <AccordionTrigger className="px-4 py-3 text-base">Crie sua Arte</AccordionTrigger>
-                <AccordionContent className="p-4 space-y-4">
-                    <div className="grid grid-cols-3 gap-2">
-                        <Button variant={artMethod === 'ai' ? 'secondary' : 'outline'} onClick={() => setArtMethod('ai')} className="flex-col h-16"><Wand2/><span className="text-xs mt-1">IA</span></Button>
-                        <Button variant={artMethod === 'upload' ? 'secondary' : 'outline'} onClick={() => setArtMethod('upload')} className="flex-col h-16"><UploadCloud/><span className="text-xs mt-1">Enviar</span></Button>
-                        <Button variant={artMethod === 'draw' ? 'secondary' : 'outline'} onClick={() => setArtMethod('draw')} className="flex-col h-16"><Palette/><span className="text-xs mt-1">Desenhar</span></Button>
-                        <Button variant={artMethod === 'background' ? 'secondary' : 'outline'} onClick={() => setArtMethod('background')} className="flex-col h-16"><PaintBucket/><span className="text-xs mt-1">Fundo</span></Button>
-                        <Button variant={artMethod === 'plain' ? 'secondary' : 'outline'} onClick={() => {setArtMethod('plain'); handlePlainArt();}} className="flex-col h-16 col-span-2"><Box/><span className="text-xs mt-1">Copo Liso (Sem Arte)</span></Button>
-                    </div>
+                      </div>
+                  </div>
+                  <div className="space-y-2">
+                      <Label className="font-semibold">Acabamento</Label>
+                      <div className="flex flex-wrap gap-3">
+                        {cupOptions.uniqueOpacities.map((opacity) => (
+                          <TooltipProvider key={opacity}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => handleCupOptionChange(undefined, opacity)}
+                                  aria-label={opacity}
+                                  className={cn(
+                                    'relative h-10 w-10 rounded-full border-2 flex items-center justify-center transition-transform hover:scale-105 overflow-hidden',
+                                    selectedCup.opacityType === opacity
+                                      ? 'ring-2 ring-offset-2 ring-primary'
+                                      : 'border-input'
+                                  )}
+                                >
+                                  {opacity === 'Translúcido' && (
+                                    <div
+                                      className="absolute inset-0 checkerboard"
+                                    />
+                                  )}
+                                  <div
+                                    className="relative h-7 w-7 rounded-full"
+                                    style={{
+                                      backgroundColor: selectedCup.colorHex,
+                                      opacity: opacity === 'Translúcido' ? 0.7 : 1,
+                                      border: selectedCup.colorHex === '#FFFFFF' ? '1px solid #CCC' : 'none'
+                                    }}
+                                  />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{opacity}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ))}
+                      </div>
+                  </div>
+                  <div className="space-y-2">
+                      <Label className="font-semibold">Borda</Label>
+                      <RadioGroup value={selectedCup.rimColor} onValueChange={(v) => handleCupOptionChange(undefined, undefined, v as any)} className="flex gap-4">
+                        {cupOptions.uniqueRimColors.map(r => <div key={r} className="flex items-center space-x-2"><RadioGroupItem value={r} id={`rim-${r}`}/><Label htmlFor={`rim-${r}`} className="font-normal">{r}</Label></div>)}
+                      </RadioGroup>
+                  </div>
+                </div>
+              </div>
 
-                    {artMethod === 'ai' && <div className="space-y-2 pt-2"><Textarea name="eventDescription" placeholder="Ex: Festa de 15 anos da Maria, tema galáxia..." rows={4} value={eventDescription} onChange={e => setEventDescription(e.target.value)} /><Button onClick={handleGenerateAIArt} className="w-full">Gerar Arte</Button></div>}
-                    {artMethod === 'upload' && <div className="pt-2"><Input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" className="hidden"/><Button onClick={() => fileInputRef.current?.click()} className="w-full">Escolher Arquivo</Button></div>}
-                    {artMethod === 'draw' && <div className="pt-2"><DrawingCanvas onDrawingReady={handleDrawingReady}/></div>}
-                    {artMethod === 'background' && <div className="pt-2 flex gap-2"><Input type="color" value={backgroundColor} onChange={e => setBackgroundColor(e.target.value)} className="p-1 h-10"/><Button onClick={handleBackgroundReady} className="w-full">Aplicar Cor</Button></div>}
-                </AccordionContent>
-            </AccordionItem>
+              <Separator />
 
-            {currentArt && (
-              <AccordionItem value="edit" className="border-b-0 rounded-lg bg-card border shadow-sm">
-                <AccordionTrigger className="px-4 py-3 text-base">Edite a Arte</AccordionTrigger>
-                <AccordionContent className="p-4 space-y-4">
-                  <Button onClick={handleAddText} variant="outline" className="w-full"><Type className="mr-2"/>Adicionar Texto</Button>
-                  
-                  {selectedText && (
-                    <div className="space-y-4 pt-4 border-t">
-                      <div className="flex justify-between items-center">
-                        <Label htmlFor="text-content" className="font-semibold">Texto Selecionado</Label>
-                        <Button variant="ghost" size="icon" onClick={handleDeleteText}><Trash2 className="text-destructive"/></Button>
-                      </div>
-                      <Textarea id="text-content" value={selectedText.text} onChange={(e) => updateText(selectedText.id, { text: e.target.value })} />
-                      <div className="flex items-center gap-4">
-                        <Label>Cor:</Label>
-                        <Input type="color" value={selectedText.color} onChange={(e) => updateText(selectedText.id, { color: e.target.value })} className="p-1 h-10 w-16" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="font-size">Tamanho da Fonte: {selectedText.size}px</Label>
-                        <Slider id="font-size" value={[selectedText.size]} onValueChange={(v) => updateText(selectedText.id, { size: v[0] })} min={10} max={100} step={1} />
-                      </div>
-                       <div className="space-y-2">
-                        <Label htmlFor="scale">Escala: {selectedText.scale.toFixed(2)}x</Label>
-                        <Slider id="scale" value={[selectedText.scale]} onValueChange={(v) => updateText(selectedText.id, { scale: v[0] })} min={0.5} max={3} step={0.1} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="rotation">Rotação: {selectedText.rotation}°</Label>
-                        <Slider id="rotation" value={[selectedText.rotation]} onValueChange={(v) => updateText(selectedText.id, { rotation: v[0] })} min={-180} max={180} step={1} />
-                      </div>
+              {/* Section 2: Create Art */}
+              <div>
+                <h3 className="font-semibold text-lg mb-4">2. Crie sua Arte</h3>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                      <Button variant={artMethod === 'ai' ? 'secondary' : 'outline'} onClick={() => setArtMethod('ai')} className="flex-col h-16"><Wand2/><span className="text-xs mt-1">IA</span></Button>
+                      <Button variant={artMethod === 'upload' ? 'secondary' : 'outline'} onClick={() => setArtMethod('upload')} className="flex-col h-16"><UploadCloud/><span className="text-xs mt-1">Enviar</span></Button>
+                      <Button variant={artMethod === 'draw' ? 'secondary' : 'outline'} onClick={() => setArtMethod('draw')} className="flex-col h-16"><Palette/><span className="text-xs mt-1">Desenhar</span></Button>
+                      <Button variant={artMethod === 'background' ? 'secondary' : 'outline'} onClick={() => setArtMethod('background')} className="flex-col h-16"><PaintBucket/><span className="text-xs mt-1">Fundo</span></Button>
+                      <Button variant={artMethod === 'plain' ? 'secondary' : 'outline'} onClick={() => {setArtMethod('plain'); handlePlainArt();}} className="flex-col h-16 col-span-2"><Box/><span className="text-xs mt-1">Copo Liso (Sem Arte)</span></Button>
+                  </div>
+
+                  {artMethod === 'ai' && <div className="space-y-2 pt-2"><Textarea name="eventDescription" placeholder="Ex: Festa de 15 anos da Maria, tema galáxia..." rows={4} value={eventDescription} onChange={e => setEventDescription(e.target.value)} /><Button onClick={handleGenerateAIArt} className="w-full">Gerar Arte</Button></div>}
+                  {artMethod === 'upload' && <div className="pt-2"><Input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" className="hidden"/><Button onClick={() => fileInputRef.current?.click()} className="w-full">Escolher Arquivo</Button></div>}
+                  {artMethod === 'draw' && <div className="pt-2"><DrawingCanvas onDrawingReady={handleDrawingReady}/></div>}
+                  {artMethod === 'background' && <div className="pt-2 flex gap-2"><Input type="color" value={backgroundColor} onChange={e => setBackgroundColor(e.target.value)} className="p-1 h-10"/><Button onClick={handleBackgroundReady} className="w-full">Aplicar Cor</Button></div>}
+                </div>
+              </div>
+
+              {/* Section 3: Edit Art */}
+              {currentArt && (
+                 <>
+                  <Separator />
+                  <div>
+                    <h3 className="font-semibold text-lg mb-4">3. Adicione e Edite</h3>
+                    <div className="space-y-4">
+                      <Button onClick={handleAddText} variant="outline" className="w-full"><Type className="mr-2"/>Adicionar Texto</Button>
+                      
+                      {selectedText && (
+                        <div className="space-y-4 pt-4 border-t">
+                          <div className="flex justify-between items-center">
+                            <Label htmlFor="text-content" className="font-semibold">Texto Selecionado</Label>
+                            <Button variant="ghost" size="icon" onClick={handleDeleteText}><Trash2 className="text-destructive"/></Button>
+                          </div>
+                          <Textarea id="text-content" value={selectedText.text} onChange={(e) => updateText(selectedText.id, { text: e.target.value })} />
+                          <div className="flex items-center gap-4">
+                            <Label>Cor:</Label>
+                            <Input type="color" value={selectedText.color} onChange={(e) => updateText(selectedText.id, { color: e.target.value })} className="p-1 h-10 w-16" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="font-size">Tamanho da Fonte: {selectedText.size}px</Label>
+                            <Slider id="font-size" value={[selectedText.size]} onValueChange={(v) => updateText(selectedText.id, { size: v[0] })} min={10} max={100} step={1} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="scale">Escala: {selectedText.scale.toFixed(2)}x</Label>
+                            <Slider id="scale" value={[selectedText.scale]} onValueChange={(v) => updateText(selectedText.id, { scale: v[0] })} min={0.5} max={3} step={0.1} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="rotation">Rotação: {selectedText.rotation}°</Label>
+                            <Slider id="rotation" value={[selectedText.rotation]} onValueChange={(v) => updateText(selectedText.id, { rotation: v[0] })} min={-180} max={180} step={1} />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </AccordionContent>
-              </AccordionItem>
-            )}
-          </Accordion>
-          
-          {currentArt && <Button onClick={handleProceedToQuote} size="lg" className="w-full">Avançar para Orçamento</Button>}
+                  </div>
+                 </>
+              )}
+            </CardContent>
+            <CardFooter className="p-4 border-t">
+              <Button onClick={handleProceedToQuote} size="lg" className="w-full" disabled={!currentArt}>Avançar para Orçamento</Button>
+            </CardFooter>
+          </Card>
         </div>
-
       </div>
     </div>
   );
 }
+
+    
