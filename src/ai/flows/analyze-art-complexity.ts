@@ -32,12 +32,12 @@ const AnalyzeArtComplexityOutputSchema = z.object({
   complexityScore: z
     .number()
     .describe(
-      'A score representing the complexity of the art, higher values indicate more complex art.'
+      'Uma pontuação representando a complexidade da arte, onde valores mais altos indicam uma arte mais complexa.'
     ),
   reasoning: z
     .string()
     .describe(
-      'The reasoning behind the complexity score, including factors like number of colors, details, and resolution.'
+      'A justificativa em português para a pontuação de complexidade, incluindo fatores como número de cores, detalhes e resolução.'
     ),
 });
 
@@ -55,17 +55,17 @@ const analyzeArtComplexityPrompt = ai.definePrompt({
   name: 'analyzeArtComplexityPrompt',
   input: {schema: AnalyzeArtComplexityInputSchema},
   output: {schema: AnalyzeArtComplexityOutputSchema},
-  prompt: `You are an expert art critic specializing in evaluating the complexity of digital art.
+  prompt: `Você é um crítico de arte especialista em avaliar a complexidade de arte digital.
 
-You will analyze the provided art image and its description to determine a complexity score.
-If the description indicates the user uploaded the art (e.g., 'Arte enviada pelo usuário'), focus your analysis solely on the image content.
-Consider factors such as the number of colors, level of detail, and image resolution.
-Provide a reasoning for the assigned score.
+Você analisará a imagem da arte fornecida e sua descrição para determinar uma pontuação de complexidade.
+Se a descrição indicar que o usuário enviou a arte (ex: 'Arte enviada pelo usuário'), foque sua análise apenas no conteúdo da imagem.
+Considere fatores como o número de cores, nível de detalhe e resolução da imagem.
+Forneça uma justificativa para a pontuação atribuída, em português.
 
-Description: {{{description}}}
+Descrição: {{{description}}}
 Art Image: {{media url=artDataUri}}
 
-Please provide a complexity score between 1 (simplest) and 10 (most complex) and your reasoning.
+Por favor, forneça uma pontuação de complexidade entre 1 (mais simples) e 10 (mais complexa) e sua justificativa.
 `,
 });
 

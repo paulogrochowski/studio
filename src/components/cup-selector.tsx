@@ -203,17 +203,17 @@ export function CupSelector({ onSelect }: CupSelectorProps) {
           <div className="md:col-span-1">
              <Label className="font-semibold mb-2 block">Modelos Disponíveis</Label>
              <ScrollArea className="h-full max-h-[450px] pr-4">
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
                   {Object.values(groupedModels).map((group) => (
                     <button
                       key={group.name}
                       onClick={() => setActiveGroupName(group.name)}
                       className={cn(
-                        "flex items-center w-full p-2 rounded-lg border text-left transition-colors",
-                        group.name === activeGroupName ? 'bg-primary/10 border-primary ring-2 ring-primary' : 'hover:bg-secondary/50'
+                        "flex flex-col items-center gap-2 p-2 rounded-lg border text-center transition-colors",
+                        group.name === activeGroupName ? 'bg-primary/10 border-primary ring-2 ring-primary' : 'bg-card hover:bg-secondary/50'
                       )}
                     >
-                      <div className="relative w-16 h-16 mr-4 bg-secondary/30 rounded-md shrink-0">
+                      <div className="relative w-20 h-20 bg-secondary/30 rounded-md shrink-0">
                         <Image
                           src={group.previewImage}
                           alt={group.name}
@@ -221,7 +221,7 @@ export function CupSelector({ onSelect }: CupSelectorProps) {
                           className="object-contain p-1"
                         />
                       </div>
-                      <span className="font-medium">{group.name}</span>
+                      <span className="font-medium text-xs h-8 flex items-center">{group.name}</span>
                     </button>
                   ))}
                 </div>

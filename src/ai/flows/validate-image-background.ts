@@ -32,7 +32,7 @@ const ValidateImageBackgroundOutputSchema = z.object({
   reasoning: z
     .string()
     .describe(
-      'A brief explanation for the validation result. For example, "The image has a transparent background." or "The image has a colored background."'
+      'Uma breve explicação em português para o resultado da validação. Por exemplo, "A imagem possui fundo transparente." ou "A imagem possui um fundo colorido."'
     ),
 });
 
@@ -50,14 +50,14 @@ const validateImageBackgroundPrompt = ai.definePrompt({
   name: 'validateImageBackgroundPrompt',
   input: {schema: ValidateImageBackgroundInputSchema},
   output: {schema: ValidateImageBackgroundOutputSchema},
-  prompt: `You are an image analysis expert. Your task is to determine if the background of the provided image is either transparent or solid white.
+  prompt: `Você é um especialista em análise de imagens. Sua tarefa é determinar se o fundo da imagem fornecida é transparente ou branco sólido.
 
-Analyze the following image:
+Analise a seguinte imagem:
 {{media url=imageDataUri}}
 
-Respond with 'hasValidBackground: true' if the background is entirely transparent or solid white.
-Respond with 'hasValidBackground: false' if the background has any other colors, gradients, or elements.
-Provide a brief reasoning for your decision.`,
+Responda com 'hasValidBackground: true' se o fundo for inteiramente transparente ou branco sólido.
+Responda com 'hasValidBackground: false' se o fundo tiver outras cores, gradientes ou elementos.
+Forneça uma justificativa breve para sua decisão em português.`,
 });
 
 const validateImageBackgroundFlow = ai.defineFlow(
