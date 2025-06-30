@@ -12,6 +12,8 @@ export interface CupModel {
   printableArea?: {
     widthPercent: number;
     heightPercent: number;
+    width_mm: number;
+    height_mm: number;
   };
 }
 
