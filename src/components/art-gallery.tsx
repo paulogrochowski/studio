@@ -1,5 +1,5 @@
 'use client';
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition, useMemo, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -44,6 +44,22 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
   const [newText, setNewText] = useState('');
   const [textColor, setTextColor] = useState('#000000');
   const [textSize, setTextSize] = useState(48);
+  
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const [previewWidth, setPreviewWidth] = useState(500);
+
+  useEffect(() => {
+    const container = previewContainerRef.current;
+    if (container) {
+      const resizeObserver = new ResizeObserver(entries => {
+        if (entries[0]) {
+          setPreviewWidth(entries[0].contentRect.width);
+        }
+      });
+      resizeObserver.observe(container);
+      return () => resizeObserver.disconnect();
+    }
+  }, []);
 
   const isAIArt = !["Arte enviada pelo usuário", "Arte desenhada pelo usuário"].includes(currentArt.prompt);
 
@@ -154,8 +170,29 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         <div className="flex flex-col items-center gap-4">
-          <div className="relative w-full aspect-square rounded-lg overflow-hidden border bg-secondary/50 shadow-inner">
+           <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-secondary/50 shadow-inner">
             <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain p-4" />
+            
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 pointer-events-none text-center">
+              {texts.map(text => {
+                const scaledSize = text.size * (previewWidth / 500);
+                return (
+                  <div
+                    key={text.id}
+                    style={{
+                      color: text.color,
+                      fontSize: `${scaledSize}px`,
+                      lineHeight: 1.2,
+                      fontFamily: 'Alegreya, serif',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {text.text}
+                  </div>
+                );
+              })}
+            </div>
+
             <div 
               className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none"
               style={{ backgroundImage: `url(${cup.imageUrl})`}}
