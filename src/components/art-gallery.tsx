@@ -272,7 +272,13 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* Left Panel: Controls */}
+                
+                {/* Preview Panel - Placed first for mobile order, sticky for desktop */}
+                <div className="lg:col-span-2 lg:sticky top-24">
+                     <PreviewCard />
+                </div>
+
+                {/* Controls Panel */}
                 <div className="lg:col-span-1 space-y-6">
                     {/* Cup Customization */}
                     <Card>
@@ -330,11 +336,6 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                             </Button>
                          </CardContent>
                     </Card>
-                    
-                    {/* Mobile-only Preview */}
-                    <div className="lg:hidden">
-                        <PreviewCard />
-                    </div>
 
                     {/* Toolbar */}
                     {art && (
@@ -359,12 +360,6 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                          </CardContent>
                        </Card>
                     )}
-
-                </div>
-
-                {/* Desktop-only Right Panel: Preview */}
-                <div className="lg:col-span-2 sticky top-24 hidden lg:block">
-                     <PreviewCard />
                 </div>
             </div>
         </div>
