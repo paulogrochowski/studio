@@ -129,7 +129,6 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
   
   // Refs
   const previewContainerRef = useRef<HTMLDivElement>(null);
-  const [previewWidth, setPreviewWidth] = useState(500);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // === DERIVED DATA & OPTIONS ===
@@ -149,17 +148,6 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
   }, [availableModels]);
 
   // === EFFECTS ===
-  useEffect(() => {
-    const container = previewContainerRef.current;
-    if (container) {
-      const resizeObserver = new ResizeObserver(entries => {
-        if (entries[0]) setPreviewWidth(entries[0].contentRect.width);
-      });
-      resizeObserver.observe(container);
-      return () => resizeObserver.disconnect();
-    }
-  }, []);
-
   // Reset art when cup changes
   useEffect(() => {
     setArtHistory([]);
@@ -350,9 +338,9 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
              <p className="text-primary font-bold">R$ {selectedCup.basePrice.toFixed(2).replace('.', ',')} / un.</p>
           </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* === LEFT PANE: CONTROLS === */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="space-y-4">
           <Accordion type="multiple" defaultValue={['cup', 'art']} className="w-full space-y-4">
             <AccordionItem value="cup" className="border-b-0 rounded-lg bg-card border shadow-sm">
               <AccordionTrigger className="px-4 py-3 text-base">Personalize o Copo</AccordionTrigger>
@@ -414,8 +402,18 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
         </div>
 
         {/* === RIGHT PANE: PREVIEW === */}
-        <div className="lg:col-span-2 flex flex-col items-center gap-4 lg:sticky lg:top-24">
-            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-secondary/50 shadow-inner">
+        <div className="lg:sticky lg:top-24 flex flex-col items-center gap-4">
+            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-background shadow-inner">
+              <div 
+                className="absolute inset-0 transition-colors"
+                style={{
+                  backgroundColor: selectedCup.colorHex,
+                  opacity: selectedCup.opacityType === 'Translúcido' ? 0.6 : 1.0,
+                }}
+              />
+              
+              <div className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none" style={{ backgroundImage: `url(${selectedCup.imageUrl})`}}></div>
+
               {currentArt && <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain p-4" />}
               
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -429,7 +427,6 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
                 {/* Text overlay rendering */}
               </div>
 
-              <div className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none" style={{ backgroundImage: `url(${selectedCup.imageUrl})`}}></div>
               {!currentArt && <div className="absolute inset-0 flex items-center justify-center text-muted-foreground"><p>Sua arte aparecerá aqui</p></div>}
             </div>
         </div>
