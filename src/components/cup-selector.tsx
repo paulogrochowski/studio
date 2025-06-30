@@ -4,11 +4,12 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import type { CupModel } from "@/lib/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const cupModels: CupModel[] = [
   // Long Drink
@@ -32,6 +33,7 @@ interface GroupedModel {
   variations: CupModel[];
   uniqueColors: { colorName: string; colorHex: string; }[];
   uniqueOpacities: string[];
+  previewImage: string;
 }
 
 interface CupSelectorProps {
@@ -39,9 +41,8 @@ interface CupSelectorProps {
 }
 
 export function CupSelector({ onSelect }: CupSelectorProps) {
-  // Group models by name and pre-calculate unique properties
   const groupedModels = useMemo<Record<string, GroupedModel>>(() => {
-    const groups: Record<string, Omit<GroupedModel, 'uniqueColors' | 'uniqueOpacities'>> = {};
+    const groups: Record<string, Omit<GroupedModel, 'uniqueColors' | 'uniqueOpacities' | 'previewImage'>> = {};
     for (const cup of cupModels) {
       if (!groups[cup.name]) {
         groups[cup.name] = {
@@ -53,7 +54,6 @@ export function CupSelector({ onSelect }: CupSelectorProps) {
       groups[cup.name].variations.push(cup);
     }
     
-    // Add unique properties
     return Object.fromEntries(Object.entries(groups).map(([name, group]) => {
       const colors = new Map<string, string>();
       group.variations.forEach(v => {
@@ -66,12 +66,15 @@ export function CupSelector({ onSelect }: CupSelectorProps) {
         if (v.opacityType) opacities.add(v.opacityType);
       });
       const uniqueOpacities = Array.from(opacities);
+      
+      const previewImage = group.variations[0].imageUrl;
 
-      return [name, { ...group, uniqueColors, uniqueOpacities }];
+      return [name, { ...group, uniqueColors, uniqueOpacities, previewImage }];
     }));
   }, []);
 
-  // State to hold the selected variation ID for each group
+  const [activeGroupName, setActiveGroupName] = useState<string>(Object.keys(groupedModels)[0]);
+
   const [selectedVariations, setSelectedVariations] = useState<Record<string, string>>(() => {
     const initialState: Record<string, string> = {};
     for (const name in groupedModels) {
@@ -88,7 +91,6 @@ export function CupSelector({ onSelect }: CupSelectorProps) {
     const group = groupedModels[groupName];
     let bestMatch = group.variations.find(v => v.colorName === currentColor && v.opacityType === currentOpacity);
 
-    // If no exact match, find the first available with the selected color or opacity
     if (!bestMatch) {
       bestMatch = group.variations.find(v => v.colorName === currentColor) || group.variations.find(v => v.opacityType === currentOpacity) || group.variations[0];
     }
@@ -99,100 +101,123 @@ export function CupSelector({ onSelect }: CupSelectorProps) {
     }));
   };
 
+  const activeGroup = groupedModels[activeGroupName];
+  const selectedVariation = cupModels.find(c => c.id === selectedVariations[activeGroupName])!;
+  const availableOpacitiesForSelectedColor = new Set(
+    activeGroup.variations
+      .filter(v => v.colorName === selectedVariation.colorName)
+      .map(v => v.opacityType)
+  );
+
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="font-headline text-3xl">1. Escolha o Modelo do Copo</CardTitle>
-        <CardDescription>Selecione o copo, a cor e a opacidade que melhor combinam com seu evento.</CardDescription>
+        <CardDescription>Selecione um modelo na lista e personalize a cor e o acabamento.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {Object.values(groupedModels).map((group) => {
-            const selected = cupModels.find(c => c.id === selectedVariations[group.name])!;
-            const availableOpacitiesForSelectedColor = new Set(
-              group.variations
-                .filter(v => v.colorName === selected.colorName)
-                .map(v => v.opacityType)
-            );
-
-            return (
-              <div key={group.name} className="flex flex-col">
-                <Card className="overflow-hidden transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-1 flex-grow">
-                  <CardContent className="p-4 flex flex-col h-full">
-                    <div className="aspect-square relative w-full mb-4">
-                      <Image
-                        src={selected.imageUrl}
-                        alt={selected.name}
-                        fill
-                        className="object-cover transition-all"
-                        data-ai-hint={selected['data-ai-hint']}
-                        key={selected.id} // Force re-render on image change
-                      />
-                    </div>
-                    
-                    <div className="flex-grow space-y-4">
-                        <h3 className="font-bold text-center text-lg">{group.name}</h3>
-
-                        {group.uniqueColors.length > 1 && (
-                            <div className="space-y-2">
-                                <Label className="font-semibold">Cor: <span className="font-normal text-muted-foreground">{selected.colorName}</span></Label>
-                                <div className="flex flex-wrap gap-2">
-                                {group.uniqueColors.map(color => (
-                                    <button
-                                    key={color.colorName}
-                                    title={color.colorName}
-                                    onClick={() => handleSelectionChange(group.name, color.colorName)}
-                                    className={cn(
-                                        "w-8 h-8 rounded-full border-2 transition-transform hover:scale-110",
-                                        selected.colorName === color.colorName ? 'ring-2 ring-offset-2 ring-primary' : 'border-card',
-                                        color.colorHex === '#FFFFFF' && 'border-gray-300' // special case for white
-                                    )}
-                                    style={{ backgroundColor: color.colorHex }}
-                                    />
-                                ))}
-                                </div>
-                            </div>
-                        )}
-                        
-                        {group.uniqueOpacities.length > 1 && (
-                            <div className="space-y-2">
-                                <Label className="font-semibold">Acabamento</Label>
-                                <RadioGroup
-                                    value={selected.opacityType}
-                                    onValueChange={(opacity) => handleSelectionChange(group.name, undefined, opacity)}
-                                    className="flex gap-4"
-                                >
-                                    {group.uniqueOpacities.map(opacity => (
-                                        <div key={opacity} className="flex items-center space-x-2">
-                                            <RadioGroupItem 
-                                                value={opacity} 
-                                                id={`${group.name}-${opacity}`}
-                                                disabled={!availableOpacitiesForSelectedColor.has(opacity)}
-                                            />
-                                            <Label htmlFor={`${group.name}-${opacity}`} className={cn("font-normal", !availableOpacitiesForSelectedColor.has(opacity) && "text-muted-foreground/50")}>{opacity}</Label>
-                                        </div>
-                                    ))}
-                                </RadioGroup>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="pt-4 mt-auto">
-                        <p className="text-xl font-bold text-primary text-center">
-                            R$ {selected.basePrice.toFixed(2).replace('.', ',')}
-                            <span className="text-sm font-normal text-muted-foreground"> /un.</span>
-                        </p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Button onClick={() => onSelect(selected)} className="mt-4 w-full">
-                  Selecionar este Modelo
-                </Button>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          
+          <div className="md:col-span-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              <div className="flex flex-col items-center">
+                  <div className="aspect-square relative w-full mb-4 rounded-lg bg-secondary/30">
+                    <Image
+                      src={selectedVariation.imageUrl}
+                      alt={selectedVariation.name}
+                      fill
+                      className="object-contain transition-all p-4"
+                      data-ai-hint={selectedVariation['data-ai-hint']}
+                      key={selectedVariation.id}
+                    />
+                  </div>
+                  <h3 className="font-bold text-center text-2xl font-headline">{activeGroup.name}</h3>
+                   <p className="text-xl font-bold text-primary text-center">
+                      R$ {selectedVariation.basePrice.toFixed(2).replace('.', ',')}
+                      <span className="text-sm font-normal text-muted-foreground"> /un.</span>
+                  </p>
               </div>
-            );
-          })}
+              <div className="space-y-6">
+                {activeGroup.uniqueColors.length > 1 && (
+                    <div className="space-y-2">
+                        <Label className="font-semibold">Cor: <span className="font-normal text-muted-foreground">{selectedVariation.colorName}</span></Label>
+                        <div className="flex flex-wrap gap-2">
+                        {activeGroup.uniqueColors.map(color => (
+                            <button
+                            key={color.colorName}
+                            title={color.colorName}
+                            onClick={() => handleSelectionChange(activeGroup.name, color.colorName)}
+                            className={cn(
+                                "w-8 h-8 rounded-full border-2 transition-transform hover:scale-110",
+                                selectedVariation.colorName === color.colorName ? 'ring-2 ring-offset-2 ring-primary' : 'border-card',
+                                color.colorHex === '#FFFFFF' && 'border-gray-300'
+                            )}
+                            style={{ backgroundColor: color.colorHex }}
+                            />
+                        ))}
+                        </div>
+                    </div>
+                )}
+                
+                {activeGroup.uniqueOpacities.length > 1 && (
+                    <div className="space-y-2">
+                        <Label className="font-semibold">Acabamento</Label>
+                        <RadioGroup
+                            value={selectedVariation.opacityType}
+                            onValueChange={(opacity) => handleSelectionChange(activeGroup.name, undefined, opacity)}
+                            className="flex gap-4"
+                        >
+                            {activeGroup.uniqueOpacities.map(opacity => (
+                                <div key={opacity} className="flex items-center space-x-2">
+                                    <RadioGroupItem 
+                                        value={opacity} 
+                                        id={`${activeGroup.name}-${opacity}`}
+                                        disabled={!availableOpacitiesForSelectedColor.has(opacity)}
+                                    />
+                                    <Label htmlFor={`${activeGroup.name}-${opacity}`} className={cn("font-normal", !availableOpacitiesForSelectedColor.has(opacity) && "text-muted-foreground/50")}>{opacity}</Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <div className="md:col-span-1">
+             <Label className="font-semibold mb-2 block">Modelos Disponíveis</Label>
+             <ScrollArea className="h-full max-h-[450px] pr-4">
+                <div className="space-y-4">
+                  {Object.values(groupedModels).map((group) => (
+                    <button
+                      key={group.name}
+                      onClick={() => setActiveGroupName(group.name)}
+                      className={cn(
+                        "flex items-center w-full p-2 rounded-lg border text-left transition-colors",
+                        group.name === activeGroupName ? 'bg-primary/10 border-primary ring-2 ring-primary' : 'hover:bg-secondary/50'
+                      )}
+                    >
+                      <div className="relative w-16 h-16 mr-4 bg-secondary/30 rounded-md shrink-0">
+                        <Image
+                          src={group.previewImage}
+                          alt={group.name}
+                          fill
+                          className="object-contain p-1"
+                        />
+                      </div>
+                      <span className="font-medium">{group.name}</span>
+                    </button>
+                  ))}
+                </div>
+             </ScrollArea>
+          </div>
         </div>
       </CardContent>
+      <CardFooter>
+        <Button onClick={() => onSelect(selectedVariation)} size="lg" className="w-full md:w-auto md:ml-auto">
+            Selecionar este Copo e Avançar
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
