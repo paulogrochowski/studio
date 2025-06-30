@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import wav from 'wav';
 
 const GenerateCupArtInputSchema = z.object({
   cupModel: z.string().describe('The model of the cup to generate art for.'),
@@ -27,22 +26,6 @@ export async function generateCupArt(input: GenerateCupArtInput): Promise<Genera
   return generateCupArtFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateCupArtPrompt',
-  input: {schema: GenerateCupArtInputSchema},
-  output: {schema: GenerateCupArtOutputSchema},
-  prompt: `You are an AI that generates visual designs for cups based on a description of the event theme.
-
-  Cup Model: {{{cupModel}}}
-  Event Description: {{{eventDescription}}}
-
-  Generate an image that is suitable to be printed on the specified cup model with the event description.
-  The generated image must be high quality, and suitable for printing.
-  Ensure the generated image will look good on a physical cup.
-  Return the generated image as a data URI.
-  `,
-});
-
 const generateCupArtFlow = ai.defineFlow(
   {
     name: 'generateCupArtFlow',
@@ -50,9 +33,11 @@ const generateCupArtFlow = ai.defineFlow(
     outputSchema: GenerateCupArtOutputSchema,
   },
   async input => {
+    const fullPrompt = `Generate a high-quality visual design for a ${input.cupModel} cup. The design should be based on the following event description: "${input.eventDescription}". The final image must have a transparent background and be suitable for printing.`;
+
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: input.eventDescription,
+      prompt: fullPrompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'], // MUST provide both TEXT and IMAGE, IMAGE only won't work
       },

@@ -34,22 +34,6 @@ export async function refineCupArt(input: RefineCupArtInput): Promise<RefineCupA
   return refineCupArtFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'refineCupArtPrompt',
-  input: {schema: RefineCupArtInputSchema},
-  output: {schema: RefineCupArtOutputSchema},
-  prompt: `You are an expert in refining cup art designs based on user feedback.
-
-  The user will provide a base image and instructions on how to refine the image.
-  Your goal is to generate a new image that incorporates the user's feedback.
-
-  Base Image: {{media url=baseImageDataUri}}
-  Refinement Instructions: {{{refinementInstructions}}}
-
-  Generate a new image of the cup art based on the instructions.  The output should be a data URI.
-`,
-});
-
 const refineCupArtFlow = ai.defineFlow(
   {
     name: 'refineCupArtFlow',
@@ -57,11 +41,13 @@ const refineCupArtFlow = ai.defineFlow(
     outputSchema: RefineCupArtOutputSchema,
   },
   async input => {
+    const fullInstructions = `${input.refinementInstructions}. The final image must have a transparent background.`;
+
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
       prompt: [
         {media: {url: input.baseImageDataUri}},
-        {text: input.refinementInstructions},
+        {text: fullInstructions},
       ],
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
