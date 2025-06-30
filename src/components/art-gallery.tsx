@@ -339,8 +339,38 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
           </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* === LEFT PANE: CONTROLS === */}
-        <div className="space-y-4">
+        {/* === PREVIEW PANE (Mobile Top, Desktop Right) === */}
+        <div className="lg:sticky lg:top-24 flex flex-col items-center gap-4 lg:order-2">
+            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-background shadow-inner">
+              <div 
+                className="absolute inset-0 transition-colors"
+                style={{
+                  backgroundColor: selectedCup.colorHex,
+                  opacity: selectedCup.opacityType === 'Translúcido' ? 0.6 : 1.0,
+                }}
+              />
+              
+              <div className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none" style={{ backgroundImage: `url(${selectedCup.imageUrl})`}}></div>
+
+              {currentArt && <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain p-4" />}
+              
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="relative border-2 border-dashed border-primary/50" style={{ width: `${selectedCup.printableArea?.widthPercent ?? 90}%`, height: `${selectedCup.printableArea?.heightPercent ?? 90}%`}}>
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-background px-1 text-xs text-muted-foreground">{selectedCup.printableArea?.width_mm}mm</div>
+                    <div className="absolute -left-8 top-1/2 -translate-y-1/2 rotate-[-90deg] bg-background px-1 text-xs text-muted-foreground">{selectedCup.printableArea?.height_mm}mm</div>
+                  </div>
+              </div>
+              
+              <div className="absolute inset-0 p-4">
+                {/* Text overlay rendering */}
+              </div>
+
+              {!currentArt && <div className="absolute inset-0 flex items-center justify-center text-muted-foreground"><p>Sua arte aparecerá aqui</p></div>}
+            </div>
+        </div>
+
+        {/* === CONTROLS PANE (Mobile Bottom, Desktop Left) === */}
+        <div className="space-y-4 lg:order-1">
           <Accordion type="multiple" defaultValue={['cup', 'art']} className="w-full space-y-4">
             <AccordionItem value="cup" className="border-b-0 rounded-lg bg-card border shadow-sm">
               <AccordionTrigger className="px-4 py-3 text-base">Personalize o Copo</AccordionTrigger>
@@ -401,35 +431,6 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
           {currentArt && <Button onClick={handleProceedToQuote} size="lg" className="w-full">Avançar para Orçamento</Button>}
         </div>
 
-        {/* === RIGHT PANE: PREVIEW === */}
-        <div className="lg:sticky lg:top-24 flex flex-col items-center gap-4">
-            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-background shadow-inner">
-              <div 
-                className="absolute inset-0 transition-colors"
-                style={{
-                  backgroundColor: selectedCup.colorHex,
-                  opacity: selectedCup.opacityType === 'Translúcido' ? 0.6 : 1.0,
-                }}
-              />
-              
-              <div className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none" style={{ backgroundImage: `url(${selectedCup.imageUrl})`}}></div>
-
-              {currentArt && <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain p-4" />}
-              
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="relative border-2 border-dashed border-primary/50" style={{ width: `${selectedCup.printableArea?.widthPercent ?? 90}%`, height: `${selectedCup.printableArea?.heightPercent ?? 90}%`}}>
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-background px-1 text-xs text-muted-foreground">{selectedCup.printableArea?.width_mm}mm</div>
-                    <div className="absolute -left-8 top-1/2 -translate-y-1/2 rotate-[-90deg] bg-background px-1 text-xs text-muted-foreground">{selectedCup.printableArea?.height_mm}mm</div>
-                  </div>
-              </div>
-              
-              <div className="absolute inset-0 p-4">
-                {/* Text overlay rendering */}
-              </div>
-
-              {!currentArt && <div className="absolute inset-0 flex items-center justify-center text-muted-foreground"><p>Sua arte aparecerá aqui</p></div>}
-            </div>
-        </div>
       </div>
     </div>
   );
