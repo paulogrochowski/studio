@@ -159,7 +159,7 @@ export default function Home() {
         return <ArtMethodSelector onSelect={handleArtMethodSelect} onGoBack={handleGoBack} />;
       case 3:
         if (!selectedCup || !artMethod || artMethod === 'plain') return null; // Should not happen
-        return <EventForm cup={selectedCup} onArtReady={handleArtReady} onGoBack={handleGoBack} initialTab={artMethod} />;
+        return <EventForm cup={selectedCup} onArtReady={handleArtReady} onGoBack={handleGoBack} artMethod={artMethod} />;
       case 4:
         if (!generatedArt || !selectedCup || artMethod === 'plain') return null; // Should not happen
         return <ArtGallery initialArt={generatedArt} cup={selectedCup} onSelectArt={handleSelectArt} onRegenerate={handleRegenerate} onGoBack={handleGoBack} />;
