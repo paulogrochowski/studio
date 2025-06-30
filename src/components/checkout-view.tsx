@@ -38,6 +38,9 @@ export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProp
                 {(orderDetails.cupModel.colorName || orderDetails.cupModel.opacityType) && (
                     <p className="text-sm text-muted-foreground">{orderDetails.cupModel.colorName} {orderDetails.cupModel.opacityType}</p>
                 )}
+                {orderDetails.cupModel.rimColor && orderDetails.cupModel.rimColor !== 'Nenhuma' && (
+                  <p className="text-sm text-muted-foreground">Borda: {orderDetails.cupModel.rimColor}</p>
+                )}
                 <p className="text-sm text-muted-foreground">Entrega: {orderDetails.isUrgent ? 'Urgente' : 'Padrão'}</p>
             </div>
             <div className="ml-auto text-right">

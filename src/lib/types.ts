@@ -8,6 +8,7 @@ export interface CupModel {
   colorName?: string;
   colorHex?: string;
   opacityType?: 'Opaco' | 'Translúcido';
+  rimColor?: 'Nenhuma' | 'Dourada' | 'Prateada';
   printableArea?: {
     widthPercent: number;
     heightPercent: number;

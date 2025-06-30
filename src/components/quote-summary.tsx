@@ -61,6 +61,9 @@ export function QuoteSummary({ initialDetails, onFinalize }: QuoteSummaryProps) 
               {(initialDetails.cupModel.colorName || initialDetails.cupModel.opacityType) && (
                 <p className="text-sm text-muted-foreground">{initialDetails.cupModel.colorName} {initialDetails.cupModel.opacityType}</p>
               )}
+              {initialDetails.cupModel.rimColor && initialDetails.cupModel.rimColor !== 'Nenhuma' && (
+                <p className="text-sm text-muted-foreground">Borda: {initialDetails.cupModel.rimColor}</p>
+              )}
               <p className="text-sm text-muted-foreground">Arte Personalizada</p>
               <p className="text-xs text-muted-foreground mt-1 line-clamp-2"><strong>Descrição:</strong> {initialDetails.eventDescription}</p>
             </div>
