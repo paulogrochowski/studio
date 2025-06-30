@@ -6,6 +6,7 @@ export interface CupModel {
   basePrice: number;
   'data-ai-hint'?: string;
   colorName?: string;
+  colorHex?: string;
   opacityType?: 'Opaco' | 'Translúcido';
   printableArea?: {
     widthPercent: number;
