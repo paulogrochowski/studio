@@ -1,14 +1,23 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Belleza, Alegreya } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const belleza = Belleza({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-belleza',
+});
+
+const alegreya = Alegreya({
+  subsets: ['latin'],
+  variable: '--font-alegreya',
+});
 
 export const metadata: Metadata = {
-  title: 'AI Image Editor',
-  description: 'Edit and generate images with the power of AI.',
+  title: 'CupVision AI',
+  description: 'Gere designs de copos personalizados com IA.',
 };
 
 export default function RootLayout({
@@ -18,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${belleza.variable} ${alegreya.variable} font-body antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

@@ -20,6 +20,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
+        headline: ["var(--font-belleza)", "sans-serif"],
+        body: ["var(--font-alegreya)", "serif"],
       },
       colors: {
         background: 'hsl(var(--background))',
