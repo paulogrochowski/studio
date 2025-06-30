@@ -132,7 +132,7 @@ export function EventForm({ cup, onArtReady, onGoBack, initialTab }: EventFormPr
             </div>
             <div className="md:col-span-2 space-y-4">
                 <Tabs defaultValue={initialTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3">
                     <TabsTrigger value="ai"><Wand2 className="mr-2 h-4 w-4"/>Gerar com IA</TabsTrigger>
                     <TabsTrigger value="upload"><UploadCloud className="mr-2 h-4 w-4"/>Enviar Arte</TabsTrigger>
                     <TabsTrigger value="draw"><Brush className="mr-2 h-4 w-4"/>Desenhar</TabsTrigger>
