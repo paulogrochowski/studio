@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { handleArtRefinement } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2, ArrowLeft, Type, Download, Trash2, Palette, Box, UploadCloud, Settings2, HelpCircle } from 'lucide-react';
+import { Loader2, Wand2, Type, Download, Trash2, Palette, Box, UploadCloud, Settings2, HelpCircle } from 'lucide-react';
 import type { GeneratedArt, CupModel } from '@/lib/types';
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -23,7 +23,6 @@ interface ArtGalleryProps {
   cup: CupModel;
   onSelectArt: (art: GeneratedArt) => void;
   onRegenerate: () => void;
-  onGoBack: () => void;
 }
 
 interface TextOverlay {
@@ -37,7 +36,7 @@ interface TextOverlay {
   scale: number; // multiplier
 }
 
-export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBack }: ArtGalleryProps) {
+export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate }: ArtGalleryProps) {
   const [history, setHistory] = useState<GeneratedArt[]>([initialArt]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const currentArt = useMemo(() => history[selectedIndex], [history, selectedIndex]);
@@ -201,14 +200,8 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
 
   return (
     <TooltipProvider>
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline text-3xl">4. Revise e Edite sua Arte</CardTitle>
-          <CardDescription>
-            Ajuste a arte, adicione textos ou refaça do zero. Suas modificações aparecerão ao lado em tempo real.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+      <Card className="bg-transparent border-none shadow-none">
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start p-0">
           {/* Coluna da Esquerda: Controles de Edição */}
           <div className="space-y-6">
             <Tabs defaultValue="refine" className="w-full">
@@ -445,23 +438,19 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
                 style={{ backgroundImage: `url(${cup.imageUrl})`}}
               ></div>
             </div>
+            <div className="w-full">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={handleSelectCompositeArt} size="lg" disabled={isPending} className="w-full">
+                      {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Gostei, usar esta arte!
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Avança para a etapa de orçamento com a arte atual.</p></TooltipContent>
+              </Tooltip>
+            </div>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between items-center">
-          <Button variant="outline" onClick={onGoBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
-          </Button>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button onClick={handleSelectCompositeArt} size="lg" disabled={isPending}>
-                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Gostei, usar esta arte!
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent><p>Avança para a etapa de orçamento com a arte atual.</p></TooltipContent>
-          </Tooltip>
-        </CardFooter>
       </Card>
     </TooltipProvider>
   );

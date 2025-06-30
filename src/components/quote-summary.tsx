@@ -9,19 +9,17 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import type { OrderDetails } from '@/lib/types';
 import Image from 'next/image';
-import { ArrowLeft } from 'lucide-react';
 
 interface QuoteSummaryProps {
   initialDetails: Omit<OrderDetails, 'quantity' | 'isUrgent' | 'total'>;
   onFinalize: (details: OrderDetails) => void;
-  onGoBack: () => void;
 }
 
 const URGENCY_MULTIPLIER = 1.25;
 const COMPLEXITY_PRICE_PER_POINT = 0.15;
 const SHIPPING_COST = 15.0;
 
-export function QuoteSummary({ initialDetails, onFinalize, onGoBack }: QuoteSummaryProps) {
+export function QuoteSummary({ initialDetails, onFinalize }: QuoteSummaryProps) {
   const [quantity, setQuantity] = useState(100);
   const [isUrgent, setIsUrgent] = useState(false);
   const [total, setTotal] = useState(0);
@@ -44,12 +42,11 @@ export function QuoteSummary({ initialDetails, onFinalize, onGoBack }: QuoteSumm
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-3xl">5. Orçamento e Compra</CardTitle>
+    <Card className="bg-transparent border-none shadow-none">
+      <CardHeader className="p-0 mb-4">
         <CardDescription>Revise os detalhes do seu pedido e finalize a compra.</CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <CardContent className="p-0 grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-6">
           <div className="flex items-start gap-4">
             <div className="relative w-24 h-24 rounded-md overflow-hidden border bg-secondary/50 shadow-inner shrink-0">
@@ -111,11 +108,7 @@ export function QuoteSummary({ initialDetails, onFinalize, onGoBack }: QuoteSumm
            </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between items-center">
-        <Button variant="outline" onClick={onGoBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar e Editar Arte
-        </Button>
+      <CardFooter className="flex justify-end items-center mt-6 p-0">
         <Button onClick={handleFinalize} size="lg">
           Finalizar Compra
         </Button>

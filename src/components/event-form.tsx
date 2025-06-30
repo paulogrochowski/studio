@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState, useRef, useActionState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, UploadCloud, Wand2 } from 'lucide-react';
+import { Loader2, UploadCloud, Wand2 } from 'lucide-react';
 import type { CupModel } from '@/lib/types';
 import Image from 'next/image';
 import { Input } from "@/components/ui/input";
@@ -17,8 +17,9 @@ import { DrawingCanvas } from './drawing-canvas';
 interface EventFormProps {
   cup: CupModel;
   onArtReady: (imageUrl: string, prompt: string) => void;
-  onGoBack: () => void;
   artMethod: 'ai' | 'upload' | 'draw';
+  eventDescription: string;
+  setEventDescription: (description: string) => void;
 }
 
 function SubmitButton() {
@@ -31,7 +32,7 @@ function SubmitButton() {
   );
 }
 
-export function EventForm({ cup, onArtReady, onGoBack, artMethod }: EventFormProps) {
+export function EventForm({ cup, onArtReady, artMethod, eventDescription, setEventDescription }: EventFormProps) {
   const { toast } = useToast();
   const [state, formAction] = useActionState(handleArtGeneration.bind(null, cup.name), null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -41,7 +42,7 @@ export function EventForm({ cup, onArtReady, onGoBack, artMethod }: EventFormPro
 
   useEffect(() => {
     if (state?.success === true) {
-      onArtReady(state.imageUrl, (document.getElementById('eventDescription') as HTMLTextAreaElement)?.value || 'Arte gerada por IA');
+      onArtReady(state.imageUrl, eventDescription || 'Arte gerada por IA');
     } else if (state?.success === false) {
       toast({
         variant: "destructive",
@@ -49,7 +50,7 @@ export function EventForm({ cup, onArtReady, onGoBack, artMethod }: EventFormPro
         description: state.error,
       });
     }
-  }, [state, onArtReady, toast]);
+  }, [state, onArtReady, toast, eventDescription]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -116,28 +117,24 @@ export function EventForm({ cup, onArtReady, onGoBack, artMethod }: EventFormPro
     switch (artMethod) {
       case 'ai':
         return {
-          title: '3. Descreva sua Ideia',
           description: 'Seja detalhista para que a IA crie a melhor arte para você. Inclua temas, cores, nomes e frases.',
         };
       case 'upload':
         return {
-          title: '3. Envie sua Arte',
           description: 'Carregue um arquivo de imagem (PNG, JPG) com fundo branco ou transparente.',
         };
       case 'draw':
         return {
-          title: '3. Desenhe sua Arte',
           description: 'Use a tela de desenho para criar sua arte com total liberdade.',
         };
       default:
         return {
-          title: '3. Crie sua Arte',
           description: 'Siga as instruções para a opção escolhida.',
         };
     }
   };
   
-  const { title, description } = getTitleAndDescription();
+  const { description } = getTitleAndDescription();
 
   const renderContent = () => {
     switch(artMethod) {
@@ -155,6 +152,8 @@ export function EventForm({ cup, onArtReady, onGoBack, artMethod }: EventFormPro
                 rows={8}
                 required
                 className="mt-2"
+                value={eventDescription}
+                onChange={(e) => setEventDescription(e.target.value)}
               />
             </div>
             <div className="flex justify-end">
@@ -209,14 +208,13 @@ export function EventForm({ cup, onArtReady, onGoBack, artMethod }: EventFormPro
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-3xl">{title}</CardTitle>
+    <Card className="bg-transparent border-none shadow-none">
+      <CardHeader className="p-0 mb-4">
         <CardDescription>
           {description}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="hidden md:flex flex-col items-center justify-center p-4 bg-secondary/30 rounded-lg">
                 <h3 className="font-bold mb-2">{cup.name}</h3>
@@ -232,12 +230,6 @@ export function EventForm({ cup, onArtReady, onGoBack, artMethod }: EventFormPro
             </div>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button variant="outline" onClick={onGoBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para Métodos
-        </Button>
-      </CardFooter>
     </Card>
   );
 }
