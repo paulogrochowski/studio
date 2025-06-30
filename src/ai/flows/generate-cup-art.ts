@@ -38,7 +38,7 @@ const generateCupArtFlow = ai.defineFlow(
   async (input) => {
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: `Crie uma arte para um copo personalizado do modelo "${input.cupName}". A arte deve ter um fundo transparente e um estilo de arte vetorial (limpo, com poucas cores, como um ícone ou clipart). A descrição do evento é: "${input.eventDescription}".`,
+      prompt: `Crie uma arte para um copo personalizado do modelo "${input.cupName}". A arte deve ter um fundo transparente. A descrição do evento é: "${input.eventDescription}".`,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },

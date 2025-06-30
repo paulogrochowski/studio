@@ -13,7 +13,7 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Slider } from './ui/slider';
 import { Input } from './ui/input';
-import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/app/actions';
+import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration, handleVectorizeArt } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
 
@@ -92,6 +92,7 @@ interface ArtGalleryProps {
 export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProps) {
     const { toast } = useToast();
     const [isGenerating, startGenerationTransition] = useTransition();
+    const [isVectorizing, startVectorizingTransition] = useTransition();
 
     const [view, setView] = useState<'editor' | 'quote' | 'checkout'>('editor');
 
@@ -149,6 +150,24 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
             setArt(prev => prev ? { ...prev, ...props } : null);
         }
     }
+
+    const handleVectorize = () => {
+        if (!art) return;
+        startVectorizingTransition(async () => {
+            const result = await handleVectorizeArt(art.imageUrl);
+            if (result.success && result.imageUrl) {
+                updateArtProperty({ imageUrl: result.imageUrl });
+                // Re-run analysis on the new vectorized art
+                const analysisResult = await handleArtAnalysis(result.imageUrl, 'Arte vetorizada a partir de imagem gerada');
+                if (analysisResult.success && analysisResult.analysis) {
+                    setAnalysis(analysisResult.analysis);
+                }
+                toast({ title: 'Sucesso!', description: 'Sua arte foi vetorizada.' });
+            } else {
+                toast({ variant: 'destructive', title: 'Erro ao Vetorizar', description: result.error });
+            }
+        });
+    };
 
     const handleGoToQuote = () => {
         if (!art || !analysis) {
@@ -256,7 +275,7 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                  </div>
             </CardContent>
             <CardFooter>
-                <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art}>
+                <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art || isGenerating || isVectorizing}>
                      Aprovar Arte e ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
                 </Button>
             </CardFooter>
@@ -322,15 +341,15 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
 
                     {/* Art Generation */}
                     <Card>
-                         <CardHeader><CardTitle>2. Crie sua Arte Vetorial</CardTitle></CardHeader>
+                         <CardHeader><CardTitle>2. Crie sua Arte</CardTitle></CardHeader>
                          <CardContent className="space-y-4">
                             <Textarea
-                                placeholder="Ex: um leão minimalista com uma coroa, tema de safari"
+                                placeholder="Ex: um leão com uma coroa, tema de safari"
                                 rows={4}
                                 value={artPrompt}
                                 onChange={(e) => setArtPrompt(e.target.value)}
                             />
-                            <Button onClick={handleGenerateArt} disabled={isGenerating} className="w-full">
+                            <Button onClick={handleGenerateArt} disabled={isGenerating || isVectorizing} className="w-full">
                                 {isGenerating ? <Loader className="h-4 w-4" /> : <Wand2 />}
                                 Gerar Arte com IA
                             </Button>
@@ -342,6 +361,11 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                        <Card>
                          <CardHeader><CardTitle>3. Edite a Arte</CardTitle></CardHeader>
                          <CardContent className="space-y-4">
+                            <Button onClick={handleVectorize} disabled={isGenerating || isVectorizing} className="w-full">
+                                {isVectorizing ? <Loader className="h-4 w-4" message="Vetorizando..." /> : <Paintbrush />}
+                                Vetorizar Arte
+                            </Button>
+                            <Separator />
                             <div className="space-y-2">
                                 <Label htmlFor="x-pos">Posição (X, Y)</Label>
                                 <div className="flex gap-2">

@@ -5,6 +5,7 @@ import { analyzeArtComplexity } from '@/ai/flows/analyze-art-complexity';
 import type { OrderDetails } from '@/lib/types';
 import { refineCupArt } from '@/ai/flows/refine-cup-art';
 import { validateImageBackground } from '@/ai/flows/validate-image-background';
+import { vectorizeImage } from '@/ai/flows/vectorize-image';
 
 
 export async function handleArtGeneration(cupName: string, prompt: string) {
@@ -52,5 +53,15 @@ export async function handleValidateArtBackground(imageDataUri: string) {
     } catch (error) {
         console.error(error);
         return { success: false, error: 'Falha ao validar a imagem.' };
+    }
+}
+
+export async function handleVectorizeArt(imageDataUri: string) {
+    try {
+        const result = await vectorizeImage({ imageDataUri });
+        return { success: true, imageUrl: result.vectorizedImageDataUri };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error: 'Falha ao vetorizar a arte. Tente novamente.' };
     }
 }
