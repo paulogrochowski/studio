@@ -14,18 +14,9 @@ export const Icons = {
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M12 2v2" />
-      <path d="M12 20v2" />
-      <path d="m4.93 4.93 1.41 1.41" />
-      <path d="m17.66 17.66 1.41 1.41" />
-      <path d="M2 12h2" />
-      <path d="M20 12h2" />
-      <path d="m6.34 17.66-1.41 1.41" />
-      <path d="m19.07 4.93-1.41 1.41" />
-      <path d="M5 12h14" />
-      <path d="M5 12a7 7 0 1 0 14 0" />
-      <path d="M5 12a7 7 0 1 1 14 0" />
-      <path d="M8 12a4 4 0 0 0 8 0" />
+        <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 1 0-2.82l2.83-2.83a2 2 0 0 1 2.82 0Z" />
+        <path d="m19 5 3-3" />
     </svg>
   ),
   cup: (props: SVGProps<SVGSVGElement>) => (

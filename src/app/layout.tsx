@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+
 export const metadata: Metadata = {
-  title: 'Personalize Copos',
-  description: 'Crie copos personalizados para o seu evento com a ajuda de IA.',
+  title: 'AI Image Editor',
+  description: 'Edit and generate images with the power of AI.',
 };
 
 export default function RootLayout({
@@ -15,12 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Belleza&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+      <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
