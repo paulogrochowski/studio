@@ -1,4 +1,5 @@
 import { Icons } from "./icons";
+import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
   return (
@@ -10,9 +11,12 @@ export function Header() {
             CupVision AI
           </h1>
         </div>
-        <p className="hidden md:block text-sm text-muted-foreground">
-          Transformando ideias em copos únicos.
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="hidden md:block text-sm text-muted-foreground">
+            Transformando ideias em copos únicos.
+          </p>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

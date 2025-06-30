@@ -33,13 +33,8 @@ export function DrawingCanvas({ onDrawingReady }: DrawingCanvasProps) {
     const canvas = canvasRef.current;
     const context = contextRef.current;
     if (canvas && context) {
-      const currentCompositeOp = context.globalCompositeOperation;
-      
-      context.globalCompositeOperation = 'source-over';
-      context.fillStyle = 'white';
-      context.fillRect(0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
-
-      context.globalCompositeOperation = currentCompositeOp;
+      const scale = window.devicePixelRatio || 1;
+      context.clearRect(0, 0, canvas.width / scale, canvas.height / scale);
     }
   };
 
@@ -110,7 +105,7 @@ export function DrawingCanvas({ onDrawingReady }: DrawingCanvasProps) {
 
   return (
     <div className="flex flex-col space-y-4">
-      <div className="border-2 border-dashed rounded-lg overflow-hidden aspect-square touch-none bg-white">
+      <div className="border-2 border-dashed rounded-lg overflow-hidden aspect-square touch-none checkerboard">
         <canvas
           ref={canvasRef}
           className="w-full h-full"

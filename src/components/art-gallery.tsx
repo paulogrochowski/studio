@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { handleArtGeneration, handleArtRefinement, handleArtAnalysis, handleImageValidation } from '@/app/actions';
+import { handleArtGeneration, handleArtAnalysis, handleImageValidation } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Wand2, Type, Download, Trash2, Palette, Box, UploadCloud, Settings2, HelpCircle, ArrowLeft, PaintBucket, ChevronsUpDown } from 'lucide-react';
 import type { GeneratedArt, CupModel, OrderDetails } from '@/lib/types';
@@ -285,21 +285,6 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
   const handlePlainArt = () => {
     setArt({ id: 'plain-art', imageUrl: PLAIN_ART_IMAGE, prompt: 'Copo Liso' });
   }
-
-  // Art Editing
-  const handleRefine = (refinementInput: string) => {
-    if (!currentArt || !refinementInput) return;
-    startProcessingTransition(async () => {
-      setLoaderMessage('Refinando sua arte...');
-      const result = await handleArtRefinement(currentArt.imageUrl, refinementInput);
-      if (result.success) {
-        setArt({ ...currentArt, id: `art-${Date.now()}`, imageUrl: result.imageUrl });
-        toast({ title: "Arte refinada!" });
-      } else {
-        toast({ variant: 'destructive', title: 'Erro ao refinar', description: result.error });
-      }
-    });
-  };
 
   // Text Editing
   const handleAddText = () => {

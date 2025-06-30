@@ -2,7 +2,6 @@
 
 import { generateCupArt } from '@/ai/flows/generate-cup-art';
 import { analyzeArtComplexity } from '@/ai/flows/analyze-art-complexity';
-import { refineCupArt } from '@/ai/flows/refine-cup-art';
 import { validateImageBackground } from '@/ai/flows/validate-image-background';
 import { z } from 'zod';
 
@@ -46,33 +45,6 @@ export async function handleArtGeneration(cupModelName: string, prevState: any, 
   }
 }
 
-
-type ArtRefinementResult = {
-  success: true;
-  imageUrl: string;
-} | {
-  success: false;
-  error: string;
-};
-
-export async function handleArtRefinement(baseImageDataUri: string, refinementInstructions: string): Promise<ArtRefinementResult> {
-  if (!refinementInstructions || refinementInstructions.trim().length === 0) {
-    return { success: false, error: "Por favor, forneça instruções para o refinamento." };
-  }
-
-  try {
-    const result = await refineCupArt({ baseImageDataUri, refinementInstructions });
-    
-    if (!result.refinedImageDataUri) {
-      return { success: false, error: "A IA não conseguiu refinar a arte. Tente novamente." };
-    }
-
-    return { success: true, imageUrl: result.refinedImageDataUri };
-  } catch (error) {
-    console.error(error);
-    return { success: false, error: "Ocorreu um erro ao refinar a arte. Tente novamente." };
-  }
-}
 
 type ArtAnalysisResult = {
   success: true;
