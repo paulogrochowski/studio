@@ -8,14 +8,14 @@ import type { OrderDetails } from '@/lib/types';
 import { z } from 'zod';
 
 const artGenerationSchema = z.object({
-  eventDescription: z.string().min(10, 'A descrição precisa ter pelo menos 10 caracteres.'),
+  eventDescription: z.string().min(1, 'A descrição não pode estar vazia.'),
   cupName: z.string(),
 });
 
 
-export async function handleArtGeneration(cupName: string, prevState: any, formData: FormData) {
+export async function handleArtGeneration(cupName: string, eventDescription: string) {
   const validatedFields = artGenerationSchema.safeParse({
-    eventDescription: formData.get('eventDescription'),
+    eventDescription: eventDescription,
     cupName: cupName,
   });
 

@@ -44,7 +44,16 @@ export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProp
                   }}
                 />
                 {/* Art */}
-               <Image src={orderDetails.art.imageUrl} alt="Arte escolhida" fill className="object-contain p-2" />
+                 <div
+                    className="absolute w-full h-full"
+                    style={{
+                        top: `${orderDetails.art.y}%`,
+                        left: `${orderDetails.art.x}%`,
+                        transform: `translate(-50%, -50%) scale(${orderDetails.art.scale}) rotate(${orderDetails.art.rotation}deg)`,
+                    }}
+                >
+                    <Image src={orderDetails.art.imageUrl} alt="Arte escolhida" fill className="object-contain" />
+                </div>
             </div>
             <div>
                 <p><strong>{orderDetails.quantity}x</strong> {orderDetails.cupModel.name}</p>
