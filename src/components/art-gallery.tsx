@@ -125,6 +125,7 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
   const [texts, setTexts] = useState<TextOverlay[]>([]);
   const [selectedTextId, setSelectedTextId] = useState<number | null>(null);
   const selectedText = useMemo(() => texts.find(t => t.id === selectedTextId), [texts, selectedTextId]);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Quote State
   const [showQuote, setShowQuote] = useState(false);
@@ -133,7 +134,10 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
   
   // Refs
   const previewContainerRef = useRef<HTMLDivElement>(null);
+  const printableAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragInfoRef = useRef<{ id: number, startX: number, startY: number, textStartX: number, textStartY: number } | null>(null);
+
 
   // === DERIVED DATA & OPTIONS ===
   const cupOptions = useMemo(() => {
@@ -159,6 +163,40 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
     setTexts([]);
     setSelectedTextId(null);
   }, [selectedCup]);
+
+  // Effect to handle dragging logic
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !dragInfoRef.current || !printableAreaRef.current) return;
+
+      const containerRect = printableAreaRef.current.getBoundingClientRect();
+      const dx = e.clientX - dragInfoRef.current.startX;
+      const dy = e.clientY - dragInfoRef.current.startY;
+      
+      const newPixelX = dragInfoRef.current.textStartX + dx;
+      const newPixelY = dragInfoRef.current.textStartY + dy;
+
+      const newPercentX = (newPixelX / containerRect.width) * 100;
+      const newPercentY = (newPixelY / containerRect.height) * 100;
+      
+      updateText(dragInfoRef.current.id, { x: newPercentX, y: newPercentY });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      dragInfoRef.current = null;
+    };
+    
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
 
   // === HANDLERS & ACTIONS ===
 
@@ -187,9 +225,16 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
       toast({ variant: 'destructive', title: "Descrição vazia", description: "Por favor, descreva sua ideia para a arte."});
       return;
     }
+    const form = document.createElement('form');
+    const textarea = document.createElement('textarea');
+    textarea.name = 'eventDescription';
+    textarea.value = eventDescription;
+    form.appendChild(textarea);
+    const formData = new FormData(form);
+
     startGeneratingTransition(async () => {
       setLoaderMessage('Gerando sua arte com IA...');
-      const result = await handleArtGeneration(selectedCup.name, {}, new FormData(document.createElement('form')));
+      const result = await handleArtGeneration(selectedCup.name, {}, formData);
       if (result.success) {
         setArt({ id: `art-${Date.now()}`, imageUrl: result.imageUrl, prompt: eventDescription });
       } else {
@@ -257,6 +302,54 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
     });
   };
 
+  // Text Editing
+  const handleAddText = () => {
+    const newId = Date.now();
+    const newText: TextOverlay = {
+      id: newId,
+      text: 'Edite-me',
+      color: '#000000',
+      size: 40,
+      scale: 1,
+      x: 50,
+      y: 50,
+      rotation: 0,
+    };
+    setTexts([...texts, newText]);
+    setSelectedTextId(newId);
+  };
+
+  const updateText = (id: number, newProps: Partial<TextOverlay>) => {
+    setTexts(texts.map(t => t.id === id ? { ...t, ...newProps } : t));
+  };
+  
+  const handleDeleteText = () => {
+    if (selectedTextId === null) return;
+    setTexts(texts.filter(t => t.id !== selectedTextId));
+    setSelectedTextId(null);
+  };
+
+  const handleTextMouseDown = (e: React.MouseEvent<HTMLDivElement>, id: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (printableAreaRef.current) {
+        const textElement = e.currentTarget;
+        const containerRect = printableAreaRef.current.getBoundingClientRect();
+        
+        dragInfoRef.current = {
+            id: id,
+            startX: e.clientX,
+            startY: e.clientY,
+            textStartX: textElement.offsetLeft,
+            textStartY: textElement.offsetTop,
+        };
+        setIsDragging(true);
+    }
+    setSelectedTextId(id);
+  };
+
+
   const createCompositeImage = (): Promise<string> => {
     return new Promise((resolve, reject) => {
       if (!currentArt) return reject(new Error("Nenhuma arte selecionada."));
@@ -277,7 +370,7 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
           ctx.translate(centerX, centerY);
           ctx.rotate(text.rotation * Math.PI / 180);
           ctx.scale(text.scale, text.scale);
-          const scaledSize = text.size * (canvas.width / 500);
+          const scaledSize = text.size * (canvas.width / 500); // Base size relative to 500px canvas
           ctx.fillStyle = text.color;
           ctx.font = `bold ${scaledSize}px Alegreya`;
           ctx.textAlign = 'center';
@@ -297,8 +390,13 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
     startAnalysisTransition(async () => {
       setLoaderMessage('Analisando complexidade da arte...');
       try {
-        const finalImageUrl = (texts.length > 0 || !currentArt) ? await createCompositeImage() : currentArt.imageUrl;
-        const finalArtObject = { ...currentArt, imageUrl: finalImageUrl };
+        const finalImageUrl = (texts.length > 0 || !currentArt) ? await createCompositeImage() : currentArt?.imageUrl || PLAIN_ART_IMAGE;
+        const finalArtObject: GeneratedArt = {
+            id: currentArt?.id || 'plain-art',
+            imageUrl: finalImageUrl,
+            prompt: currentArt?.prompt || 'Copo Liso'
+        };
+        
         setFinalArt(finalArtObject);
         const result = await handleArtAnalysis(finalArtObject.imageUrl, finalArtObject.prompt);
         if (result.success) {
@@ -345,7 +443,7 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* === PREVIEW PANE (Mobile Top, Desktop Right) === */}
         <div className="lg:sticky lg:top-24 flex flex-col items-center gap-4 lg:order-2">
-            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-card shadow-inner checkerboard">
+            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-card shadow-inner checkerboard" onClick={() => setSelectedTextId(null)}>
                {/* Cup color and shape using a mask */}
               <div
                 className="absolute inset-0 transition-colors"
@@ -362,21 +460,48 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
                   maskPosition: 'center',
                 }}
               />
-
-              {/* The art, constrained to the printable area */}
-              {currentArt && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div
-                          className="relative"
-                          style={{
-                              width: `${selectedCup.printableArea.widthPercent}%`,
-                              height: `${selectedCup.printableArea.heightPercent}%`,
-                          }}
-                      >
-                          <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain" />
-                      </div>
+              
+              <div className="absolute inset-0 flex items-center justify-center">
+                  <div
+                      ref={printableAreaRef}
+                      className="relative"
+                      style={{
+                          width: `${selectedCup.printableArea.widthPercent}%`,
+                          height: `${selectedCup.printableArea.heightPercent}%`,
+                      }}
+                  >
+                      {/* The art */}
+                      {currentArt && (
+                           <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain pointer-events-none" />
+                      )}
+                      
+                      {/* Text Overlays */}
+                      {texts.map((text) => (
+                        <div
+                            key={text.id}
+                            onMouseDown={(e) => handleTextMouseDown(e, text.id)}
+                            style={{
+                                position: 'absolute',
+                                left: `${text.x}%`,
+                                top: `${text.y}%`,
+                                transform: `translate(-50%, -50%) rotate(${text.rotation}deg) scale(${text.scale})`,
+                                color: text.color,
+                                fontSize: `${text.size}px`,
+                                fontFamily: 'Alegreya, serif',
+                                fontWeight: 'bold',
+                                whiteSpace: 'pre-wrap',
+                                textAlign: 'center',
+                                cursor: isDragging ? 'grabbing' : 'grab',
+                                userSelect: 'none',
+                                padding: '4px',
+                                border: selectedTextId === text.id ? '2px dashed hsl(var(--primary))' : '2px dashed transparent',
+                            }}
+                        >
+                            {text.text.replace(/ /g, '\u00a0')}
+                        </div>
+                      ))}
                   </div>
-              )}
+              </div>
               
               {/* Printable area guideline */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -385,12 +510,8 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
                     <div className="absolute -left-10 top-1/2 -translate-y-1/2 rotate-[-90deg] bg-card px-1 text-xs text-muted-foreground">{selectedCup.printableArea.height_mm}mm</div>
                   </div>
               </div>
-              
-              <div className="absolute inset-0 p-4">
-                {/* Text overlay rendering */}
-              </div>
 
-              {!currentArt && <div className="absolute inset-0 flex items-center justify-center text-muted-foreground"><p>Sua arte aparecerá aqui</p></div>}
+              {!currentArt && <div className="absolute inset-0 flex items-center justify-center text-muted-foreground pointer-events-none"><p>Sua arte aparecerá aqui</p></div>}
             </div>
         </div>
 
@@ -470,7 +591,7 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
                         <Button variant={artMethod === 'plain' ? 'secondary' : 'outline'} onClick={() => {setArtMethod('plain'); handlePlainArt();}} className="flex-col h-16 col-span-2"><Box/><span className="text-xs mt-1">Copo Liso (Sem Arte)</span></Button>
                     </div>
 
-                    {artMethod === 'ai' && <form action={handleGenerateAIArt} className="space-y-2 pt-2"><Textarea name="eventDescription" placeholder="Ex: Festa de 15 anos da Maria, tema galáxia..." rows={4} value={eventDescription} onChange={e => setEventDescription(e.target.value)} /><Button type="submit" className="w-full">Gerar Arte</Button></form>}
+                    {artMethod === 'ai' && <div className="space-y-2 pt-2"><Textarea name="eventDescription" placeholder="Ex: Festa de 15 anos da Maria, tema galáxia..." rows={4} value={eventDescription} onChange={e => setEventDescription(e.target.value)} /><Button onClick={handleGenerateAIArt} className="w-full">Gerar Arte</Button></div>}
                     {artMethod === 'upload' && <div className="pt-2"><Input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" className="hidden"/><Button onClick={() => fileInputRef.current?.click()} className="w-full">Escolher Arquivo</Button></div>}
                     {artMethod === 'draw' && <div className="pt-2"><DrawingCanvas onDrawingReady={handleDrawingReady}/></div>}
                     {artMethod === 'background' && <div className="pt-2 flex gap-2"><Input type="color" value={backgroundColor} onChange={e => setBackgroundColor(e.target.value)} className="p-1 h-10"/><Button onClick={handleBackgroundReady} className="w-full">Aplicar Cor</Button></div>}
@@ -481,7 +602,33 @@ export function ArtGallery({ cupType, onFinalize, onBack }: ArtStudioProps) { //
               <AccordionItem value="edit" className="border-b-0 rounded-lg bg-card border shadow-sm">
                 <AccordionTrigger className="px-4 py-3 text-base">Edite a Arte</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                    {/* Text editing will go here */}
+                  <Button onClick={handleAddText} variant="outline" className="w-full"><Type className="mr-2"/>Adicionar Texto</Button>
+                  
+                  {selectedText && (
+                    <div className="space-y-4 pt-4 border-t">
+                      <div className="flex justify-between items-center">
+                        <Label htmlFor="text-content" className="font-semibold">Texto Selecionado</Label>
+                        <Button variant="ghost" size="icon" onClick={handleDeleteText}><Trash2 className="text-destructive"/></Button>
+                      </div>
+                      <Textarea id="text-content" value={selectedText.text} onChange={(e) => updateText(selectedText.id, { text: e.target.value })} />
+                      <div className="flex items-center gap-4">
+                        <Label>Cor:</Label>
+                        <Input type="color" value={selectedText.color} onChange={(e) => updateText(selectedText.id, { color: e.target.value })} className="p-1 h-10 w-16" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="font-size">Tamanho da Fonte: {selectedText.size}px</Label>
+                        <Slider id="font-size" value={[selectedText.size]} onValueChange={(v) => updateText(selectedText.id, { size: v[0] })} min={10} max={100} step={1} />
+                      </div>
+                       <div className="space-y-2">
+                        <Label htmlFor="scale">Escala: {selectedText.scale.toFixed(2)}x</Label>
+                        <Slider id="scale" value={[selectedText.scale]} onValueChange={(v) => updateText(selectedText.id, { scale: v[0] })} min={0.5} max={3} step={0.1} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="rotation">Rotação: {selectedText.rotation}°</Label>
+                        <Slider id="rotation" value={[selectedText.rotation]} onValueChange={(v) => updateText(selectedText.id, { rotation: v[0] })} min={-180} max={180} step={1} />
+                      </div>
+                    </div>
+                  )}
                 </AccordionContent>
               </AccordionItem>
             )}
