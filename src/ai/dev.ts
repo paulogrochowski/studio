@@ -1,5 +1,7 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/generate-cup-art.ts'; // This file now contains the editImageFlow
-// The other flow files are now unused.
+import '@/ai/flows/generate-cup-art.ts';
+import '@/ai/flows/analyze-art-complexity.ts';
+import '@/ai/flows/validate-image-background.ts';
+import '@/ai/flows/refine-cup-art.ts';

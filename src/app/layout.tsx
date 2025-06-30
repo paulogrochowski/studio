@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'AI Image Editor',
-  description: 'Edit your images with the power of AI.',
+  title: 'Personalize Copos',
+  description: 'Crie copos personalizados para o seu evento com a ajuda de IA.',
 };
 
 export default function RootLayout({

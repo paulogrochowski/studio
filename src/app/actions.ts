@@ -1,50 +1,79 @@
 'use server';
 
-import { editImage } from '@/ai/flows/generate-cup-art'; // path is old, but functions are new
+import { generateCupArt } from '@/ai/flows/generate-cup-art';
+import { validateImageBackground } from '@/ai/flows/validate-image-background';
+import { analyzeArtComplexity } from '@/ai/flows/analyze-art-complexity';
+import { refineCupArt } from '@/ai/flows/refine-cup-art';
+import type { OrderDetails } from '@/lib/types';
 import { z } from 'zod';
 
-const editImageFormSchema = z.object({
-  baseImage: z.string().min(1, "Please upload an image."),
-  instruction: z.string().min(3, "Please provide a valid edit instruction."),
+const artGenerationSchema = z.object({
+  eventDescription: z.string().min(10, 'A descrição precisa ter pelo menos 10 caracteres.'),
+  cupName: z.string(),
 });
 
-type EditImageResult = {
-  success: true;
-  imageUrl: string;
-} | {
-  success: false;
-  error: string;
-};
 
-export async function handleImageEdit(prevState: any, formData: FormData): Promise<EditImageResult> {
-  const validatedFields = editImageFormSchema.safeParse({
-    baseImage: formData.get('baseImage'),
-    instruction: formData.get('instruction'),
+export async function handleArtGeneration(cupName: string, prevState: any, formData: FormData) {
+  const validatedFields = artGenerationSchema.safeParse({
+    eventDescription: formData.get('eventDescription'),
+    cupName: cupName,
   });
 
   if (!validatedFields.success) {
-    return { 
-      success: false, 
-      error: validatedFields.error.errors.map(e => e.message).join(', ') 
+    return {
+      success: false,
+      error: validatedFields.error.errors.map((e) => e.message).join(', '),
     };
   }
-  
-  const { baseImage: baseImageDataUri, instruction } = validatedFields.data;
 
   try {
-    const result = await editImage({ 
-      baseImageDataUri, 
-      instruction 
+    const result = await generateCupArt({
+      eventDescription: validatedFields.data.eventDescription,
+      cupName: validatedFields.data.cupName,
     });
-    
-    if (!result.editedImage) {
-      return { success: false, error: "The AI failed to return an image. Please try a different instruction." };
+    if (!result.imageUrl) {
+      return { success: false, error: 'A IA não conseguiu gerar uma imagem. Tente uma descrição diferente.' };
     }
-
-    return { success: true, imageUrl: result.editedImage };
+    return { success: true, imageUrl: result.imageUrl };
   } catch (error) {
     console.error(error);
-    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred during image editing.";
-    return { success: false, error: errorMessage };
+    return { success: false, error: 'Ocorreu um erro inesperado ao gerar a arte.' };
   }
+}
+
+export async function handleImageValidation(imageDataUri: string) {
+  try {
+    const result = await validateImageBackground({ imageDataUri });
+    return { success: true, isValid: result.hasValidBackground, reasoning: result.reasoning };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: 'Falha ao validar a imagem.' };
+  }
+}
+
+export async function handleArtAnalysis(artDataUri: string, description: string) {
+  try {
+    const result = await analyzeArtComplexity({ artDataUri, description });
+    return { success: true, analysis: result };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: 'Falha ao analisar a complexidade da arte.' };
+  }
+}
+
+export async function handleFinalizeOrder(orderDetails: OrderDetails) {
+  console.log('Pedido finalizado:', orderDetails);
+  // Here you would typically save the order to a database,
+  // process payment, send confirmation emails, etc.
+  return { success: true, orderId: `order_${Date.now()}` };
+}
+
+export async function handleArtRefinement(baseImageDataUri: string, refinementInstructions: string) {
+    try {
+        const result = await refineCupArt({ baseImageDataUri, refinementInstructions });
+        return { success: true, imageUrl: result.refinedImageDataUri };
+    } catch (error) {
+        console.error("Refinement error:", error);
+        return { success: false, error: "Falha ao refinar a arte. Tente uma instrução diferente." };
+    }
 }
