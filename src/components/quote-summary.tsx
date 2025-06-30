@@ -13,13 +13,14 @@ import Image from 'next/image';
 interface QuoteSummaryProps {
   initialDetails: Omit<OrderDetails, 'quantity' | 'isUrgent' | 'total'>;
   onFinalize: (details: OrderDetails) => void;
+  onBack: () => void;
 }
 
 const URGENCY_MULTIPLIER = 1.25;
 const COMPLEXITY_PRICE_PER_POINT = 0.15;
 const SHIPPING_COST = 15.0;
 
-export function QuoteSummary({ initialDetails, onFinalize }: QuoteSummaryProps) {
+export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummaryProps) {
   const [quantity, setQuantity] = useState(100);
   const [isUrgent, setIsUrgent] = useState(false);
   const [total, setTotal] = useState(0);
@@ -42,20 +43,38 @@ export function QuoteSummary({ initialDetails, onFinalize }: QuoteSummaryProps) 
   }
 
   return (
-    <Card className="bg-transparent border-none shadow-none">
-      <CardHeader className="p-0 mb-4">
-        <CardDescription>Revise os detalhes do seu pedido e finalize a compra.</CardDescription>
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle className="font-headline text-3xl">Último Passo: Revise seu Pedido</CardTitle>
+            <CardDescription>Confirme os detalhes e finalize para enviar seu pedido.</CardDescription>
+        </div>
+        <Button variant="outline" onClick={onBack}>Voltar para Edição</Button>
       </CardHeader>
-      <CardContent className="p-0 grid grid-cols-1 md:grid-cols-2 gap-8">
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
         <div className="space-y-6">
           <div className="flex items-start gap-4">
-            <div className="relative w-24 h-24 rounded-md overflow-hidden border bg-secondary/50 shadow-inner shrink-0">
-               <Image src={initialDetails.art.imageUrl} alt="Arte escolhida" fill className="object-contain p-2" />
-               <div 
-                  className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none"
-                  style={{ backgroundImage: `url(${initialDetails.cupModel.imageUrl})`}}
-                ></div>
+             <div className="relative w-24 h-24 rounded-md overflow-hidden border bg-white shadow-inner shrink-0 checkerboard">
+                {/* Cup color shape */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundColor: initialDetails.cupModel.colorHex,
+                    opacity: initialDetails.cupModel.opacityType === 'Translúcido' ? 0.75 : 1.0,
+                    WebkitMaskImage: `url(${initialDetails.cupModel.imageUrl})`,
+                    maskImage: `url(${initialDetails.cupModel.imageUrl})`,
+                    WebkitMaskSize: 'contain',
+                    maskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat',
+                    maskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center',
+                    maskPosition: 'center',
+                  }}
+                />
+                {/* Art */}
+                <Image src={initialDetails.art.imageUrl} alt="Arte escolhida" fill className="object-contain p-2" />
             </div>
+
             <div>
               <h3 className="font-bold">{initialDetails.cupModel.name}</h3>
               {(initialDetails.cupModel.colorName || initialDetails.cupModel.opacityType) && (
@@ -109,13 +128,13 @@ export function QuoteSummary({ initialDetails, onFinalize }: QuoteSummaryProps) 
             <span className="font-bold text-xl">Total</span>
             <span className="font-bold text-2xl text-primary">R$ {total.toFixed(2).replace('.', ',')}</span>
            </div>
+           <div className="mt-4">
+            <Button onClick={handleFinalize} size="lg" className="w-full">
+                Finalizar Compra e Enviar Pedido
+            </Button>
+           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end items-center mt-6 p-0">
-        <Button onClick={handleFinalize} size="lg">
-          Finalizar Compra
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

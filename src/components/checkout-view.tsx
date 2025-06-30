@@ -26,12 +26,25 @@ export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProp
         <div className="bg-secondary/50 rounded-lg p-6 space-y-4">
           <h3 className="font-bold text-lg text-center">Resumo do Pedido</h3>
           <div className="flex items-center gap-4">
-             <div className="relative w-24 h-24 rounded-md overflow-hidden border bg-white shadow-inner shrink-0">
+             <div className="relative w-24 h-24 rounded-md overflow-hidden border bg-white shadow-inner shrink-0 checkerboard">
+                {/* Cup color shape */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundColor: orderDetails.cupModel.colorHex,
+                    opacity: orderDetails.cupModel.opacityType === 'Translúcido' ? 0.75 : 1.0,
+                    WebkitMaskImage: `url(${orderDetails.cupModel.imageUrl})`,
+                    maskImage: `url(${orderDetails.cupModel.imageUrl})`,
+                    WebkitMaskSize: 'contain',
+                    maskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat',
+                    maskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center',
+                    maskPosition: 'center',
+                  }}
+                />
+                {/* Art */}
                <Image src={orderDetails.art.imageUrl} alt="Arte escolhida" fill className="object-contain p-2" />
-               <div 
-                  className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none"
-                  style={{ backgroundImage: `url(${orderDetails.cupModel.imageUrl})`}}
-                ></div>
             </div>
             <div>
                 <p><strong>{orderDetails.quantity}x</strong> {orderDetails.cupModel.name}</p>

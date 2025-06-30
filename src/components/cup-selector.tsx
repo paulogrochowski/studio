@@ -5,10 +5,14 @@ import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+const LONG_DRINK_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCAxMjAiPjxwYXRoIGQ9Ik01LDAgSDU1IEw1MCwxMjAgSDEwIFoiIGZpbGw9ImJsYWNrIi8+PC9zdmc+';
+const TWISTER_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MCAxNDAiPjxwYXRoIGQ9Ik0wIDEwaDcwdjE1SDB6TTEwIDMwaDUwbC01IDEwMEgxNXpNMzIgMGg2djEwaC02eiIgZmlsbD0iYmxhY2siLz48L3N2Zz4=';
+const CALDERETA_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCAxMDAiPjxwYXRoIGQ9Ik01LDAgSDc1IEw2NSwxMDAgSDE1IFoiIGZpbGw9ImJsYWNrIi8+PC9zdmc+';
+
 const cupTypes = [
-  { name: 'Copo Long Drink', imageUrl: 'https://placehold.co/400x400.png', 'data-ai-hint': 'white cup' },
-  { name: 'Copo Twister com Tampa', imageUrl: 'https://placehold.co/400x400.png', 'data-ai-hint': 'clear cup' },
-  { name: 'Copo Caldereta', imageUrl: 'https://placehold.co/400x400.png', 'data-ai-hint': 'black cup' },
+  { name: 'Copo Long Drink', imageUrl: LONG_DRINK_SVG, 'data-ai-hint': 'white cup' },
+  { name: 'Copo Twister com Tampa', imageUrl: TWISTER_SVG, 'data-ai-hint': 'clear cup' },
+  { name: 'Copo Caldereta', imageUrl: CALDERETA_SVG, 'data-ai-hint': 'black cup' },
 ];
 
 interface CupSelectorProps {
