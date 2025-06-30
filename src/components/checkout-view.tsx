@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { OrderDetails } from "@/lib/types";
@@ -34,6 +35,9 @@ export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProp
             </div>
             <div>
                 <p><strong>{orderDetails.quantity}x</strong> {orderDetails.cupModel.name}</p>
+                {(orderDetails.cupModel.colorName || orderDetails.cupModel.opacityType) && (
+                    <p className="text-sm text-muted-foreground">{orderDetails.cupModel.colorName} {orderDetails.cupModel.opacityType}</p>
+                )}
                 <p className="text-sm text-muted-foreground">Entrega: {orderDetails.isUrgent ? 'Urgente' : 'Padrão'}</p>
             </div>
             <div className="ml-auto text-right">

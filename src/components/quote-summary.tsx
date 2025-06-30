@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,9 @@ export function QuoteSummary({ initialDetails, onFinalize, onGoBack }: QuoteSumm
             </div>
             <div>
               <h3 className="font-bold">{initialDetails.cupModel.name}</h3>
+              {(initialDetails.cupModel.colorName || initialDetails.cupModel.opacityType) && (
+                <p className="text-sm text-muted-foreground">{initialDetails.cupModel.colorName} {initialDetails.cupModel.opacityType}</p>
+              )}
               <p className="text-sm text-muted-foreground">Arte Personalizada</p>
               <p className="text-xs text-muted-foreground mt-1 line-clamp-2"><strong>Descrição:</strong> {initialDetails.eventDescription}</p>
             </div>

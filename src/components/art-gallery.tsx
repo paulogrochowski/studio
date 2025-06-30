@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useTransition, useMemo, useRef, useEffect } from 'react';
 import Image from 'next/image';
@@ -6,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { handleArtRefinement } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2, ArrowLeft, Type, Download, Trash2, Palette, Box, UploadCloud, Settings2 } from 'lucide-react';
+import { Loader2, Wand2, ArrowLeft, Type, Download, Trash2, Palette, Box, UploadCloud, Settings2, HelpCircle } from 'lucide-react';
 import type { GeneratedArt, CupModel } from '@/lib/types';
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -15,6 +16,7 @@ import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface ArtGalleryProps {
   initialArt: GeneratedArt;
@@ -210,6 +212,16 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-secondary/50 shadow-inner">
             <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain p-4" />
             
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div 
+                    className="border-2 border-dashed border-primary/50"
+                    style={{ 
+                        width: `${cup.printableArea?.widthPercent ?? 90}%`, 
+                        height: `${cup.printableArea?.heightPercent ?? 90}%`
+                    }}
+                />
+            </div>
+            
             <div className="absolute inset-0 p-4">
               {texts.map(text => {
                 const scaledSize = text.size * (previewWidth / 500);
@@ -251,7 +263,17 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
             ></div>
           </div>
            <div className="space-y-2 w-full">
-            <Label>Histórico de Versões</Label>
+            <div className="flex items-center gap-2">
+                <Label>Histórico de Versões</Label>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Todas as versões da sua arte são salvas aqui. Clique em uma para editar.</p>
+                    </TooltipContent>
+                </Tooltip>
+            </div>
             <ScrollArea className="w-full whitespace-nowrap rounded-lg border">
               <div className="flex space-x-2 p-2">
                 {history.map((art, index) => (
@@ -274,10 +296,10 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
         <div className="space-y-6">
           <Tabs defaultValue="text" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="refine"><Wand2 /> Ajuste Fino</TabsTrigger>
-              <TabsTrigger value="text"><Type /> Texto</TabsTrigger>
-              <TabsTrigger value="tools" disabled={!selectedText}><Settings2 /> Ferramentas</TabsTrigger>
-              <TabsTrigger value="3d" disabled><Box /> Visualizar 3D</TabsTrigger>
+              <Tooltip><TooltipTrigger asChild><TabsTrigger value="refine"><Wand2 /></TabsTrigger></TooltipTrigger><TooltipContent><p>Ajuste Fino com IA</p></TooltipContent></Tooltip>
+              <Tooltip><TooltipTrigger asChild><TabsTrigger value="text"><Type /></TabsTrigger></TooltipTrigger><TooltipContent><p>Adicionar/Remover Texto</p></TooltipContent></Tooltip>
+              <Tooltip><TooltipTrigger asChild><TabsTrigger value="tools" disabled={!selectedText}><Settings2 /></TabsTrigger></TooltipTrigger><TooltipContent><p>Editar Texto Selecionado</p></TooltipContent></Tooltip>
+              <Tooltip><TooltipTrigger asChild><TabsTrigger value="3d" disabled><Box /></TabsTrigger></TooltipTrigger><TooltipContent><p>Visualizar 3D (Em Breve)</p></TooltipContent></Tooltip>
             </TabsList>
             <TabsContent value="refine" className="mt-4 border rounded-lg p-4">
               <div className="space-y-2">
@@ -289,10 +311,15 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
                   onChange={(e) => setRefinementInput(e.target.value)}
                   rows={3}
                 />
-                <Button onClick={handleRefine} disabled={isPending || !isAIArt} className="w-full">
+                <Tooltip>
+                  <TooltipTrigger asChild><Button onClick={handleRefine} disabled={isPending || !isAIArt} className="w-full">
                   {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Refinar com IA
-                </Button>
+                </Button></TooltipTrigger>
+                  <TooltipContent>
+                    <p>Use a IA para fazer alterações na imagem base.<br/>(Indisponível para artes enviadas/desenhadas)</p>
+                  </TooltipContent>
+                </Tooltip>
                 {!isAIArt && <p className="text-xs text-muted-foreground text-center">O refinamento com IA só está disponível para artes geradas pela IA.</p>}
               </div>
             </TabsContent>
@@ -301,7 +328,10 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
                 <Label htmlFor="text-input">Adicionar Texto</Label>
                 <div className="flex gap-2">
                   <Input id="text-input" value={newText} onChange={e => setNewText(e.target.value)} placeholder="Sua frase aqui..." />
-                  <Button onClick={handleAddText}>Adicionar</Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild><Button onClick={handleAddText}>Adicionar</Button></TooltipTrigger>
+                    <TooltipContent><p>Adiciona o texto à sua arte.</p></TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -318,7 +348,10 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
                 {texts.map(t => (
                   <div key={t.id} className="flex items-center justify-between bg-secondary/50 p-2 rounded-md text-sm">
                     <span style={{color: t.color}} className="font-bold font-body truncate">{t.text}</span>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeText(t.id)}><Trash2 className="w-4 h-4" /></Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeText(t.id)}><Trash2 className="w-4 h-4" /></Button></TooltipTrigger>
+                      <TooltipContent><p>Remover este texto</p></TooltipContent>
+                    </Tooltip>
                   </div>
                 ))}
                 {texts.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Nenhum texto adicionado.</p>}
@@ -328,22 +361,34 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
               {selectedText ? (
                 <>
                   <p className="text-sm font-bold text-center text-primary truncate">Editando: "{selectedText.text}"</p>
-                  <div className="space-y-2">
-                    <Label>Posição X: {selectedText.x}%</Label>
-                    <Slider value={[selectedText.x]} onValueChange={(v) => updateSelectedText({ x: v[0] })} min={0} max={100} step={1} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Posição Y: {selectedText.y}%</Label>
-                    <Slider value={[selectedText.y]} onValueChange={(v) => updateSelectedText({ y: v[0] })} min={0} max={100} step={1} />
-                  </div>
-                   <div className="space-y-2">
-                    <Label>Rotação: {selectedText.rotation}°</Label>
-                    <Slider value={[selectedText.rotation]} onValueChange={(v) => updateSelectedText({ rotation: v[0] })} min={-180} max={180} step={1} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Escala: {selectedText.scale.toFixed(2)}x</Label>
-                    <Slider value={[selectedText.scale]} onValueChange={(v) => updateSelectedText({ scale: v[0] })} min={0.5} max={3} step={0.05} />
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger className="w-full space-y-2">
+                      <Label>Posição X: {selectedText.x}%</Label>
+                      <Slider value={[selectedText.x]} onValueChange={(v) => updateSelectedText({ x: v[0] })} min={0} max={100} step={1} />
+                    </TooltipTrigger>
+                    <TooltipContent><p>Move o texto horizontalmente.</p></TooltipContent>
+                  </Tooltip>
+                   <Tooltip>
+                    <TooltipTrigger className="w-full space-y-2">
+                        <Label>Posição Y: {selectedText.y}%</Label>
+                        <Slider value={[selectedText.y]} onValueChange={(v) => updateSelectedText({ y: v[0] })} min={0} max={100} step={1} />
+                    </TooltipTrigger>
+                    <TooltipContent><p>Move o texto verticalmente.</p></TooltipContent>
+                  </Tooltip>
+                   <Tooltip>
+                    <TooltipTrigger className="w-full space-y-2">
+                      <Label>Rotação: {selectedText.rotation}°</Label>
+                      <Slider value={[selectedText.rotation]} onValueChange={(v) => updateSelectedText({ rotation: v[0] })} min={-180} max={180} step={1} />
+                    </TooltipTrigger>
+                     <TooltipContent><p>Gira o texto.</p></TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger className="w-full space-y-2">
+                      <Label>Escala: {selectedText.scale.toFixed(2)}x</Label>
+                      <Slider value={[selectedText.scale]} onValueChange={(v) => updateSelectedText({ scale: v[0] })} min={0.5} max={3} step={0.05} />
+                    </TooltipTrigger>
+                     <TooltipContent><p>Aumenta ou diminui o tamanho do texto.</p></TooltipContent>
+                  </Tooltip>
                 </>
               ) : (
                 <div className="text-center p-8 text-muted-foreground flex flex-col items-center gap-4">
@@ -367,16 +412,31 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
           <div className="space-y-2">
             <p className="font-bold text-center">Outras Opções</p>
             <div className="grid grid-cols-2 gap-2">
-                <Button onClick={onRegenerate} variant="outline" className="w-full">
-                    {isAIArt ? (
-                        <><Wand2 /> Gerar outra</>
-                    ) : (
-                        <><UploadCloud/> Trocar Arte</>
-                    )}
-                </Button>
-                <Button onClick={handleDownload} variant="outline" className="w-full">
-                    <Download/> Baixar Arte
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={onRegenerate} variant="outline" className="w-full">
+                        {isAIArt ? (
+                            <><Wand2 /> Gerar outra</>
+                        ) : (
+                            <><UploadCloud/> Trocar Arte</>
+                        )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isAIArt 
+                      ? <p>Gera uma arte completamente nova com IA.</p> 
+                      : <p>Volta para a tela de envio/desenho.</p>
+                    }
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={handleDownload} variant="outline" className="w-full">
+                        <Download/> Baixar Arte
+                    </Button>
+                  </TooltipTrigger>
+                   <TooltipContent><p>Baixa a imagem final com seus textos em PNG.</p></TooltipContent>
+                </Tooltip>
             </div>
           </div>
         </div>
@@ -386,10 +446,15 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
         </Button>
-        <Button onClick={handleSelectCompositeArt} size="lg" disabled={isPending}>
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Gostei, usar esta arte!
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button onClick={handleSelectCompositeArt} size="lg" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Gostei, usar esta arte!
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent><p>Avança para a etapa de orçamento com a arte atual.</p></TooltipContent>
+        </Tooltip>
       </CardFooter>
     </Card>
   );

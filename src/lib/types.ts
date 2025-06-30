@@ -4,6 +4,13 @@ export interface CupModel {
   name: string;
   imageUrl: string;
   basePrice: number;
+  'data-ai-hint'?: string;
+  colorName?: string;
+  opacityType?: 'Opaco' | 'Translúcido';
+  printableArea?: {
+    widthPercent: number;
+    heightPercent: number;
+  };
 }
 
 export interface GeneratedArt {

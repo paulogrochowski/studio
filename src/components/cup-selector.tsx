@@ -4,10 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 
 const cupModels: CupModel[] = [
-  { id: 'long-drink', name: 'Copo Long Drink', imageUrl: 'https://placehold.co/400x400.png', basePrice: 2.50, 'data-ai-hint': 'long drink cup' },
-  { id: 'yard-cup', name: 'Copo Yard Cup', imageUrl: 'https://placehold.co/400x400.png', basePrice: 4.00, 'data-ai-hint': 'yard cup' },
-  { id: 'twister', name: 'Copo Twister com Tampa', imageUrl: 'https://placehold.co/400x400.png', basePrice: 3.75, 'data-ai-hint': 'twister cup' },
-  { id: 'caldereta', name: 'Copo Caldereta', imageUrl: 'https://placehold.co/400x400.png', basePrice: 2.20, 'data-ai-hint': 'caldereta cup' },
+  { id: 'long-drink-white', name: 'Copo Long Drink', imageUrl: 'https://placehold.co/400x400.png', basePrice: 2.50, colorName: 'Branco', opacityType: 'Opaco', printableArea: { widthPercent: 85, heightPercent: 70 }, 'data-ai-hint': 'white cup' },
+  { id: 'long-drink-blue', name: 'Copo Long Drink', imageUrl: 'https://placehold.co/400x400.png', basePrice: 2.70, colorName: 'Azul', opacityType: 'Translúcido', printableArea: { widthPercent: 85, heightPercent: 70 }, 'data-ai-hint': 'blue cup' },
+  { id: 'twister-clear', name: 'Copo Twister com Tampa', imageUrl: 'https://placehold.co/400x400.png', basePrice: 3.75, colorName: 'Transparente', opacityType: 'Translúcido', printableArea: { widthPercent: 90, heightPercent: 60 }, 'data-ai-hint': 'twister cup' },
+  { id: 'caldereta-black', name: 'Copo Caldereta', imageUrl: 'https://placehold.co/400x400.png', basePrice: 2.30, colorName: 'Preto', opacityType: 'Opaco', printableArea: { widthPercent: 95, heightPercent: 80 }, 'data-ai-hint': 'black cup' },
 ];
 
 interface CupSelectorProps {
@@ -19,7 +19,7 @@ export function CupSelector({ onSelect }: CupSelectorProps) {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="font-headline text-3xl">1. Escolha o Modelo do Copo</CardTitle>
-        <CardDescription>Selecione o copo que melhor combina com seu evento.</CardDescription>
+        <CardDescription>Selecione o copo que melhor combina com seu evento. Veja as cores e tipos disponíveis.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -38,6 +38,7 @@ export function CupSelector({ onSelect }: CupSelectorProps) {
                   </div>
                   <div className="p-4 border-t">
                     <h3 className="font-bold text-center">{cup.name}</h3>
+                    <p className="text-sm text-center font-semibold text-primary/90">{cup.colorName} {cup.opacityType}</p>
                     <p className="text-sm text-muted-foreground text-center mt-1">
                       A partir de R$ {cup.basePrice.toFixed(2).replace('.', ',')}
                     </p>
