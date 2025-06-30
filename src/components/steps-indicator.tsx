@@ -20,11 +20,13 @@ const steps = [
 ];
 
 export function StepsIndicator({ currentStep, onStepClick, isStepCompleted }: StepsIndicatorProps) {
+  const visibleSteps = steps.slice(0, currentStep);
+  
   return (
     <TooltipProvider>
       <div className="w-full mb-12">
-        <ol className="flex items-center w-full">
-          {steps.map((label, index) => {
+        <ol className="flex items-center justify-center gap-4 sm:gap-6">
+          {visibleSteps.map((label, index) => {
             const stepNumber = index + 1;
             const isCurrent = currentStep === stepNumber;
             const isCompleted = isStepCompleted ? isStepCompleted(stepNumber) : currentStep > stepNumber;
@@ -33,9 +35,9 @@ export function StepsIndicator({ currentStep, onStepClick, isStepCompleted }: St
             return (
               <React.Fragment key={label}>
                 {index > 0 && (
-                  <div className={cn("flex-auto border-t-2 transition-colors", isCompleted || isCurrent ? 'border-primary' : 'border-border')} />
+                  <div className={cn("h-0.5 w-8 sm:w-12 bg-border transition-colors", isCompleted || isCurrent ? 'bg-primary' : 'bg-border')} />
                 )}
-                <li className="flex flex-col items-center shrink-0">
+                <li className="flex items-center gap-3">
                   <Tooltip delayDuration={100}>
                     <TooltipTrigger asChild>
                       <button
@@ -45,7 +47,7 @@ export function StepsIndicator({ currentStep, onStepClick, isStepCompleted }: St
                         className={cn(
                           "flex items-center justify-center w-8 h-8 rounded-full font-bold text-lg shrink-0 transition-all duration-300",
                           isCompleted || isCurrent ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground',
-                          isCurrent && 'ring-4 ring-accent/50 scale-110',
+                          isCurrent && 'ring-4 ring-primary/50 scale-110',
                           canBeClicked && "cursor-pointer hover:scale-110"
                         )}
                       >
@@ -62,11 +64,8 @@ export function StepsIndicator({ currentStep, onStepClick, isStepCompleted }: St
                         </TooltipContent>
                     )}
                   </Tooltip>
-
                   {isCurrent && (
-                     <div className="absolute top-full text-center mt-2 w-32">
-                       <span className="font-bold text-primary text-sm whitespace-nowrap">{label}</span>
-                     </div>
+                     <span className="hidden sm:block font-bold text-primary text-sm whitespace-nowrap animate-in fade-in-0 duration-500">{label}</span>
                   )}
                 </li>
               </React.Fragment>

@@ -15,25 +15,25 @@ const creationMethods = [
     method: 'ai' as const,
     icon: Wand2,
     title: 'Gerar com IA',
-    description: 'Descreva sua ideia e nossa Inteligência Artificial criará uma arte exclusiva para você.',
+    description: 'Descreva sua ideia e nossa IA criará uma arte exclusiva.',
   },
   {
     method: 'upload' as const,
     icon: UploadCloud,
     title: 'Enviar sua Arte',
-    description: 'Faça o upload de uma imagem pronta que você já tenha. O fundo deve ser branco ou transparente.',
+    description: 'Faça o upload de uma imagem com fundo branco ou transparente.',
   },
   {
     method: 'draw' as const,
     icon: Brush,
     title: 'Desenhar na Hora',
-    description: 'Use nossa ferramenta de desenho para criar sua própria arte do zero, com total liberdade.',
+    description: 'Use nossa ferramenta de desenho para criar sua própria arte.',
   },
   {
     method: 'plain' as const,
     icon: Ban,
     title: 'Sem Arte (Copo Liso)',
-    description: 'Prossiga para o orçamento sem adicionar nenhuma arte personalizada ao copo.',
+    description: 'Prossiga para o orçamento sem adicionar nenhuma arte.',
   },
 ];
 
@@ -41,9 +41,9 @@ export function ArtMethodSelector({ onSelect, onGoBack }: ArtMethodSelectorProps
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-3xl">2. Como você quer personalizar o copo?</CardTitle>
+        <CardTitle className="font-headline text-2xl">2. Como você quer personalizar?</CardTitle>
         <CardDescription>
-          Escolha uma das opções abaixo. Você pode gerar uma arte com IA, enviar a sua, desenhar ou pedir o copo liso.
+          Escolha como criar a arte para o seu copo.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -53,12 +53,12 @@ export function ArtMethodSelector({ onSelect, onGoBack }: ArtMethodSelectorProps
               key={method}
               onClick={() => onSelect(method)}
               className={cn(
-                "group text-left p-4 rounded-lg border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 hover:border-primary"
+                "group text-left p-3 rounded-lg border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 hover:border-primary"
               )}
             >
-              <Icon className="w-8 h-8 mb-3 text-primary transition-transform group-hover:scale-110" />
-              <h3 className="font-bold text-lg mb-2">{title}</h3>
-              <p className="text-sm text-muted-foreground">{description}</p>
+              <Icon className="w-6 h-6 mb-2 text-primary transition-transform group-hover:scale-110" />
+              <h3 className="font-bold text-base mb-1">{title}</h3>
+              <p className="text-xs text-muted-foreground">{description}</p>
             </button>
           ))}
         </div>
@@ -66,7 +66,7 @@ export function ArtMethodSelector({ onSelect, onGoBack }: ArtMethodSelectorProps
       <CardFooter>
         <Button variant="outline" onClick={onGoBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para Seleção de Copo
+          Voltar
         </Button>
       </CardFooter>
     </Card>
