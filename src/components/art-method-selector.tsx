@@ -47,16 +47,16 @@ export function ArtMethodSelector({ onSelect, onGoBack }: ArtMethodSelectorProps
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {creationMethods.map(({ method, icon: Icon, title, description }) => (
             <button
               key={method}
               onClick={() => onSelect(method)}
               className={cn(
-                "group text-left p-6 rounded-lg border bg-card text-card-foreground shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 hover:border-primary"
+                "group text-left p-4 rounded-lg border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 hover:border-primary"
               )}
             >
-              <Icon className="w-10 h-10 mb-4 text-primary transition-transform group-hover:scale-110" />
+              <Icon className="w-8 h-8 mb-3 text-primary transition-transform group-hover:scale-110" />
               <h3 className="font-bold text-lg mb-2">{title}</h3>
               <p className="text-sm text-muted-foreground">{description}</p>
             </button>
