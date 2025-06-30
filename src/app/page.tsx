@@ -25,19 +25,47 @@ export default function Home() {
   const [finalOrder, setFinalOrder] = useState<OrderDetails | null>(null);
   const [artComplexity, setArtComplexity] = useState<{ score: number, reasoning: string } | null>(null);
 
+  const isStepCompleted = (stepNumber: number): boolean => {
+    if (stepNumber <= 0) return true; // Step 0 is always "completed" to allow navigation to step 1
+    switch (stepNumber) {
+      case 1:
+        return !!selectedCup;
+      case 2:
+        return !!generatedArt;
+      case 3:
+        return !!artComplexity;
+      case 4:
+        return !!finalOrder;
+      default:
+        return false;
+    }
+  };
+
   const handleCupSelect = (cup: CupModel) => {
+    // If the user selects a different cup, invalidate the subsequent steps' state.
+    if (selectedCup?.id !== cup.id) {
+      setEventDescription('');
+      setGeneratedArt(null);
+      setArtComplexity(null);
+      setFinalOrder(null);
+    }
     setSelectedCup(cup);
     setStep(2);
   };
 
   const handleArtReady = (imageUrl: string, prompt: string) => {
+    // When new art is ready, invalidate the steps that depend on it.
     setGeneratedArt({ id: `art-${Date.now()}`, imageUrl, prompt });
     setEventDescription(prompt);
+    setArtComplexity(null);
+    setFinalOrder(null);
     setStep(3);
   };
 
   const handleRegenerate = () => {
     setGeneratedArt(null);
+    setArtComplexity(null);
+    setFinalOrder(null);
     setStep(2);
   };
   
@@ -73,11 +101,14 @@ export default function Home() {
   }
 
   const handleGoBack = () => {
-    setStep(prev => (prev > 1 ? prev - 1 : 1));
+    if (step > 1) {
+      setStep(prev => (prev > 1 ? prev - 1 : 1));
+    }
   };
 
   const handleStepClick = (stepNumber: number) => {
-    if (stepNumber < step) {
+    // Only allow navigating to a step if the previous one has been completed.
+    if (isStepCompleted(stepNumber - 1)) {
       setStep(stepNumber);
     }
   };
@@ -120,7 +151,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1 container mx-auto py-8 px-4">
-        {step <= TOTAL_STEPS && <StepsIndicator currentStep={step} totalSteps={TOTAL_STEPS} onStepClick={handleStepClick} />}
+        {step <= TOTAL_STEPS && <StepsIndicator currentStep={step} totalSteps={TOTAL_STEPS} onStepClick={handleStepClick} isStepCompleted={isStepCompleted} />}
         {renderStep()}
       </main>
       <footer className="text-center py-4 text-sm text-muted-foreground border-t">
