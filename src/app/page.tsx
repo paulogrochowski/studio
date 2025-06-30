@@ -15,13 +15,16 @@ import { ArtMethodSelector } from '@/components/art-method-selector';
 
 const TOTAL_STEPS = 5;
 
+// A 1x1 transparent pixel
+const PLAIN_ART_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
 export default function Home() {
   const [step, setStep] = useState(1);
   const [isAnalyzing, startAnalysisTransition] = useTransition();
   const { toast } = useToast();
 
   const [selectedCup, setSelectedCup] = useState<CupModel | null>(null);
-  const [artMethod, setArtMethod] = useState<'ai' | 'upload' | 'draw' | null>(null);
+  const [artMethod, setArtMethod] = useState<'ai' | 'upload' | 'draw' | 'plain' | null>(null);
   const [eventDescription, setEventDescription] = useState<string>('');
   const [generatedArt, setGeneratedArt] = useState<GeneratedArt | null>(null);
   const [finalOrder, setFinalOrder] = useState<OrderDetails | null>(null);
@@ -58,13 +61,24 @@ export default function Home() {
     setStep(2);
   };
 
-  const handleArtMethodSelect = (method: 'ai' | 'upload' | 'draw') => {
+  const handleArtMethodSelect = (method: 'ai' | 'upload' | 'draw' | 'plain') => {
     setArtMethod(method);
     // Reset subsequent steps when method changes
     setGeneratedArt(null);
     setArtComplexity(null);
     setFinalOrder(null);
-    setStep(3);
+
+    if (method === 'plain') {
+      const plainArt: GeneratedArt = { id: 'plain-art', imageUrl: PLAIN_ART_IMAGE, prompt: 'Copo Liso' };
+      const plainComplexity = { score: 0, reasoning: 'Nenhuma arte aplicada.' };
+      
+      setGeneratedArt(plainArt);
+      setEventDescription('Copo Liso');
+      setArtComplexity(plainComplexity);
+      setStep(5);
+    } else {
+      setStep(3);
+    }
   };
 
   const handleArtReady = (imageUrl: string, prompt: string) => {
@@ -124,7 +138,12 @@ export default function Home() {
   const handleStepClick = (stepNumber: number) => {
     // Only allow navigating to a step if the previous one has been completed.
     if (isStepCompleted(stepNumber - 1)) {
-      setStep(stepNumber);
+      if (artMethod === 'plain' && (stepNumber === 3 || stepNumber === 4)) {
+        // If user has a plain cup and tries to go to art steps, redirect them to method selection
+        setStep(2);
+      } else {
+        setStep(stepNumber);
+      }
     }
   };
 
@@ -139,10 +158,10 @@ export default function Home() {
       case 2:
         return <ArtMethodSelector onSelect={handleArtMethodSelect} onGoBack={handleGoBack} />;
       case 3:
-        if (!selectedCup || !artMethod) return null; // Should not happen
+        if (!selectedCup || !artMethod || artMethod === 'plain') return null; // Should not happen
         return <EventForm cup={selectedCup} onArtReady={handleArtReady} onGoBack={handleGoBack} initialTab={artMethod} />;
       case 4:
-        if (!generatedArt || !selectedCup) return null; // Should not happen
+        if (!generatedArt || !selectedCup || artMethod === 'plain') return null; // Should not happen
         return <ArtGallery initialArt={generatedArt} cup={selectedCup} onSelectArt={handleSelectArt} onRegenerate={handleRegenerate} onGoBack={handleGoBack} />;
       case 5:
         if (!selectedCup || !generatedArt || !artComplexity) return null; // Should not happen

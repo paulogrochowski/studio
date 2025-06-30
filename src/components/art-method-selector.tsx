@@ -2,11 +2,11 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Brush, UploadCloud, Wand2 } from "lucide-react";
+import { ArrowLeft, Brush, UploadCloud, Wand2, Ban } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ArtMethodSelectorProps {
-  onSelect: (method: 'ai' | 'upload' | 'draw') => void;
+  onSelect: (method: 'ai' | 'upload' | 'draw' | 'plain') => void;
   onGoBack: () => void;
 }
 
@@ -29,19 +29,25 @@ const creationMethods = [
     title: 'Desenhar na Hora',
     description: 'Use nossa ferramenta de desenho para criar sua própria arte do zero, com total liberdade.',
   },
+  {
+    method: 'plain' as const,
+    icon: Ban,
+    title: 'Sem Arte (Copo Liso)',
+    description: 'Prossiga para o orçamento sem adicionar nenhuma arte personalizada ao copo.',
+  },
 ];
 
 export function ArtMethodSelector({ onSelect, onGoBack }: ArtMethodSelectorProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-3xl">2. Como você quer criar a arte?</CardTitle>
+        <CardTitle className="font-headline text-3xl">2. Como você quer personalizar o copo?</CardTitle>
         <CardDescription>
-          Escolha uma das opções abaixo para personalizar seu copo.
+          Escolha uma das opções abaixo. Você pode gerar uma arte com IA, enviar a sua, desenhar ou pedir o copo liso.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {creationMethods.map(({ method, icon: Icon, title, description }) => (
             <button
               key={method}
