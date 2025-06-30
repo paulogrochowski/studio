@@ -205,97 +205,13 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
         <CardHeader>
           <CardTitle className="font-headline text-3xl">4. Revise e Edite sua Arte</CardTitle>
           <CardDescription>
-            Esta é a arte para o seu copo. Você pode fazer ajustes, adicionar textos ou voltar para escolher outra.
+            Ajuste a arte, adicione textos ou refaça do zero. Suas modificações aparecerão ao lado em tempo real.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-          <div className="flex flex-col items-center gap-4">
-            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-secondary/50 shadow-inner">
-              <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain p-4" />
-              
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div 
-                      className="border-2 border-dashed border-primary/50"
-                      style={{ 
-                          width: `${cup.printableArea?.widthPercent ?? 90}%`, 
-                          height: `${cup.printableArea?.heightPercent ?? 90}%`
-                      }}
-                  />
-              </div>
-              
-              <div className="absolute inset-0 p-4">
-                {texts.map(text => {
-                  const scaledSize = text.size * (previewWidth / 500);
-                  return (
-                    <div
-                        key={text.id}
-                        className={cn(
-                          "absolute pointer-events-auto cursor-pointer p-1 border border-transparent hover:border-dashed hover:border-primary/50",
-                          selectedTextId === text.id && "border-primary border-dashed"
-                        )}
-                        style={{
-                          top: `${text.y}%`,
-                          left: `${text.x}%`,
-                          transform: `translate(-50%, -50%) rotate(${text.rotation}deg) scale(${text.scale})`,
-                        }}
-                        onClick={() => setSelectedTextId(text.id)}
-                      >
-                        <div
-                          className="pointer-events-none"
-                          style={{
-                            color: text.color,
-                            fontSize: `${scaledSize}px`,
-                            lineHeight: 1.2,
-                            fontFamily: 'Alegreya, serif',
-                            fontWeight: 'bold',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {text.text}
-                        </div>
-                      </div>
-                  );
-                })}
-              </div>
-
-              <div 
-                className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none"
-                style={{ backgroundImage: `url(${cup.imageUrl})`}}
-              ></div>
-            </div>
-            <div className="space-y-2 w-full">
-              <div className="flex items-center gap-2">
-                  <Label>Histórico de Versões</Label>
-                  <Tooltip>
-                      <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                          <p>Todas as versões da sua arte são salvas aqui. Clique em uma para editar.</p>
-                      </TooltipContent>
-                  </Tooltip>
-              </div>
-              <ScrollArea className="w-full whitespace-nowrap rounded-lg border">
-                <div className="flex space-x-2 p-2">
-                  {history.map((art, index) => (
-                    <button
-                      key={art.id}
-                      onClick={() => selectArtFromHistory(index)}
-                      className={cn(
-                          "relative h-20 w-20 shrink-0 cursor-pointer rounded-md overflow-hidden ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          selectedIndex === index && "ring-2 ring-primary"
-                      )}
-                    >
-                      <Image src={art.imageUrl} alt={`Versão ${index + 1}`} fill className="object-contain bg-white p-1" />
-                    </button>
-                  ))}
-                </div>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </div>
-          </div>
+          {/* Coluna da Esquerda: Controles de Edição */}
           <div className="space-y-6">
-            <Tabs defaultValue="text" className="w-full">
+            <Tabs defaultValue="refine" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
                 <Tooltip><TooltipTrigger asChild><TabsTrigger value="refine"><Wand2 /></TabsTrigger></TooltipTrigger><TooltipContent><p>Ajuste Fino com IA</p></TooltipContent></Tooltip>
                 <Tooltip><TooltipTrigger asChild><TabsTrigger value="text"><Type /></TabsTrigger></TooltipTrigger><TooltipContent><p>Adicionar/Remover Texto</p></TooltipContent></Tooltip>
@@ -439,6 +355,95 @@ export function ArtGallery({ initialArt, cup, onSelectArt, onRegenerate, onGoBac
                     <TooltipContent><p>Baixa a imagem final com seus textos em PNG.</p></TooltipContent>
                   </Tooltip>
               </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2 w-full">
+              <div className="flex items-center gap-2">
+                  <Label>Histórico de Versões</Label>
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <p>Todas as versões da sua arte são salvas aqui. Clique em uma para editar.</p>
+                      </TooltipContent>
+                  </Tooltip>
+              </div>
+              <ScrollArea className="w-full whitespace-nowrap rounded-lg border">
+                <div className="flex space-x-2 p-2">
+                  {history.map((art, index) => (
+                    <button
+                      key={art.id}
+                      onClick={() => selectArtFromHistory(index)}
+                      className={cn(
+                          "relative h-20 w-20 shrink-0 cursor-pointer rounded-md overflow-hidden ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          selectedIndex === index && "ring-2 ring-primary"
+                      )}
+                    >
+                      <Image src={art.imageUrl} alt={`Versão ${index + 1}`} fill className="object-contain bg-white p-1" />
+                    </button>
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </div>
+          </div>
+          {/* Coluna da Direita: Visualização */}
+          <div className="flex flex-col items-center gap-4 md:sticky md:top-24">
+            <div ref={previewContainerRef} className="relative w-full aspect-square rounded-lg overflow-hidden border bg-secondary/50 shadow-inner">
+              <Image src={currentArt.imageUrl} alt="Arte para o copo" fill className="object-contain p-4" />
+              
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div 
+                      className="border-2 border-dashed border-primary/50"
+                      style={{ 
+                          width: `${cup.printableArea?.widthPercent ?? 90}%`, 
+                          height: `${cup.printableArea?.heightPercent ?? 90}%`
+                      }}
+                  />
+              </div>
+              
+              <div className="absolute inset-0 p-4">
+                {texts.map(text => {
+                  const scaledSize = text.size * (previewWidth / 500);
+                  return (
+                    <div
+                        key={text.id}
+                        className={cn(
+                          "absolute pointer-events-auto cursor-pointer p-1 border border-transparent hover:border-dashed hover:border-primary/50",
+                          selectedTextId === text.id && "border-primary border-dashed"
+                        )}
+                        style={{
+                          top: `${text.y}%`,
+                          left: `${text.x}%`,
+                          transform: `translate(-50%, -50%) rotate(${text.rotation}deg) scale(${text.scale})`,
+                        }}
+                        onClick={() => setSelectedTextId(text.id)}
+                      >
+                        <div
+                          className="pointer-events-none"
+                          style={{
+                            color: text.color,
+                            fontSize: `${scaledSize}px`,
+                            lineHeight: 1.2,
+                            fontFamily: 'Alegreya, serif',
+                            fontWeight: 'bold',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {text.text}
+                        </div>
+                      </div>
+                  );
+                })}
+              </div>
+
+              <div 
+                className="absolute inset-0 bg-no-repeat bg-contain bg-center opacity-20 pointer-events-none"
+                style={{ backgroundImage: `url(${cup.imageUrl})`}}
+              ></div>
             </div>
           </div>
         </CardContent>
