@@ -1,15 +1,14 @@
 'use server';
 
-import { generateCupArt } from '@/ai/flows/generate-cup-art';
-import { analyzeArtComplexity } from '@/ai/flows/analyze-art-complexity';
-import { validateImageBackground } from '@/ai/flows/validate-image-background';
+import { editImage } from '@/ai/flows/generate-cup-art'; // path is old, but functions are new
 import { z } from 'zod';
 
-const eventFormSchema = z.object({
-  eventDescription: z.string().min(10, "Por favor, descreva seu evento com mais detalhes."),
+const editImageFormSchema = z.object({
+  baseImage: z.string().min(1, "Please upload an image."),
+  instruction: z.string().min(3, "Please provide a valid edit instruction."),
 });
 
-type ArtGenerationResult = {
+type EditImageResult = {
   success: true;
   imageUrl: string;
 } | {
@@ -17,73 +16,35 @@ type ArtGenerationResult = {
   error: string;
 };
 
-export async function handleArtGeneration(cupModelName: string, prevState: any, formData: FormData): Promise<ArtGenerationResult> {
-  const validatedFields = eventFormSchema.safeParse({
-    eventDescription: formData.get('eventDescription'),
+export async function handleImageEdit(prevState: any, formData: FormData): Promise<EditImageResult> {
+  const validatedFields = editImageFormSchema.safeParse({
+    baseImage: formData.get('baseImage'),
+    instruction: formData.get('instruction'),
   });
 
   if (!validatedFields.success) {
-    return { success: false, error: "Dados inválidos." };
+    return { 
+      success: false, 
+      error: validatedFields.error.errors.map(e => e.message).join(', ') 
+    };
   }
   
-  const { eventDescription } = validatedFields.data;
+  const { baseImage: baseImageDataUri, instruction } = validatedFields.data;
 
   try {
-    const result = await generateCupArt({ 
-      cupModel: cupModelName, 
-      eventDescription 
+    const result = await editImage({ 
+      baseImageDataUri, 
+      instruction 
     });
     
-    if (!result.generatedArt) {
-      return { success: false, error: "A IA não conseguiu gerar uma arte. Tente novamente com uma descrição diferente." };
+    if (!result.editedImage) {
+      return { success: false, error: "The AI failed to return an image. Please try a different instruction." };
     }
 
-    return { success: true, imageUrl: result.generatedArt };
+    return { success: true, imageUrl: result.editedImage };
   } catch (error) {
     console.error(error);
-    return { success: false, error: "Ocorreu um erro ao gerar a arte. Tente novamente." };
-  }
-}
-
-
-type ArtAnalysisResult = {
-  success: true;
-  complexityScore: number;
-  reasoning: string;
-} | {
-  success: false;
-  error: string;
-};
-
-export async function handleArtAnalysis(artDataUri: string, description: string): Promise<ArtAnalysisResult> {
-  try {
-    const result = await analyzeArtComplexity({ artDataUri, description });
-    return { success: true, complexityScore: result.complexityScore, reasoning: result.reasoning };
-  } catch (error) {
-    console.error(error);
-    return { success: false, error: "Ocorreu um erro ao analisar a arte." };
-  }
-}
-
-type ImageValidationResult = {
-  success: true;
-  isValid: boolean;
-  reasoning: string;
-} | {
-  success: false;
-  error: string;
-};
-
-export async function handleImageValidation(imageDataUri: string): Promise<ImageValidationResult> {
-  if (!imageDataUri) {
-    return { success: false, error: "Nenhuma imagem para validar." };
-  }
-  
-  try {
-    const result = await validateImageBackground({ imageDataUri });
-    return { success: true, isValid: result.hasValidBackground, reasoning: result.reasoning };
-  } catch (error) {
-    console.error(error);
-    return { success: false, error: "Ocorreu um erro ao validar a imagem." };
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred during image editing.";
+    return { success: false, error: errorMessage };
   }
 }
