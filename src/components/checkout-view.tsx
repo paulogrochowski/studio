@@ -12,6 +12,46 @@ interface CheckoutViewProps {
 }
 
 export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProps) {
+    const getDegradeHexColor = (colorName: string | undefined) => {
+        if (!colorName || colorName === 'Nenhum') return null;
+        const colors: { [key: string]: string } = {
+            'Rosa Pink': '#FF1493', 'Azul': '#4287f5', 'Verde': '#32a852',
+            'Laranja': '#FFA500', 'Vermelho': '#FF0000', 'Preto': '#000000',
+            'Prata': '#C0C0C0', 'Amarelo': '#FFFF00', 'Roxo': '#800080',
+            'Rose Gold': '#B76E79', 'Dourado': '#FFD700', 'Rosa Chiclete': '#FF69B4',
+            'Cobre': '#B87333',
+        };
+        return colors[colorName] || null;
+    }
+
+    const cupStyle: React.CSSProperties = {
+        WebkitMaskImage: `url(${orderDetails.cupModel.imageUrl})`,
+        maskImage: `url(${orderDetails.cupModel.imageUrl})`,
+        WebkitMaskSize: 'contain',
+        maskSize: 'contain',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center',
+    };
+
+    const degradeColorHex = getDegradeHexColor(orderDetails.cupModel.degradeColor);
+
+    if (degradeColorHex && orderDetails.cupModel.degradePosition && orderDetails.cupModel.degradePosition !== 'Nenhum') {
+        const direction = orderDetails.cupModel.degradePosition === 'Cima' ? 'to bottom' : 'to top';
+        const baseColor = 'rgba(255, 255, 255, 0.7)';
+        let gradient;
+        if (direction === 'to bottom') {
+            gradient = `linear-gradient(to bottom, ${degradeColorHex}, ${baseColor})`;
+        } else {
+            gradient = `linear-gradient(to top, ${degradeColorHex}, ${baseColor})`;
+        }
+        cupStyle.background = gradient;
+    } else {
+        cupStyle.backgroundColor = orderDetails.cupModel.colorHex;
+        cupStyle.opacity = orderDetails.cupModel.opacityType === 'Transparente' ? 0.75 : 1.0;
+    }
+
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader className="text-center">
@@ -43,24 +83,16 @@ export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProp
                 {/* Cup color shape */}
                 <div
                   className="absolute inset-0"
-                  style={{
-                    backgroundColor: orderDetails.cupModel.colorHex,
-                    opacity: orderDetails.cupModel.opacityType === 'Transparente' ? 0.75 : 1.0,
-                    WebkitMaskImage: `url(${orderDetails.cupModel.imageUrl})`,
-                    maskImage: `url(${orderDetails.cupModel.imageUrl})`,
-                    WebkitMaskSize: 'contain',
-                    maskSize: 'contain',
-                    WebkitMaskRepeat: 'no-repeat',
-                    maskRepeat: 'no-repeat',
-                    WebkitMaskPosition: 'center',
-                    maskPosition: 'center',
-                  }}
+                  style={cupStyle}
                 />
             </div>
             <div>
                 <p><strong>{orderDetails.quantity}x</strong> {orderDetails.cupModel.name}</p>
                 {orderDetails.cupModel.opacityType && (
                     <p className="text-sm text-muted-foreground">{orderDetails.cupModel.opacityType}</p>
+                )}
+                 {orderDetails.cupModel.degradeColor && orderDetails.cupModel.degradeColor !== 'Nenhum' && (
+                  <p className="text-sm text-muted-foreground">Degradê: {orderDetails.cupModel.degradeColor} ({orderDetails.cupModel.degradePosition})</p>
                 )}
                 {orderDetails.cupModel.rimColor && orderDetails.cupModel.rimColor !== 'Nenhuma' && (
                   <p className="text-sm text-muted-foreground">Borda: {orderDetails.cupModel.rimColor}</p>

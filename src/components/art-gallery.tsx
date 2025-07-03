@@ -16,6 +16,9 @@ import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/a
 import { useToast } from '@/hooks/use-toast';
 import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
 import { vectorizeImage } from '@/ai/flows/vectorize-image';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
 
 // Mock data - replace with your actual data fetching
 const LONG_DRINK_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCAxMjAiPjxwYXRoIGQ9Ik01LDAgSDU1IEw1MCwxMjAgSDEwIFoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
@@ -24,6 +27,23 @@ const CALDERETA_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy5
 
 const ALL_OPACITIES = ['Fosco', 'Transparente'] as const;
 const ALL_RIMS = ['Nenhuma', 'Dourado', 'Prata', 'Rosa Gold'] as const;
+
+const DEGRADE_COLORS = [
+    'Nenhum',
+    'Rosa Pink',
+    'Azul',
+    'Verde',
+    'Laranja',
+    'Vermelho',
+    'Preto',
+    'Prata',
+    'Amarelo',
+    'Roxo',
+    'Rose Gold',
+    'Dourado',
+    'Rosa Chiclete',
+    'Cobre',
+];
 
 const CUP_CATALOG: CupModel[] = [
     // Long Drink
@@ -93,6 +113,9 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
     const { opacities, rims } = getAvailableCupOptions(selectedCupName);
     const [selectedOpacity, setSelectedOpacity] = useState(opacities[0]);
     const [selectedRim, setSelectedRim] = useState(rims[0]);
+    const [selectedDegradeColor, setSelectedDegradeColor] = useState('Nenhum');
+    const [selectedDegradePosition, setSelectedDegradePosition] = useState<'Nenhum' | 'Cima' | 'Baixo'>('Nenhum');
+
 
     // Art State
     const [art, setArt] = useState<GeneratedArt | null>(null);
@@ -102,11 +125,17 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
     // Final Order State
     const [finalOrder, setFinalOrder] = useState<OrderDetails | null>(null);
 
-    const activeCupModel = CUP_CATALOG.find(c =>
+    const baseCupModel = CUP_CATALOG.find(c =>
         c.name === selectedCupName &&
         c.opacityType === selectedOpacity &&
         c.rimColor === selectedRim
     ) || CUP_CATALOG.find(c => c.name === selectedCupName)!;
+
+    const activeCupModel: CupModel = {
+        ...baseCupModel,
+        degradeColor: selectedDegradeColor,
+        degradePosition: selectedDegradePosition,
+    };
 
     const handleGenerateArt = () => {
         if (!artPrompt) {
@@ -186,19 +215,15 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
         setView('editor');
     };
 
-    const getRimHexColor = (rimColor: CupModel['rimColor']) => {
-        switch (rimColor) {
-            case 'Dourado':
-                return '#FFD700'; // Gold
-            case 'Prata':
-                return '#C0C0C0'; // Silver
-            case 'Rosa Gold':
-                return '#E6C4C0'; // A light rose gold
-            default:
-                return 'transparent';
+    const handleDegradeColorChange = (color: string) => {
+        setSelectedDegradeColor(color);
+        if (color !== 'Nenhum' && selectedDegradePosition === 'Nenhum') {
+            setSelectedDegradePosition('Cima'); // Default to top
         }
-    };
-
+        if (color === 'Nenhum') {
+            setSelectedDegradePosition('Nenhum');
+        }
+    }
 
     if (view === 'checkout' && finalOrder) {
         return <CheckoutView orderDetails={finalOrder} onStartNewOrder={resetFlow} />;
@@ -219,72 +244,114 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
         );
     }
     
-    const PreviewCard = () => (
-         <Card className="lg:sticky lg:top-24">
-            <CardHeader>
-                <CardTitle>Pré-visualização</CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center p-4 min-h-[400px] md:min-h-[500px] bg-muted/50 rounded-lg checkerboard">
-                 <div className="relative w-56 h-56 sm:w-64 sm:h-64">
-                     {/* Cup Render */}
-                     <div
-                        className="absolute inset-0"
-                        style={{
-                          backgroundColor: activeCupModel.colorHex,
-                          opacity: activeCupModel.opacityType === 'Transparente' ? 0.75 : 1.0,
-                          WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
-                          maskImage: `url(${activeCupModel.imageUrl})`,
-                          WebkitMaskSize: 'contain',
-                          maskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat',
-                          maskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center',
-                          maskPosition: 'center',
-                        }}
-                      />
-                      {activeCupModel.rimColor !== 'Nenhuma' && (
-                          <div
-                            className="absolute inset-0"
-                            style={{
-                              borderColor: getRimHexColor(activeCupModel.rimColor),
-                              borderTopWidth: '8px',
-                              WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
-                              maskImage: `url(${activeCupModel.imageUrl})`,
-                              WebkitMaskSize: 'contain',
-                              maskSize: 'contain',
-                              WebkitMaskRepeat: 'no-repeat',
-                              maskRepeat: 'no-repeat',
-                              WebkitMaskPosition: 'center',
-                              maskPosition: 'center',
-                            }}
-                          />
-                      )}
-                      {/* Art Render */}
-                      {art && (
+    const PreviewCard = () => {
+        const getRimHexColor = (rimColor: CupModel['rimColor']) => {
+            switch (rimColor) {
+                case 'Dourado': return '#FFD700';
+                case 'Prata': return '#C0C0C0';
+                case 'Rosa Gold': return '#E6C4C0';
+                default: return 'transparent';
+            }
+        };
+
+        const getDegradeHexColor = (colorName: string | undefined) => {
+            if (!colorName || colorName === 'Nenhum') return null;
+            const colors: { [key: string]: string } = {
+                'Rosa Pink': '#FF1493', 'Azul': '#4287f5', 'Verde': '#32a852',
+                'Laranja': '#FFA500', 'Vermelho': '#FF0000', 'Preto': '#000000',
+                'Prata': '#C0C0C0', 'Amarelo': '#FFFF00', 'Roxo': '#800080',
+                'Rose Gold': '#B76E79', 'Dourado': '#FFD700', 'Rosa Chiclete': '#FF69B4',
+                'Cobre': '#B87333',
+            };
+            return colors[colorName] || null;
+        }
+
+        const cupStyle: React.CSSProperties = {
+            WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
+            maskImage: `url(${activeCupModel.imageUrl})`,
+            WebkitMaskSize: 'contain',
+            maskSize: 'contain',
+            WebkitMaskRepeat: 'no-repeat',
+            maskRepeat: 'no-repeat',
+            WebkitMaskPosition: 'center',
+            maskPosition: 'center',
+        };
+    
+        const degradeColorHex = getDegradeHexColor(activeCupModel.degradeColor);
+    
+        if (degradeColorHex && activeCupModel.degradePosition && activeCupModel.degradePosition !== 'Nenhum') {
+            const direction = activeCupModel.degradePosition === 'Cima' ? 'to bottom' : 'to top';
+            const baseColor = 'rgba(255, 255, 255, 0.7)';
+            
+            let gradient;
+            if (direction === 'to bottom') {
+                gradient = `linear-gradient(to bottom, ${degradeColorHex}, ${baseColor})`;
+            } else {
+                gradient = `linear-gradient(to top, ${degradeColorHex}, ${baseColor})`;
+            }
+            cupStyle.background = gradient;
+        } else {
+            cupStyle.backgroundColor = activeCupModel.colorHex;
+            cupStyle.opacity = activeCupModel.opacityType === 'Transparente' ? 0.75 : 1.0;
+        }
+
+        return (
+            <Card className="lg:sticky lg:top-24">
+                <CardHeader>
+                    <CardTitle>Pré-visualização</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center p-4 min-h-[400px] md:min-h-[500px] bg-muted/50 rounded-lg checkerboard">
+                    <div className="relative w-56 h-56 sm:w-64 sm:h-64">
+                        {/* Cup Render */}
                         <div
-                          className="absolute"
-                          style={{
-                            top: `${art.y}%`,
-                            left: `${art.x}%`,
-                            width: `calc(${activeCupModel.printableArea?.widthPercent || 80}%)`,
-                            height: `calc(${activeCupModel.printableArea?.heightPercent || 40}%)`,
-                            transform: `translate(-50%, -50%) rotate(${art.rotation}deg)`,
-                          }}
-                        >
-                            <div className="relative w-full h-full">
-                                <Image src={art.imageUrl} alt="Arte gerada" fill className="object-contain" />
+                            className="absolute inset-0"
+                            style={cupStyle}
+                        />
+                        {activeCupModel.rimColor !== 'Nenhuma' && (
+                            <div
+                                className="absolute inset-0"
+                                style={{
+                                    borderColor: getRimHexColor(activeCupModel.rimColor),
+                                    borderTopWidth: '8px',
+                                    WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
+                                    maskImage: `url(${activeCupModel.imageUrl})`,
+                                    WebkitMaskSize: 'contain',
+                                    maskSize: 'contain',
+                                    WebkitMaskRepeat: 'no-repeat',
+                                    maskRepeat: 'no-repeat',
+                                    WebkitMaskPosition: 'center',
+                                    maskPosition: 'center',
+                                }}
+                            />
+                        )}
+                        {/* Art Render */}
+                        {art && (
+                            <div
+                                className="absolute"
+                                style={{
+                                    top: `${art.y}%`,
+                                    left: `${art.x}%`,
+                                    width: `calc(${activeCupModel.printableArea?.widthPercent || 80}%)`,
+                                    height: `calc(${activeCupModel.printableArea?.heightPercent || 40}%)`,
+                                    transform: `translate(-50%, -50%) rotate(${art.rotation}deg)`,
+                                }}
+                            >
+                                <div className="relative w-full h-full">
+                                    <Image src={art.imageUrl} alt="Arte gerada" fill className="object-contain" />
+                                </div>
                             </div>
-                        </div>
-                      )}
-                 </div>
-            </CardContent>
-            <CardFooter>
-                <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art || isGenerating || isVectorizing}>
-                     Aprovar Arte e ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
-                </Button>
-            </CardFooter>
-         </Card>
-    );
+                        )}
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art || isGenerating || isVectorizing}>
+                        Aprovar Arte e ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
+                    </Button>
+                </CardFooter>
+            </Card>
+        );
+    }
+
 
     return (
         <div>
@@ -296,11 +363,11 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 
-                {/* Preview Panel - Placed first for mobile order, sticky for desktop */}
-                <div className="lg:col-span-2 order-last lg:order-first">
-                     <div className="lg:hidden">
-                        <PreviewCard />
-                     </div>
+                <div className="lg:col-span-1 lg:order-last">
+                     <PreviewCard />
+                </div>
+
+                <div className="lg:col-span-2 order-first lg:order-first space-y-6">
                       <div className="space-y-6">
                         {/* Cup Customization */}
                         <Card>
@@ -328,6 +395,44 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                                                 {rim}
                                             </Button>
                                         ))}
+                                    </div>
+                                </div>
+                                <Separator />
+                                <div>
+                                    <Label className="font-bold">Degradê</Label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                        <div>
+                                            <Label htmlFor="degrade-color" className="text-sm">Cor</Label>
+                                            <Select value={selectedDegradeColor} onValueChange={handleDegradeColorChange}>
+                                                <SelectTrigger id="degrade-color">
+                                                    <SelectValue placeholder="Selecione uma cor" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {DEGRADE_COLORS.map(color => (
+                                                        <SelectItem key={color} value={color}>{color}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        {selectedDegradeColor !== 'Nenhum' && (
+                                            <div>
+                                                <Label className="text-sm">Posição</Label>
+                                                <RadioGroup
+                                                    value={selectedDegradePosition}
+                                                    onValueChange={(value) => setSelectedDegradePosition(value as any)}
+                                                    className="flex gap-4 mt-3"
+                                                >
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="Cima" id="pos-cima" />
+                                                        <Label htmlFor="pos-cima" className="font-normal">De Cima</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="Baixo" id="pos-baixo" />
+                                                        <Label htmlFor="pos-baixo" className="font-normal">De Baixo</Label>
+                                                    </div>
+                                                </RadioGroup>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </CardContent>
@@ -374,10 +479,6 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                         </Card>
                         )}
                     </div>
-                </div>
-
-                <div className="lg:col-span-1 hidden lg:block">
-                     <PreviewCard />
                 </div>
             </div>
         </div>

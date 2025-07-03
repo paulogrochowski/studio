@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import type { OrderDetails } from '@/lib/types';
+import type { OrderDetails, CupModel } from '@/lib/types';
 import Image from 'next/image';
 
 interface QuoteSummaryProps {
@@ -42,6 +42,46 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
     });
   }
 
+  const getDegradeHexColor = (colorName: string | undefined) => {
+    if (!colorName || colorName === 'Nenhum') return null;
+    const colors: { [key: string]: string } = {
+        'Rosa Pink': '#FF1493', 'Azul': '#4287f5', 'Verde': '#32a852',
+        'Laranja': '#FFA500', 'Vermelho': '#FF0000', 'Preto': '#000000',
+        'Prata': '#C0C0C0', 'Amarelo': '#FFFF00', 'Roxo': '#800080',
+        'Rose Gold': '#B76E79', 'Dourado': '#FFD700', 'Rosa Chiclete': '#FF69B4',
+        'Cobre': '#B87333',
+    };
+    return colors[colorName] || null;
+  }
+
+  const cupStyle: React.CSSProperties = {
+    WebkitMaskImage: `url(${initialDetails.cupModel.imageUrl})`,
+    maskImage: `url(${initialDetails.cupModel.imageUrl})`,
+    WebkitMaskSize: 'contain',
+    maskSize: 'contain',
+    WebkitMaskRepeat: 'no-repeat',
+    maskRepeat: 'no-repeat',
+    WebkitMaskPosition: 'center',
+    maskPosition: 'center',
+  };
+
+  const degradeColorHex = getDegradeHexColor(initialDetails.cupModel.degradeColor);
+
+  if (degradeColorHex && initialDetails.cupModel.degradePosition && initialDetails.cupModel.degradePosition !== 'Nenhum') {
+      const direction = initialDetails.cupModel.degradePosition === 'Cima' ? 'to bottom' : 'to top';
+      const baseColor = 'rgba(255, 255, 255, 0.7)';
+      let gradient;
+      if (direction === 'to bottom') {
+          gradient = `linear-gradient(to bottom, ${degradeColorHex}, ${baseColor})`;
+      } else {
+          gradient = `linear-gradient(to top, ${degradeColorHex}, ${baseColor})`;
+      }
+      cupStyle.background = gradient;
+  } else {
+      cupStyle.backgroundColor = initialDetails.cupModel.colorHex;
+      cupStyle.opacity = initialDetails.cupModel.opacityType === 'Transparente' ? 0.75 : 1.0;
+  }
+
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -58,18 +98,7 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
                 {/* Cup color shape */}
                 <div
                   className="absolute inset-0"
-                  style={{
-                    backgroundColor: initialDetails.cupModel.colorHex,
-                    opacity: initialDetails.cupModel.opacityType === 'Transparente' ? 0.75 : 1.0,
-                    WebkitMaskImage: `url(${initialDetails.cupModel.imageUrl})`,
-                    maskImage: `url(${initialDetails.cupModel.imageUrl})`,
-                    WebkitMaskSize: 'contain',
-                    maskSize: 'contain',
-                    WebkitMaskRepeat: 'no-repeat',
-                    maskRepeat: 'no-repeat',
-                    WebkitMaskPosition: 'center',
-                    maskPosition: 'center',
-                  }}
+                  style={cupStyle}
                 />
                 {/* Art */}
                  <div
@@ -78,6 +107,8 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
                         top: `${initialDetails.art.y}%`,
                         left: `${initialDetails.art.x}%`,
                         transform: `translate(-50%, -50%) rotate(${initialDetails.art.rotation}deg)`,
+                        width: `calc(${initialDetails.cupModel.printableArea?.widthPercent || 80}%)`,
+                        height: `calc(${initialDetails.cupModel.printableArea?.heightPercent || 40}%)`,
                     }}
                 >
                     <Image src={initialDetails.art.imageUrl} alt="Arte escolhida" fill className="object-contain" />
@@ -88,6 +119,9 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
               <h3 className="font-bold">{initialDetails.cupModel.name}</h3>
               {initialDetails.cupModel.opacityType && (
                 <p className="text-sm text-muted-foreground">{initialDetails.cupModel.opacityType}</p>
+              )}
+               {initialDetails.cupModel.degradeColor && initialDetails.cupModel.degradeColor !== 'Nenhum' && (
+                <p className="text-sm text-muted-foreground">Degradê: {initialDetails.cupModel.degradeColor} ({initialDetails.cupModel.degradePosition})</p>
               )}
               {initialDetails.cupModel.rimColor && initialDetails.cupModel.rimColor !== 'Nenhuma' && (
                 <p className="text-sm text-muted-foreground">Borda: {initialDetails.cupModel.rimColor}</p>

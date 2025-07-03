@@ -9,6 +9,8 @@ export interface CupModel {
   colorHex?: string;
   opacityType?: 'Fosco' | 'Transparente';
   rimColor?: 'Nenhuma' | 'Dourado' | 'Prata' | 'Rosa Gold';
+  degradeColor?: string;
+  degradePosition?: 'Nenhum' | 'Cima' | 'Baixo';
   printableArea?: {
     widthPercent: number;
     heightPercent: number;
