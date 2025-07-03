@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -152,6 +152,11 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     }
     
     const PreviewCard = () => {
+        const [rotation, setRotation] = useState(20);
+        const isDragging = useRef(false);
+        const dragStart = useRef(0);
+        const rotationStart = useRef(0);
+
         const getRimHexColor = (rimColor: CupModel['rimColor']) => RIM_COLORS[rimColor] || 'transparent';
 
         const degradeColorHex = activeCupModel.degradeColor ? DEGRADE_HEX_COLORS[activeCupModel.degradeColor] : null;
@@ -176,13 +181,40 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             overlayStyle.opacity = activeCupModel.opacityType === 'Transparente' ? 0.6 : 1.0;
         }
 
+        const handleInteractionStart = (clientX: number, currentRotation: number) => {
+            isDragging.current = true;
+            dragStart.current = clientX;
+            rotationStart.current = currentRotation;
+        };
+
+        const handleInteractionMove = (clientX: number) => {
+            if (!isDragging.current) return;
+            const deltaX = clientX - dragStart.current;
+            setRotation(rotationStart.current + deltaX * 0.5); // Sensitivity factor
+        };
+
+        const handleInteractionEnd = () => {
+            isDragging.current = false;
+        };
+
         return (
             <Card>
                 <CardHeader>
                     <CardTitle>Pré-visualização</CardTitle>
+                    <CardDescription>Clique e arraste para girar</CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center justify-center p-4 min-h-[400px] md:min-h-[500px] bg-muted/50 rounded-lg overflow-hidden">
-                    <div className="relative w-56 h-96 sm:w-64 sm:h-[426px] animate-cup-rotate" style={{ transformStyle: 'preserve-3d' }}>
+                    <div 
+                        className="relative w-56 h-96 sm:w-64 sm:h-[426px] cursor-grab active:cursor-grabbing"
+                        style={{ transform: `perspective(1000px) rotateY(${rotation}deg)`, transformStyle: 'preserve-3d' }}
+                        onMouseDown={(e) => handleInteractionStart(e.clientX, rotation)}
+                        onMouseMove={(e) => handleInteractionMove(e.clientX)}
+                        onMouseUp={handleInteractionEnd}
+                        onMouseLeave={handleInteractionEnd}
+                        onTouchStart={(e) => handleInteractionStart(e.touches[0].clientX, rotation)}
+                        onTouchMove={(e) => handleInteractionMove(e.touches[0].clientX)}
+                        onTouchEnd={handleInteractionEnd}
+                    >
                         
                         <Image src={activeCupModel.imageUrl} alt={activeCupModel.name} fill className="object-contain" data-ai-hint="white cup" />
 
@@ -242,11 +274,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 
-                <div className="lg:col-span-1 lg:order-last lg:sticky lg:top-24">
-                     <PreviewCard />
-                </div>
-
-                <div className="lg:col-span-2 space-y-6">
+                <div className="order-2 lg:order-1 lg:col-span-2 space-y-6">
                       <div className="space-y-6">
                         {/* Cup Customization */}
                         <Card>
@@ -381,6 +409,12 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                                 </Button>
                             </CardContent>
                         </Card>
+                    </div>
+                </div>
+
+                 <div className="order-1 lg:order-2 lg:col-span-1">
+                    <div className="sticky top-24">
+                        <PreviewCard />
                     </div>
                 </div>
             </div>
