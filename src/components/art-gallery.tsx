@@ -8,24 +8,28 @@ import { QuoteSummary } from './quote-summary';
 import { CheckoutView } from './checkout-view';
 import { Loader } from './loader';
 import { Separator } from './ui/separator';
-import { ArrowLeft, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowLeft, Brush, Sparkles } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
+import { vectorizeImage } from '@/ai/flows/vectorize-image';
 
 // Mock data - replace with your actual data fetching
 const LONG_DRINK_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCAxMjAiPjxwYXRoIGQ9Ik01LDAgSDU1IEw1MCwxMjAgSDEwIFoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
 const TWISTER_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MCAxNDAiPjxwYXRoIGQ9Ik0wIDEwaDcwdjE1SDB6TTEwIDMwaDUwbC01IDEwMEgxNXpNMzIgMGg2djEwaC02eiIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+';
 const CALDERETA_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCAxMDAiPjxwYXRoIGQ9Ik01LDAgSDc1IEw2NSwxMDAgSDE1IFoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
 
+const ALL_OPACITIES = ['Fosco', 'Transparente'] as const;
+const ALL_RIMS = ['Nenhuma', 'Dourado', 'Prata', 'Rosa Gold'] as const;
+
 const CUP_CATALOG: CupModel[] = [
     // Long Drink
     ...['Branco', 'Preto', 'Azul', 'Vermelho', 'Verde', 'Amarelo', 'Rosa', 'Roxo', 'Laranja'].flatMap(color =>
-        ['Opaco', 'Translúcido'].flatMap(opacity =>
-            ['Nenhuma', 'Dourada', 'Prateada'].map(rim => ({
+        ALL_OPACITIES.flatMap(opacity =>
+            ALL_RIMS.map(rim => ({
                 id: `long-drink-${color}-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
                 name: 'Copo Long Drink',
                 imageUrl: LONG_DRINK_SVG,
@@ -35,40 +39,40 @@ const CUP_CATALOG: CupModel[] = [
                     'Branco': '#FFFFFF', 'Preto': '#222222', 'Azul': '#0074D9', 'Vermelho': '#FF4136', 'Verde': '#2ECC40',
                     'Amarelo': '#FFDC00', 'Rosa': '#F012BE', 'Roxo': '#B10DC9', 'Laranja': '#FF851B'
                 }[color],
-                opacityType: opacity as 'Opaco' | 'Translúcido',
-                rimColor: rim as 'Nenhuma' | 'Dourada' | 'Prateada',
+                opacityType: opacity,
+                rimColor: rim,
                 printableArea: { widthPercent: 80, heightPercent: 40, width_mm: 50, height_mm: 80 },
             }))
         )
     ),
     // Twister
     ...['Branco', 'Preto', 'Azul', 'Vermelho', 'Verde'].flatMap(color =>
-        ['Opaco', 'Translúcido'].flatMap(opacity =>
-            ['Nenhuma', 'Dourada', 'Prateada'].map(rim => ({
+        ALL_OPACITIES.flatMap(opacity =>
+            ALL_RIMS.map(rim => ({
                 id: `twister-${color}-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
                 name: 'Copo Twister com Tampa',
                 imageUrl: TWISTER_SVG,
                 basePrice: 4.80 + (rim !== 'Nenhuma' ? 0.90 : 0),
                 colorName: color,
                 colorHex: { 'Branco': '#FFFFFF', 'Preto': '#222222', 'Azul': '#0074D9', 'Vermelho': '#FF4136', 'Verde': '#2ECC40' }[color],
-                opacityType: opacity as 'Opaco' | 'Translúcido',
-                rimColor: rim as 'Nenhuma' | 'Dourada' | 'Prateada',
+                opacityType: opacity,
+                rimColor: rim,
                 printableArea: { widthPercent: 85, heightPercent: 35, width_mm: 55, height_mm: 90 },
             }))
         )
     ),
     // Caldereta
     ...['Branco', 'Preto', 'Transparente'].flatMap(color =>
-        ['Opaco', 'Translúcido'].flatMap(opacity =>
-            ['Nenhuma', 'Dourada', 'Prateada'].map(rim => ({
+        ALL_OPACITIES.flatMap(opacity =>
+            ALL_RIMS.map(rim => ({
                 id: `caldereta-${color}-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
                 name: 'Copo Caldereta',
                 imageUrl: CALDERETA_SVG,
                 basePrice: 3.20 + (rim !== 'Nenhuma' ? 0.70 : 0),
                 colorName: color,
                 colorHex: { 'Branco': '#FFFFFF', 'Preto': '#222222', 'Transparente': '#FFFFFF' }[color],
-                opacityType: (color === 'Transparente' ? 'Translúcido' : opacity) as 'Opaco' | 'Translúcido',
-                rimColor: rim as 'Nenhuma' | 'Dourada' | 'Prateada',
+                opacityType: (color === 'Transparente' ? 'Transparente' : opacity),
+                rimColor: rim,
                 printableArea: { widthPercent: 75, heightPercent: 50, width_mm: 60, height_mm: 70 },
             }))
         )
@@ -91,6 +95,7 @@ interface ArtGalleryProps {
 export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProps) {
     const { toast } = useToast();
     const [isGenerating, startGenerationTransition] = useTransition();
+    const [isVectorizing, startVectorizingTransition] = useTransition();
 
     const [view, setView] = useState<'editor' | 'quote' | 'checkout'>('editor');
 
@@ -135,9 +140,27 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                 const analysisResult = await handleArtAnalysis(result.imageUrl, artPrompt);
                 if (analysisResult.success && analysisResult.analysis) {
                     setAnalysis(analysisResult.analysis);
+                } else {
+                     toast({ variant: 'destructive', title: 'Erro na Análise', description: analysisResult.error });
                 }
             } else {
                 toast({ variant: 'destructive', title: 'Erro na Geração', description: result.error });
+            }
+        });
+    };
+
+    const handleVectorizeArt = () => {
+        if (!art) {
+            toast({ variant: 'destructive', title: 'Atenção', description: 'Gere uma arte primeiro.' });
+            return;
+        }
+        startVectorizingTransition(async () => {
+            const result = await vectorizeImage({ imageDataUri: art.imageUrl });
+            if (result.success && result.vectorizedImageDataUri) {
+                updateArtProperty({ imageUrl: result.vectorizedImageDataUri });
+                toast({ title: 'Sucesso', description: 'Sua arte foi vetorizada.' });
+            } else {
+                toast({ variant: 'destructive', title: 'Erro ao Vetorizar', description: result.error || 'Não foi possível vetorizar a arte.' });
             }
         });
     };
@@ -150,7 +173,7 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
 
     const handleGoToQuote = () => {
         if (!art || !analysis) {
-            toast({ variant: 'destructive', title: 'Atenção', description: 'Você precisa gerar uma arte antes de prosseguir.' });
+            toast({ variant: 'destructive', title: 'Atenção', description: 'Você precisa gerar e analisar uma arte antes de prosseguir.' });
             return;
         }
         setView('quote');
@@ -175,6 +198,20 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
         setView('editor');
     };
 
+    const getRimHexColor = (rimColor: CupModel['rimColor']) => {
+        switch (rimColor) {
+            case 'Dourado':
+                return '#FFD700'; // Gold
+            case 'Prata':
+                return '#C0C0C0'; // Silver
+            case 'Rosa Gold':
+                return '#E6C4C0'; // A light rose gold
+            default:
+                return 'transparent';
+        }
+    };
+
+
     if (view === 'checkout' && finalOrder) {
         return <CheckoutView orderDetails={finalOrder} onStartNewOrder={resetFlow} />;
     }
@@ -195,18 +232,18 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
     }
     
     const PreviewCard = () => (
-         <Card>
+         <Card className="lg:sticky lg:top-24">
             <CardHeader>
                 <CardTitle>Pré-visualização</CardTitle>
             </CardHeader>
-            <CardContent className="flex items-center justify-center p-4 min-h-[500px] bg-muted/50 rounded-lg">
-                 <div className="relative w-64 h-64">
+            <CardContent className="flex items-center justify-center p-4 min-h-[400px] md:min-h-[500px] bg-muted/50 rounded-lg checkerboard">
+                 <div className="relative w-56 h-56 sm:w-64 sm:h-64">
                      {/* Cup Render */}
                      <div
                         className="absolute inset-0"
                         style={{
                           backgroundColor: activeCupModel.colorHex,
-                          opacity: activeCupModel.opacityType === 'Translúcido' ? 0.75 : 1.0,
+                          opacity: activeCupModel.opacityType === 'Transparente' ? 0.75 : 1.0,
                           WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
                           maskImage: `url(${activeCupModel.imageUrl})`,
                           WebkitMaskSize: 'contain',
@@ -221,7 +258,7 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                           <div
                             className="absolute inset-0"
                             style={{
-                              borderColor: activeCupModel.rimColor === 'Dourada' ? '#FFD700' : '#C0C0C0',
+                              borderColor: getRimHexColor(activeCupModel.rimColor),
                               borderTopWidth: '8px',
                               WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
                               maskImage: `url(${activeCupModel.imageUrl})`,
@@ -237,16 +274,16 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                       {/* Art Render */}
                       {art && (
                         <div
-                          className="absolute w-full h-full"
+                          className="absolute"
                           style={{
                             top: `${art.y}%`,
                             left: `${art.x}%`,
+                            width: `calc(${activeCupModel.printableArea?.widthPercent || 80}%)`,
+                            height: `calc(${activeCupModel.printableArea?.heightPercent || 40}%)`,
                             transform: `translate(-50%, -50%) rotate(${art.rotation}deg)`,
-                            width: '100%',
-                            height: '100%',
                           }}
                         >
-                            <div className="relative w-full h-full flex items-center justify-center">
+                            <div className="relative w-full h-full">
                                 <Image src={art.imageUrl} alt="Arte gerada" fill className="object-contain" />
                             </div>
                         </div>
@@ -254,7 +291,7 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                  </div>
             </CardContent>
             <CardFooter>
-                <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art || isGenerating}>
+                <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art || isGenerating || isVectorizing}>
                      Aprovar Arte e ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
                 </Button>
             </CardFooter>
@@ -272,88 +309,97 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 
                 {/* Preview Panel - Placed first for mobile order, sticky for desktop */}
-                <div className="lg:col-span-2 lg:sticky top-24">
-                     <PreviewCard />
+                <div className="lg:col-span-2 order-last lg:order-first">
+                     <div className="lg:hidden">
+                        <PreviewCard />
+                     </div>
+                      <div className="space-y-6">
+                        {/* Cup Customization */}
+                        <Card>
+                            <CardHeader><CardTitle>1. Personalize o Copo</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <Label className="font-bold">Cor</Label>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {colors.map(color => (
+                                            <button key={color} onClick={() => setSelectedColor(color)} className="p-1 border-2 rounded-full transition-all" style={{ borderColor: selectedColor === color ? 'hsl(var(--primary))' : 'transparent' }}>
+                                                <div className="w-8 h-8 rounded-full border" style={{ backgroundColor: (CUP_CATALOG.find(c=>c.colorName === color)?.colorHex) }}></div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label className="font-bold">Acabamento</Label>
+                                    <div className="flex gap-2 mt-2">
+                                        {opacities.map(opacity => (
+                                            <Button key={opacity} variant={selectedOpacity === opacity ? 'secondary' : 'outline'} onClick={() => setSelectedOpacity(opacity)}>
+                                                {opacity === 'Transparente' ? <Sparkles className="mr-2" /> : <div className="w-4 h-4 mr-2 rounded-full bg-foreground" />}
+                                                {opacity}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label className="font-bold">Borda</Label>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {rims.map(rim => (
+                                            <Button key={rim} variant={selectedRim === rim ? 'secondary' : 'outline'} onClick={() => setSelectedRim(rim)}>
+                                                {rim === 'Dourado' && <div className="w-4 h-4 mr-2 rounded-full bg-yellow-500" />}
+                                                {rim === 'Prata' && <div className="w-4 h-4 mr-2 rounded-full bg-slate-400" />}
+                                                {rim === 'Rosa Gold' && <div className="w-4 h-4 mr-2 rounded-full bg-rose-400" />}
+                                                {rim}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Art Generation */}
+                        <Card>
+                            <CardHeader><CardTitle>2. Crie sua Arte</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                                <Textarea
+                                    placeholder="Ex: um leão com uma coroa, tema de safari, com a escrita 'Rei da festa'"
+                                    rows={4}
+                                    value={artPrompt}
+                                    onChange={(e) => setArtPrompt(e.target.value)}
+                                />
+                                <Button onClick={handleGenerateArt} disabled={isGenerating || isVectorizing} className="w-full">
+                                    {isGenerating ? <Loader message="Gerando..." /> : <Sparkles />}
+                                    Gerar Arte com IA
+                                </Button>
+                            </CardContent>
+                        </Card>
+
+                        {/* Toolbar */}
+                        {art && (
+                        <Card>
+                            <CardHeader><CardTitle>3. Edite a Arte</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="x-pos">Posição (X, Y)</Label>
+                                    <div className="flex gap-2">
+                                        <Input id="x-pos" type="number" value={art.x} onChange={e => updateArtProperty({ x: parseInt(e.target.value, 10) })} />
+                                        <Input id="y-pos" type="number" value={art.y} onChange={e => updateArtProperty({ y: parseInt(e.target.value, 10) })} />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="rotation-slider">Rotação (graus)</Label>
+                                    <Input id="rotation-slider" type="number" value={art.rotation} onChange={e => updateArtProperty({ rotation: parseInt(e.target.value, 10) || 0 })} min={-180} max={180} step={1} />
+                                </div>
+                                <Button onClick={handleVectorizeArt} disabled={isVectorizing || isGenerating} variant="outline" className="w-full">
+                                    {isVectorizing ? <Loader message="Vetorizando..." /> : <Brush />}
+                                    Vetorizar Arte
+                                </Button>
+                            </CardContent>
+                        </Card>
+                        )}
+                    </div>
                 </div>
 
-                {/* Controls Panel */}
-                <div className="lg:col-span-1 space-y-6">
-                    {/* Cup Customization */}
-                    <Card>
-                        <CardHeader><CardTitle>1. Personalize o Copo</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <Label className="font-bold">Cor</Label>
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                    {colors.map(color => (
-                                        <button key={color} onClick={() => setSelectedColor(color)} className="p-1 border-2 rounded-full transition-all" style={{ borderColor: selectedColor === color ? 'hsl(var(--primary))' : 'transparent' }}>
-                                            <div className="w-8 h-8 rounded-full border" style={{ backgroundColor: (CUP_CATALOG.find(c=>c.colorName === color)?.colorHex) }}></div>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <Label className="font-bold">Acabamento</Label>
-                                <div className="flex gap-2 mt-2">
-                                     {opacities.map(opacity => (
-                                        <Button key={opacity} variant={selectedOpacity === opacity ? 'secondary' : 'outline'} onClick={() => setSelectedOpacity(opacity)}>
-                                            {opacity === 'Translúcido' ? <Sparkles className="mr-2" /> : <div className="w-4 h-4 mr-2 rounded-full bg-foreground" />}
-                                            {opacity}
-                                        </Button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <Label className="font-bold">Borda</Label>
-                                 <div className="flex gap-2 mt-2">
-                                     {rims.map(rim => (
-                                        <Button key={rim} variant={selectedRim === rim ? 'secondary' : 'outline'} onClick={() => setSelectedRim(rim)}>
-                                            {rim === 'Dourada' && <div className="w-4 h-4 mr-2 rounded-full bg-yellow-500" />}
-                                            {rim === 'Prateada' && <div className="w-4 h-4 mr-2 rounded-full bg-slate-400" />}
-                                            {rim}
-                                        </Button>
-                                    ))}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Art Generation */}
-                    <Card>
-                         <CardHeader><CardTitle>2. Crie sua Arte</CardTitle></CardHeader>
-                         <CardContent className="space-y-4">
-                            <Textarea
-                                placeholder="Ex: um leão com uma coroa, tema de safari"
-                                rows={4}
-                                value={artPrompt}
-                                onChange={(e) => setArtPrompt(e.target.value)}
-                            />
-                            <Button onClick={handleGenerateArt} disabled={isGenerating} className="w-full">
-                                {isGenerating ? <Loader className="h-4 w-4" /> : <Wand2 />}
-                                Gerar Arte com IA
-                            </Button>
-                         </CardContent>
-                    </Card>
-
-                    {/* Toolbar */}
-                    {art && (
-                       <Card>
-                         <CardHeader><CardTitle>3. Edite a Arte</CardTitle></CardHeader>
-                         <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="x-pos">Posição (X, Y)</Label>
-                                <div className="flex gap-2">
-                                    <Input id="x-pos" type="number" value={art.x} onChange={e => updateArtProperty({ x: parseInt(e.target.value, 10) })} />
-                                    <Input id="y-pos" type="number" value={art.y} onChange={e => updateArtProperty({ y: parseInt(e.target.value, 10) })} />
-                                </div>
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="rotation-slider">Rotação (graus)</Label>
-                                <Input id="rotation-slider" type="number" value={art.rotation} onChange={e => updateArtProperty({ rotation: parseInt(e.target.value, 10) || 0 })} min={-180} max={180} step={1} />
-                            </div>
-                         </CardContent>
-                       </Card>
-                    )}
+                <div className="lg:col-span-1 hidden lg:block">
+                     <PreviewCard />
                 </div>
             </div>
         </div>

@@ -7,8 +7,8 @@ export interface CupModel {
   'data-ai-hint'?: string;
   colorName?: string;
   colorHex?: string;
-  opacityType?: 'Opaco' | 'Translúcido';
-  rimColor?: 'Nenhuma' | 'Dourada' | 'Prateada';
+  opacityType?: 'Fosco' | 'Transparente';
+  rimColor?: 'Nenhuma' | 'Dourado' | 'Prata' | 'Rosa Gold';
   printableArea?: {
     widthPercent: number;
     heightPercent: number;
