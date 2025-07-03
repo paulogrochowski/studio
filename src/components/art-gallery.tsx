@@ -20,6 +20,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CUP_CATALOG, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/lib/cup-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
+import { Slider } from './ui/slider';
 
 
 const getAvailableCupOptions = (cupName: string) => {
@@ -74,7 +75,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             return;
         }
         startGenerationTransition(async () => {
-            const result = await handleArtGeneration(activeCupModel.name, artPrompt);
+            const result = await handleArtGeneration(artPrompt);
             if (result.success && result.imageUrl) {
                 const artData: GeneratedArt = {
                     id: `art-${Date.now()}`,
@@ -83,6 +84,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                     x: 50,
                     y: 50,
                     rotation: 0,
+                    scale: 1,
                 };
                 setArt(artData);
                 const analysisResult = await handleArtAnalysis(result.imageUrl, artPrompt);
@@ -237,13 +239,13 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                         {/* Art Render */}
                         {art && (
                             <div
-                                className="absolute"
+                                className="absolute transition-all"
                                 style={{
                                     top: `${art.y}%`,
                                     left: `${art.x}%`,
                                     width: `calc(${activeCupModel.printableArea?.widthPercent || 80}%)`,
                                     height: `calc(${activeCupModel.printableArea?.heightPercent || 40}%)`,
-                                    transform: `translate(-50%, -50%) rotate(${art.rotation}deg)`,
+                                    transform: `translate(-50%, -50%) rotate(${art.rotation}deg) scale(${art.scale || 1})`,
                                 }}
                             >
                                 <div className="relative w-full h-full">
@@ -423,9 +425,13 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                                         <Input id="y-pos" type="number" value={art.y} onChange={e => updateArtProperty({ y: parseInt(e.target.value, 10) })} />
                                     </div>
                                 </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="scale-slider">Tamanho ({art.scale.toFixed(2)}x)</Label>
+                                    <Slider id="scale-slider" value={[art.scale]} onValueChange={value => updateArtProperty({ scale: value[0] })} min={0.2} max={2} step={0.05} />
+                                </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="rotation-slider">Rotação (graus)</Label>
-                                    <Input id="rotation-slider" type="number" value={art.rotation} onChange={e => updateArtProperty({ rotation: parseInt(e.target.value, 10) || 0 })} min={-180} max={180} step={1} />
+                                    <Label htmlFor="rotation-slider">Rotação ({art.rotation}°)</Label>
+                                    <Slider id="rotation-slider" value={[art.rotation]} onValueChange={value => updateArtProperty({ rotation: value[0] })} min={-180} max={180} step={1} />
                                 </div>
                                 <Button onClick={handleVectorizeArt} disabled={isVectorizing || isGenerating} variant="outline" className="w-full">
                                     {isVectorizing ? <Loader message="Vetorizando..." /> : <Brush />}

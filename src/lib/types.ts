@@ -27,6 +27,7 @@ export interface GeneratedArt {
   x: number;
   y: number;
   rotation: number;
+  scale: number;
 }
 
 export interface OrderDetails {

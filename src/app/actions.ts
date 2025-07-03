@@ -7,9 +7,9 @@ import { refineCupArt } from '@/ai/flows/refine-cup-art';
 import { validateImageBackground } from '@/ai/flows/validate-image-background';
 
 
-export async function handleArtGeneration(cupName: string, prompt: string) {
+export async function handleArtGeneration(prompt: string) {
   try {
-    const result = await generateCupArt({ cupName, eventDescription: prompt });
+    const result = await generateCupArt({ eventDescription: prompt });
     return { success: true, imageUrl: result.imageUrl };
   } catch (error) {
     console.error(error);

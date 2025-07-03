@@ -12,7 +12,6 @@ import {z} from 'genkit';
 
 const GenerateCupArtInputSchema = z.object({
   eventDescription: z.string().describe('A descrição detalhada do evento e da arte desejada.'),
-  cupName: z.string().describe('O nome do modelo do copo para contextualizar o tamanho e formato da arte.'),
 });
 export type GenerateCupArtInput = z.infer<typeof GenerateCupArtInputSchema>;
 
@@ -36,9 +35,11 @@ const generateCupArtFlow = ai.defineFlow(
     outputSchema: GenerateCupArtOutputSchema,
   },
   async (input) => {
+    const fullPrompt = `Gere uma arte vetorial/clipart com base na seguinte descrição: "${input.eventDescription}". A arte deve ter um fundo transparente e ser adequada para impressão em um copo. Não inclua o formato do copo na imagem.`;
+    
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: `Crie uma arte para um copo personalizado do modelo "${input.cupName}". A arte deve ter um fundo transparente. A descrição do evento é: "${input.eventDescription}".`,
+      prompt: fullPrompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },
