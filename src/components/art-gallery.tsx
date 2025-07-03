@@ -197,6 +197,53 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             isDragging.current = false;
         };
 
+        const ArtCylinder = ({ art }: { art: GeneratedArt }) => {
+            const NUM_FACES = 20;
+            // These values are tuned to approximate the printable area of the cup model
+            const faceWidth = 35; // width of each cylinder face in px
+            const radius = 55; // calculated radius for the cylinder
+            const totalTextureWidth = faceWidth * NUM_FACES;
+
+            return (
+                <div
+                    className="absolute"
+                    style={{
+                        top: `${art.y}%`,
+                        left: `${art.x}%`,
+                        width: `calc(${activeCupModel.printableArea?.widthPercent || 80}%)`,
+                        height: `calc(${activeCupModel.printableArea?.heightPercent || 40}%)`,
+                        transform: `translate(-50%, -50%) scale(${art.scale || 1})`,
+                        transformStyle: 'preserve-3d',
+                    }}
+                >
+                    <div className="w-full h-full" style={{ transformStyle: 'preserve-3d' }}>
+                        {Array.from({ length: NUM_FACES }).map((_, i) => {
+                            const angle = i * (360 / NUM_FACES);
+                            const backgroundPositionX = -i * faceWidth;
+
+                            return (
+                                <div
+                                    key={i}
+                                    style={{
+                                        position: 'absolute',
+                                        width: `${faceWidth}px`,
+                                        height: '100%',
+                                        left: `calc(50% - ${faceWidth / 2}px)`,
+                                        backgroundImage: `url(${art.imageUrl})`,
+                                        backgroundSize: `${totalTextureWidth}px 100%`,
+                                        backgroundPosition: `${backgroundPositionX}px 0`,
+                                        transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
+                                        backfaceVisibility: 'hidden',
+                                    }}
+                                />
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+
         return (
             <Card>
                 <CardHeader>
@@ -243,22 +290,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                             />
                         )}
                         {/* Art Render */}
-                        {art && (
-                            <div
-                                className="absolute transition-all"
-                                style={{
-                                    top: `${art.y}%`,
-                                    left: `${art.x}%`,
-                                    width: `calc(${activeCupModel.printableArea?.widthPercent || 80}%)`,
-                                    height: `calc(${activeCupModel.printableArea?.heightPercent || 40}%)`,
-                                    transform: `translate(-50%, -50%) rotate(${art.rotation}deg) scale(${art.scale || 1})`,
-                                }}
-                            >
-                                <div className="relative w-full h-full">
-                                    <Image src={art.imageUrl} alt="Arte gerada" fill className="object-contain" />
-                                </div>
-                            </div>
-                        )}
+                        {art && <ArtCylinder art={art} />}
                     </div>
                 </CardContent>
             </Card>
