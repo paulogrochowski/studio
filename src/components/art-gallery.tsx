@@ -283,14 +283,34 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                             <CardContent className="space-y-4">
                                 <div>
                                     <Label className="font-bold">Cor</Label>
-                                    <div className="flex gap-2 mt-2">
-                                        {opacities.map(opacity => (
-                                            <Button key={opacity} variant={selectedOpacity === opacity ? 'secondary' : 'outline'} onClick={() => setSelectedOpacity(opacity)}>
-                                                {opacity === 'Transparente' ? <Sparkles className="mr-2" /> : <div className="w-4 h-4 mr-2 rounded-full bg-foreground" />}
-                                                {opacity}
-                                            </Button>
-                                        ))}
-                                    </div>
+                                    <TooltipProvider>
+                                        <div className="flex flex-wrap gap-3 mt-2">
+                                            {opacities.map(opacity => (
+                                                <Tooltip key={opacity}>
+                                                    <TooltipTrigger asChild>
+                                                        <button
+                                                            onClick={() => setSelectedOpacity(opacity)}
+                                                            className={cn(
+                                                                "relative w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all overflow-hidden",
+                                                                selectedOpacity === opacity ? 'border-primary ring-2 ring-primary ring-offset-2 ring-offset-background' : 'border-muted hover:border-foreground/50'
+                                                            )}
+                                                        >
+                                                            {opacity === 'Fosco' && (
+                                                                <div className="w-full h-full bg-foreground/20"></div>
+                                                            )}
+                                                            {opacity === 'Transparente' && (
+                                                                <div className="w-full h-full checkerboard"></div>
+                                                            )}
+                                                            {selectedOpacity === opacity && <Check className="absolute h-5 w-5 text-primary-foreground mix-blend-difference" />}
+                                                        </button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{opacity}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            ))}
+                                        </div>
+                                    </TooltipProvider>
                                 </div>
                                 <div>
                                     <Label className="font-bold">Borda</Label>
