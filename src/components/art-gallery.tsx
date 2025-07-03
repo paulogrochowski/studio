@@ -27,64 +27,54 @@ const ALL_RIMS = ['Nenhuma', 'Dourado', 'Prata', 'Rosa Gold'] as const;
 
 const CUP_CATALOG: CupModel[] = [
     // Long Drink
-    ...['Branco', 'Preto', 'Azul', 'Vermelho', 'Verde', 'Amarelo', 'Rosa', 'Roxo', 'Laranja'].flatMap(color =>
-        ALL_OPACITIES.flatMap(opacity =>
-            ALL_RIMS.map(rim => ({
-                id: `long-drink-${color}-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
-                name: 'Copo Long Drink',
-                imageUrl: LONG_DRINK_SVG,
-                basePrice: 3.50 + (rim !== 'Nenhuma' ? 0.75 : 0),
-                colorName: color,
-                colorHex: {
-                    'Branco': '#FFFFFF', 'Preto': '#222222', 'Azul': '#0074D9', 'Vermelho': '#FF4136', 'Verde': '#2ECC40',
-                    'Amarelo': '#FFDC00', 'Rosa': '#F012BE', 'Roxo': '#B10DC9', 'Laranja': '#FF851B'
-                }[color],
-                opacityType: opacity,
-                rimColor: rim,
-                printableArea: { widthPercent: 80, heightPercent: 40, width_mm: 50, height_mm: 80 },
-            }))
-        )
+    ...ALL_OPACITIES.flatMap(opacity =>
+        ALL_RIMS.map(rim => ({
+            id: `long-drink-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
+            name: 'Copo Long Drink',
+            imageUrl: LONG_DRINK_SVG,
+            basePrice: 3.50 + (rim !== 'Nenhuma' ? 0.75 : 0),
+            colorName: 'Branco', // Default for preview
+            colorHex: '#FFFFFF', // Default for preview
+            opacityType: opacity,
+            rimColor: rim,
+            printableArea: { widthPercent: 80, heightPercent: 40, width_mm: 50, height_mm: 80 },
+        }))
     ),
     // Twister
-    ...['Branco', 'Preto', 'Azul', 'Vermelho', 'Verde'].flatMap(color =>
-        ALL_OPACITIES.flatMap(opacity =>
-            ALL_RIMS.map(rim => ({
-                id: `twister-${color}-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
-                name: 'Copo Twister com Tampa',
-                imageUrl: TWISTER_SVG,
-                basePrice: 4.80 + (rim !== 'Nenhuma' ? 0.90 : 0),
-                colorName: color,
-                colorHex: { 'Branco': '#FFFFFF', 'Preto': '#222222', 'Azul': '#0074D9', 'Vermelho': '#FF4136', 'Verde': '#2ECC40' }[color],
-                opacityType: opacity,
-                rimColor: rim,
-                printableArea: { widthPercent: 85, heightPercent: 35, width_mm: 55, height_mm: 90 },
-            }))
-        )
+    ...ALL_OPACITIES.flatMap(opacity =>
+        ALL_RIMS.map(rim => ({
+            id: `twister-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
+            name: 'Copo Twister com Tampa',
+            imageUrl: TWISTER_SVG,
+            basePrice: 4.80 + (rim !== 'Nenhuma' ? 0.90 : 0),
+            colorName: 'Branco', // Default for preview
+            colorHex: '#FFFFFF', // Default for preview
+            opacityType: opacity,
+            rimColor: rim,
+            printableArea: { widthPercent: 85, heightPercent: 35, width_mm: 55, height_mm: 90 },
+        }))
     ),
     // Caldereta
-    ...['Branco', 'Preto', 'Transparente'].flatMap(color =>
-        ALL_OPACITIES.flatMap(opacity =>
-            ALL_RIMS.map(rim => ({
-                id: `caldereta-${color}-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
-                name: 'Copo Caldereta',
-                imageUrl: CALDERETA_SVG,
-                basePrice: 3.20 + (rim !== 'Nenhuma' ? 0.70 : 0),
-                colorName: color,
-                colorHex: { 'Branco': '#FFFFFF', 'Preto': '#222222', 'Transparente': '#FFFFFF' }[color],
-                opacityType: (color === 'Transparente' ? 'Transparente' : opacity),
-                rimColor: rim,
-                printableArea: { widthPercent: 75, heightPercent: 50, width_mm: 60, height_mm: 70 },
-            }))
-        )
+    ...ALL_OPACITIES.flatMap(opacity =>
+        ALL_RIMS.map(rim => ({
+            id: `caldereta-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
+            name: 'Copo Caldereta',
+            imageUrl: CALDERETA_SVG,
+            basePrice: 3.20 + (rim !== 'Nenhuma' ? 0.70 : 0),
+            colorName: 'Branco', // Default for preview
+            colorHex: '#FFFFFF', // Default for preview
+            opacityType: opacity,
+            rimColor: rim,
+            printableArea: { widthPercent: 75, heightPercent: 50, width_mm: 60, height_mm: 70 },
+        }))
     ),
 ];
 
 const getAvailableCupOptions = (cupName: string) => {
     const allOptions = CUP_CATALOG.filter(c => c.name === cupName);
-    const colors = [...new Set(allOptions.map(c => c.colorName!))];
     const opacities = [...new Set(allOptions.map(c => c.opacityType!))];
     const rims = [...new Set(allOptions.map(c => c.rimColor!))];
-    return { colors, opacities, rims };
+    return { opacities, rims };
 };
 
 interface ArtGalleryProps {
@@ -100,8 +90,7 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
     const [view, setView] = useState<'editor' | 'quote' | 'checkout'>('editor');
 
     // Cup Customization State
-    const { colors, opacities, rims } = getAvailableCupOptions(selectedCupName);
-    const [selectedColor, setSelectedColor] = useState(colors[0]);
+    const { opacities, rims } = getAvailableCupOptions(selectedCupName);
     const [selectedOpacity, setSelectedOpacity] = useState(opacities[0]);
     const [selectedRim, setSelectedRim] = useState(rims[0]);
 
@@ -115,7 +104,6 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
 
     const activeCupModel = CUP_CATALOG.find(c =>
         c.name === selectedCupName &&
-        c.colorName === selectedColor &&
         c.opacityType === selectedOpacity &&
         c.rimColor === selectedRim
     ) || CUP_CATALOG.find(c => c.name === selectedCupName)!;
@@ -156,11 +144,11 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
         }
         startVectorizingTransition(async () => {
             const result = await vectorizeImage({ imageDataUri: art.imageUrl });
-            if (result.success && result.vectorizedImageDataUri) {
+            if (result.vectorizedImageDataUri) {
                 updateArtProperty({ imageUrl: result.vectorizedImageDataUri });
                 toast({ title: 'Sucesso', description: 'Sua arte foi vetorizada.' });
             } else {
-                toast({ variant: 'destructive', title: 'Erro ao Vetorizar', description: result.error || 'Não foi possível vetorizar a arte.' });
+                toast({ variant: 'destructive', title: 'Erro ao Vetorizar', description: 'Não foi possível vetorizar a arte.' });
             }
         });
     };
@@ -318,16 +306,6 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                         <Card>
                             <CardHeader><CardTitle>1. Personalize o Copo</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
-                                <div>
-                                    <Label className="font-bold">Cor</Label>
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                        {colors.map(color => (
-                                            <button key={color} onClick={() => setSelectedColor(color)} className="p-1 border-2 rounded-full transition-all" style={{ borderColor: selectedColor === color ? 'hsl(var(--primary))' : 'transparent' }}>
-                                                <div className="w-8 h-8 rounded-full border" style={{ backgroundColor: (CUP_CATALOG.find(c=>c.colorName === color)?.colorHex) }}></div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
                                 <div>
                                     <Label className="font-bold">Acabamento</Label>
                                     <div className="flex gap-2 mt-2">

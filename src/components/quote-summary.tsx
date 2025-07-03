@@ -60,7 +60,7 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
                   className="absolute inset-0"
                   style={{
                     backgroundColor: initialDetails.cupModel.colorHex,
-                    opacity: initialDetails.cupModel.opacityType === 'Translúcido' ? 0.75 : 1.0,
+                    opacity: initialDetails.cupModel.opacityType === 'Transparente' ? 0.75 : 1.0,
                     WebkitMaskImage: `url(${initialDetails.cupModel.imageUrl})`,
                     maskImage: `url(${initialDetails.cupModel.imageUrl})`,
                     WebkitMaskSize: 'contain',
@@ -86,8 +86,8 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
 
             <div>
               <h3 className="font-bold">{initialDetails.cupModel.name}</h3>
-              {(initialDetails.cupModel.colorName || initialDetails.cupModel.opacityType) && (
-                <p className="text-sm text-muted-foreground">{initialDetails.cupModel.colorName} {initialDetails.cupModel.opacityType}</p>
+              {initialDetails.cupModel.opacityType && (
+                <p className="text-sm text-muted-foreground">{initialDetails.cupModel.opacityType}</p>
               )}
               {initialDetails.cupModel.rimColor && initialDetails.cupModel.rimColor !== 'Nenhuma' && (
                 <p className="text-sm text-muted-foreground">Borda: {initialDetails.cupModel.rimColor}</p>
