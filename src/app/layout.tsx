@@ -1,22 +1,21 @@
 import type { Metadata } from 'next';
-import { Belleza, Alegreya } from 'next/font/google';
+import { Oswald, Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 
-const belleza = Belleza({
+const oswald = Oswald({
   subsets: ['latin'],
-  weight: '400',
-  variable: '--font-belleza',
+  variable: '--font-oswald',
 });
 
-const alegreya = Alegreya({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-alegreya',
+  variable: '--font-inter',
 });
 
 export const metadata: Metadata = {
-  title: 'CupVision AI',
+  title: 'Copos Mania',
   description: 'Gere designs de copos personalizados com IA.',
 };
 
@@ -27,10 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${belleza.variable} ${alegreya.variable} font-body antialiased`}>
+      <body className={`${oswald.variable} ${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >

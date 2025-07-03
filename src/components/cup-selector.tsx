@@ -5,9 +5,9 @@ import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-const LONG_DRINK_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCAxMjAiPjxwYXRoIGQ9Ik01LDAgSDU1IEw1MCwxMjAgSDEwIFoiIGZpbGw9ImJsYWNrIi8+PC9zdmc+';
-const TWISTER_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MCAxNDAiPjxwYXRoIGQ9Ik0wIDEwaDcwdjE1SDB6TTEwIDMwaDUwbC01IDEwMEgxNXpNMzIgMGg2djEwaC02eiIgZmlsbD0iYmxhY2siLz48L3N2Zz4=';
-const CALDERETA_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCAxMDAiPjxwYXRoIGQ9Ik01LDAgSDc1IEw2NSwxMDAgSDE1IFoiIGZpbGw9ImJsYWNrIi8+PC9zdmc+';
+const LONG_DRINK_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCAxMjAiPjxwYXRoIGQ9Ik01LDAgSDU1IEw1MCwxMjAgSDEwIFoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
+const TWISTER_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MCAxNDAiPjxwYXRoIGQ9Ik0wIDEwaDcwdjE1SDB6TTEwIDMwaDUwbC01IDEwMEgxNXpNMzIgMGg2djEwaC02eiIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+';
+const CALDERETA_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCAxMDAiPjxwYXRoIGQ9Ik01LDAgSDc1IEw2NSwxMDAgSDE1IFoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
 
 const cupTypes = [
   { name: 'Copo Long Drink', imageUrl: LONG_DRINK_SVG, 'data-ai-hint': 'white cup' },
@@ -23,7 +23,7 @@ export function CupSelector({ onSelect }: CupSelectorProps) {
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader className="text-center">
-        <CardTitle className="font-headline text-3xl">Passo 1: Escolha o Modelo do Copo</CardTitle>
+        <CardTitle className="font-headline text-3xl uppercase">Passo 1: Escolha o Modelo</CardTitle>
         <CardDescription>Selecione o modelo base que você deseja personalizar.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -35,7 +35,7 @@ export function CupSelector({ onSelect }: CupSelectorProps) {
                     src={type.imageUrl}
                     alt={type.name}
                     fill
-                    className="object-contain transition-all p-4"
+                    className="object-contain transition-all p-4 text-foreground"
                     data-ai-hint={type['data-ai-hint']}
                   />
                </div>

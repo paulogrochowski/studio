@@ -30,7 +30,7 @@ export default function LandingPage() {
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative w-full h-[50vh] md:h-[65vh] flex items-center justify-center text-center text-white">
+        <section className="relative w-full h-[50vh] md:h-[65vh] flex items-center justify-center text-center text-white overflow-hidden">
            <Carousel 
               className="absolute inset-0 w-full h-full" 
               opts={{ loop: true }} 
@@ -52,10 +52,10 @@ export default function LandingPage() {
             </Carousel>
 
             {/* Dark overlay for text readability */}
-            <div className="absolute inset-0 bg-black/50 z-10"></div>
+            <div className="absolute inset-0 bg-black/60 z-10"></div>
 
             <div className="relative z-20 container mx-auto px-4">
-                 <h1 className="font-headline text-4xl md:text-6xl font-bold text-white drop-shadow-lg tracking-tight">Dê Vida à sua Ideia</h1>
+                 <h1 className="font-headline text-5xl md:text-7xl font-bold text-white drop-shadow-lg tracking-wider uppercase">Dê Vida à sua Ideia</h1>
                  <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-gray-200 drop-shadow-md">Crie designs exclusivos para copos personalizados com o poder da inteligência artificial.</p>
                  <Button asChild size="lg" className="mt-8">
                      <Link href="/create">
@@ -68,16 +68,16 @@ export default function LandingPage() {
 
         {/* Product Showcase Section */}
         <section className="container mx-auto py-16 md:py-24">
-            <h2 className="text-3xl font-bold text-center font-headline">Nossos Modelos Mais Populares</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center font-headline uppercase">Nossos Modelos</h2>
             <p className="text-muted-foreground text-center mt-2 mb-10">Escolha um modelo e comece a criar em segundos.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {cupTypes.map((type) => (
-                    <Card key={type.name} className="flex flex-col items-center p-6 text-center transition-all hover:shadow-xl hover:-translate-y-1.5 duration-300">
+                    <Card key={type.name} className="flex flex-col items-center p-6 text-center transition-all duration-300 bg-card hover:shadow-xl hover:-translate-y-1.5 hover:border-primary">
                         <CardHeader>
                             <CardTitle className="font-sans text-xl">{type.name}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex-1 flex items-center justify-center w-full">
-                            <div className="relative w-40 h-40 text-foreground/80">
+                            <div className="relative w-40 h-40 text-foreground">
                                 <Image src={type.imageUrl} alt={type.name} fill className="object-contain" data-ai-hint={type['data-ai-hint']} />
                             </div>
                         </CardContent>
@@ -91,9 +91,9 @@ export default function LandingPage() {
             </div>
         </section>
       </main>
-      <footer className="border-t bg-secondary/50">
+      <footer className="border-t bg-card">
         <div className="container mx-auto py-6 text-center text-muted-foreground text-sm">
-            <p>&copy; {new Date().getFullYear()} CupVision AI. Todos os direitos reservados.</p>
+            <p>&copy; {new Date().getFullYear()} Copos Mania. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

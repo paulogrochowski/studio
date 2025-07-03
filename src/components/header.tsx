@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Icons } from "./icons";
 import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
@@ -7,9 +6,8 @@ export function Header() {
     <header className="border-b sticky top-0 bg-background/95 backdrop-blur z-20">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-3">
-          <Icons.cup className="h-8 w-8 text-primary" />
-          <h1 className="font-headline text-xl sm:text-2xl font-bold tracking-tight text-primary">
-            CupVision AI
+          <h1 className="font-headline text-2xl sm:text-3xl font-bold tracking-wider text-primary uppercase">
+            Copos Mania
           </h1>
         </Link>
         <div className="flex items-center gap-2">
