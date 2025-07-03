@@ -5,6 +5,7 @@ import type { OrderDetails } from "@/lib/types";
 import { CheckCircle2, PartyPopper } from "lucide-react";
 import Image from "next/image";
 import { Separator } from "./ui/separator";
+import { DEGRADE_HEX_COLORS, RIM_COLORS } from "@/lib/cup-data";
 
 interface CheckoutViewProps {
   orderDetails: OrderDetails;
@@ -12,21 +13,13 @@ interface CheckoutViewProps {
 }
 
 export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProps) {
-    const getDegradeHexColor = (colorName: string | undefined) => {
-        if (!colorName || colorName === 'Nenhum') return null;
-        const colors: { [key: string]: string } = {
-            'Rosa Pink': '#FF1493', 'Azul': '#4287f5', 'Verde': '#32a852',
-            'Laranja': '#FFA500', 'Vermelho': '#FF0000', 'Preto': '#000000',
-            'Prata': '#C0C0C0', 'Amarelo': '#FFFF00', 'Roxo': '#800080',
-            'Rose Gold': '#B76E79', 'Dourado': '#FFD700', 'Rosa Chiclete': '#FF69B4',
-            'Cobre': '#B87333',
-        };
-        return colors[colorName] || null;
-    }
+    const cup = orderDetails.cupModel;
+    const degradeColorHex = cup.degradeColor ? DEGRADE_HEX_COLORS[cup.degradeColor] : null;
+    const rimColorHex = RIM_COLORS[cup.rimColor!] || 'transparent';
 
-    const cupStyle: React.CSSProperties = {
-        WebkitMaskImage: `url(${orderDetails.cupModel.imageUrl})`,
-        maskImage: `url(${orderDetails.cupModel.imageUrl})`,
+    const overlayStyle: React.CSSProperties = {
+        WebkitMaskImage: `url(${cup.svgMaskUrl})`,
+        maskImage: `url(${cup.svgMaskUrl})`,
         WebkitMaskSize: 'contain',
         maskSize: 'contain',
         WebkitMaskRepeat: 'no-repeat',
@@ -35,21 +28,13 @@ export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProp
         maskPosition: 'center',
     };
 
-    const degradeColorHex = getDegradeHexColor(orderDetails.cupModel.degradeColor);
-
-    if (degradeColorHex && orderDetails.cupModel.degradePosition && orderDetails.cupModel.degradePosition !== 'Nenhum') {
-        const direction = orderDetails.cupModel.degradePosition === 'Cima' ? 'to bottom' : 'to top';
-        const baseColor = 'rgba(255, 255, 255, 0.7)';
-        let gradient;
-        if (direction === 'to bottom') {
-            gradient = `linear-gradient(to bottom, ${degradeColorHex}, ${baseColor})`;
-        } else {
-            gradient = `linear-gradient(to top, ${degradeColorHex}, ${baseColor})`;
-        }
-        cupStyle.background = gradient;
+    if (degradeColorHex && cup.degradePosition && cup.degradePosition !== 'Nenhum') {
+        const direction = cup.degradePosition === 'Cima' ? 'to bottom' : 'to top';
+        const baseColor = cup.opacityType === 'Transparente' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)';
+        overlayStyle.background = `linear-gradient(${direction}, ${degradeColorHex}, ${baseColor})`;
     } else {
-        cupStyle.backgroundColor = orderDetails.cupModel.colorHex;
-        cupStyle.opacity = orderDetails.cupModel.opacityType === 'Transparente' ? 0.75 : 1.0;
+        overlayStyle.backgroundColor = cup.colorHex;
+        overlayStyle.opacity = cup.opacityType === 'Transparente' ? 0.6 : 1.0;
     }
 
   return (
@@ -79,23 +64,37 @@ export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProp
         <div className="bg-secondary/50 rounded-lg p-6 space-y-4">
           <h3 className="font-bold text-lg text-center">Resumo do Pedido</h3>
           <div className="flex items-center gap-4">
-             <div className="relative w-24 h-24 rounded-md overflow-hidden border bg-white shadow-inner shrink-0">
-                {/* Cup color shape */}
-                <div
-                  className="absolute inset-0"
-                  style={cupStyle}
-                />
+             <div className="relative w-24 h-32 rounded-md overflow-hidden border bg-white shadow-inner shrink-0">
+                <Image src={cup.imageUrl} alt={cup.name} fill className="object-contain" />
+                <div className="absolute inset-0 mix-blend-multiply" style={overlayStyle} />
+                {cup.rimColor !== 'Nenhuma' && (
+                    <div
+                        className="absolute inset-0"
+                        style={{
+                            borderColor: rimColorHex,
+                            borderTopWidth: '5px',
+                            WebkitMaskImage: `url(${cup.svgMaskUrl})`,
+                            maskImage: `url(${cup.svgMaskUrl})`,
+                            WebkitMaskSize: 'contain',
+                            maskSize: 'contain',
+                            WebkitMaskRepeat: 'no-repeat',
+                            maskRepeat: 'no-repeat',
+                            WebkitMaskPosition: 'center',
+                            maskPosition: 'center',
+                        }}
+                    />
+                )}
             </div>
             <div>
-                <p><strong>{orderDetails.quantity}x</strong> {orderDetails.cupModel.name}</p>
-                {orderDetails.cupModel.opacityType && (
-                    <p className="text-sm text-muted-foreground">{orderDetails.cupModel.opacityType}</p>
+                <p><strong>{orderDetails.quantity}x</strong> {cup.name}</p>
+                {cup.opacityType && (
+                    <p className="text-sm text-muted-foreground">{cup.opacityType}</p>
                 )}
-                 {orderDetails.cupModel.degradeColor && orderDetails.cupModel.degradeColor !== 'Nenhum' && (
-                  <p className="text-sm text-muted-foreground">Degradê: {orderDetails.cupModel.degradeColor} ({orderDetails.cupModel.degradePosition})</p>
+                 {cup.degradeColor && cup.degradeColor !== 'Nenhum' && (
+                  <p className="text-sm text-muted-foreground">Degradê: {cup.degradeColor} ({cup.degradePosition})</p>
                 )}
-                {orderDetails.cupModel.rimColor && orderDetails.cupModel.rimColor !== 'Nenhuma' && (
-                  <p className="text-sm text-muted-foreground">Borda: {orderDetails.cupModel.rimColor}</p>
+                {cup.rimColor && cup.rimColor !== 'Nenhuma' && (
+                  <p className="text-sm text-muted-foreground">Borda: {cup.rimColor}</p>
                 )}
                 <p className="text-sm text-muted-foreground">Entrega: {orderDetails.isUrgent ? 'Urgente' : 'Padrão'}</p>
             </div>

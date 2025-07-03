@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import type { OrderDetails, CupModel } from '@/lib/types';
 import Image from 'next/image';
+import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 
 interface QuoteSummaryProps {
   initialDetails: Omit<OrderDetails, 'quantity' | 'isUrgent' | 'total'>;
@@ -24,14 +25,17 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
   const [quantity, setQuantity] = useState(100);
   const [isUrgent, setIsUrgent] = useState(false);
   const [total, setTotal] = useState(0);
+  
+  const cup = initialDetails.cupModel;
+  const art = initialDetails.art;
 
   useEffect(() => {
     const artPrice = initialDetails.artComplexity.score * COMPLEXITY_PRICE_PER_POINT;
-    const baseTotal = (initialDetails.cupModel.basePrice + artPrice) * quantity;
+    const baseTotal = (cup.basePrice + artPrice) * quantity;
     const urgencyCost = isUrgent ? baseTotal * (URGENCY_MULTIPLIER - 1) : 0;
     const finalTotal = baseTotal + urgencyCost + SHIPPING_COST;
     setTotal(finalTotal);
-  }, [quantity, isUrgent, initialDetails]);
+  }, [quantity, isUrgent, initialDetails, cup]);
   
   const handleFinalize = () => {
     onFinalize({
@@ -41,46 +45,30 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
       total,
     });
   }
+  
+    const degradeColorHex = cup.degradeColor ? DEGRADE_HEX_COLORS[cup.degradeColor] : null;
+    const rimColorHex = RIM_COLORS[cup.rimColor!] || 'transparent';
 
-  const getDegradeHexColor = (colorName: string | undefined) => {
-    if (!colorName || colorName === 'Nenhum') return null;
-    const colors: { [key: string]: string } = {
-        'Rosa Pink': '#FF1493', 'Azul': '#4287f5', 'Verde': '#32a852',
-        'Laranja': '#FFA500', 'Vermelho': '#FF0000', 'Preto': '#000000',
-        'Prata': '#C0C0C0', 'Amarelo': '#FFFF00', 'Roxo': '#800080',
-        'Rose Gold': '#B76E79', 'Dourado': '#FFD700', 'Rosa Chiclete': '#FF69B4',
-        'Cobre': '#B87333',
+    const overlayStyle: React.CSSProperties = {
+        WebkitMaskImage: `url(${cup.svgMaskUrl})`,
+        maskImage: `url(${cup.svgMaskUrl})`,
+        WebkitMaskSize: 'contain',
+        maskSize: 'contain',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center',
     };
-    return colors[colorName] || null;
-  }
 
-  const cupStyle: React.CSSProperties = {
-    WebkitMaskImage: `url(${initialDetails.cupModel.imageUrl})`,
-    maskImage: `url(${initialDetails.cupModel.imageUrl})`,
-    WebkitMaskSize: 'contain',
-    maskSize: 'contain',
-    WebkitMaskRepeat: 'no-repeat',
-    maskRepeat: 'no-repeat',
-    WebkitMaskPosition: 'center',
-    maskPosition: 'center',
-  };
+    if (degradeColorHex && cup.degradePosition && cup.degradePosition !== 'Nenhum') {
+        const direction = cup.degradePosition === 'Cima' ? 'to bottom' : 'to top';
+        const baseColor = cup.opacityType === 'Transparente' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)';
+        overlayStyle.background = `linear-gradient(${direction}, ${degradeColorHex}, ${baseColor})`;
+    } else {
+        overlayStyle.backgroundColor = cup.colorHex;
+        overlayStyle.opacity = cup.opacityType === 'Transparente' ? 0.6 : 1.0;
+    }
 
-  const degradeColorHex = getDegradeHexColor(initialDetails.cupModel.degradeColor);
-
-  if (degradeColorHex && initialDetails.cupModel.degradePosition && initialDetails.cupModel.degradePosition !== 'Nenhum') {
-      const direction = initialDetails.cupModel.degradePosition === 'Cima' ? 'to bottom' : 'to top';
-      const baseColor = 'rgba(255, 255, 255, 0.7)';
-      let gradient;
-      if (direction === 'to bottom') {
-          gradient = `linear-gradient(to bottom, ${degradeColorHex}, ${baseColor})`;
-      } else {
-          gradient = `linear-gradient(to top, ${degradeColorHex}, ${baseColor})`;
-      }
-      cupStyle.background = gradient;
-  } else {
-      cupStyle.backgroundColor = initialDetails.cupModel.colorHex;
-      cupStyle.opacity = initialDetails.cupModel.opacityType === 'Transparente' ? 0.75 : 1.0;
-  }
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -94,37 +82,33 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
         <div className="space-y-6">
           <div className="flex items-start gap-4">
-             <div className="relative w-24 h-24 rounded-md overflow-hidden border bg-white shadow-inner shrink-0 checkerboard">
-                {/* Cup color shape */}
-                <div
-                  className="absolute inset-0"
-                  style={cupStyle}
-                />
-                {/* Art */}
+             <div className="relative w-24 h-36 rounded-md overflow-hidden border bg-white shadow-inner shrink-0">
+                <Image src={cup.imageUrl} alt={cup.name} fill className="object-contain" />
+                <div className="absolute inset-0 mix-blend-multiply" style={overlayStyle} />
                  <div
                     className="absolute w-full h-full"
                     style={{
-                        top: `${initialDetails.art.y}%`,
-                        left: `${initialDetails.art.x}%`,
-                        transform: `translate(-50%, -50%) rotate(${initialDetails.art.rotation}deg)`,
-                        width: `calc(${initialDetails.cupModel.printableArea?.widthPercent || 80}%)`,
-                        height: `calc(${initialDetails.cupModel.printableArea?.heightPercent || 40}%)`,
+                        top: `${art.y}%`,
+                        left: `${art.x}%`,
+                        transform: `translate(-50%, -50%) rotate(${art.rotation}deg)`,
+                        width: `calc(${cup.printableArea?.widthPercent || 80}%)`,
+                        height: `calc(${cup.printableArea?.heightPercent || 40}%)`,
                     }}
                 >
-                    <Image src={initialDetails.art.imageUrl} alt="Arte escolhida" fill className="object-contain" />
+                    <Image src={art.imageUrl} alt="Arte escolhida" fill className="object-contain" />
                 </div>
             </div>
 
             <div>
-              <h3 className="font-bold">{initialDetails.cupModel.name}</h3>
-              {initialDetails.cupModel.opacityType && (
-                <p className="text-sm text-muted-foreground">{initialDetails.cupModel.opacityType}</p>
+              <h3 className="font-bold">{cup.name}</h3>
+              {cup.opacityType && (
+                <p className="text-sm text-muted-foreground">{cup.opacityType}</p>
               )}
-               {initialDetails.cupModel.degradeColor && initialDetails.cupModel.degradeColor !== 'Nenhum' && (
-                <p className="text-sm text-muted-foreground">Degradê: {initialDetails.cupModel.degradeColor} ({initialDetails.cupModel.degradePosition})</p>
+               {cup.degradeColor && cup.degradeColor !== 'Nenhum' && (
+                <p className="text-sm text-muted-foreground">Degradê: {cup.degradeColor} ({cup.degradePosition})</p>
               )}
-              {initialDetails.cupModel.rimColor && initialDetails.cupModel.rimColor !== 'Nenhuma' && (
-                <p className="text-sm text-muted-foreground">Borda: {initialDetails.cupModel.rimColor}</p>
+              {cup.rimColor && cup.rimColor !== 'Nenhuma' && (
+                <p className="text-sm text-muted-foreground">Borda: {cup.rimColor}</p>
               )}
               <p className="text-sm text-muted-foreground">Arte Personalizada</p>
               <p className="text-xs text-muted-foreground mt-1 line-clamp-2"><strong>Descrição:</strong> {initialDetails.eventDescription}</p>
@@ -160,10 +144,10 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
         <div className="bg-secondary/50 rounded-lg p-6 space-y-4 flex flex-col">
            <h3 className="font-bold text-lg">Resumo do Orçamento</h3>
            <div className="space-y-2 flex-1">
-            <div className="flex justify-between text-sm"><span>Copo ({initialDetails.cupModel.name})</span><span>R$ {initialDetails.cupModel.basePrice.toFixed(2)} / un.</span></div>
+            <div className="flex justify-between text-sm"><span>Copo ({cup.name})</span><span>R$ {cup.basePrice.toFixed(2)} / un.</span></div>
             <div className="flex justify-between text-sm"><span>Complexidade da Arte ({initialDetails.artComplexity.score}/10)</span><span>R$ {(initialDetails.artComplexity.score * COMPLEXITY_PRICE_PER_POINT).toFixed(2)} / un.</span></div>
             <div className="flex justify-between text-sm"><span>Quantidade</span><span>x{quantity}</span></div>
-            {isUrgent && <div className="flex justify-between text-sm text-accent"><span>Taxa de Urgência</span><span>+ R$ {(((initialDetails.cupModel.basePrice + initialDetails.artComplexity.score * COMPLEXITY_PRICE_PER_POINT) * quantity) * (URGENCY_MULTIPLIER - 1)).toFixed(2)}</span></div>}
+            {isUrgent && <div className="flex justify-between text-sm text-accent"><span>Taxa de Urgência</span><span>+ R$ {(((cup.basePrice + initialDetails.artComplexity.score * COMPLEXITY_PRICE_PER_POINT) * quantity) * (URGENCY_MULTIPLIER - 1)).toFixed(2)}</span></div>}
             <div className="flex justify-between text-sm"><span>Frete</span><span>R$ {SHIPPING_COST.toFixed(2)}</span></div>
            </div>
            <Separator />

@@ -16,9 +16,8 @@ import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/a
 import { useToast } from '@/hooks/use-toast';
 import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
 import { vectorizeImage } from '@/ai/flows/vectorize-image';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { CUP_CATALOG, ALL_OPACITIES, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS } from '@/lib/cup-data';
+import { CUP_CATALOG, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/lib/cup-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -177,30 +176,13 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     }
     
     const PreviewCard = () => {
-        const getRimHexColor = (rimColor: CupModel['rimColor']) => {
-            switch (rimColor) {
-                case 'Dourado': return '#FFD700';
-                case 'Prata': return '#C0C0C0';
-                case 'Rosa Gold': return '#E6C4C0';
-                default: return 'transparent';
-            }
-        };
+        const getRimHexColor = (rimColor: CupModel['rimColor']) => RIM_COLORS[rimColor] || 'transparent';
 
-        const getDegradeHexColor = (colorName: string | undefined) => {
-            if (!colorName || colorName === 'Nenhum') return null;
-            const colors: { [key: string]: string } = {
-                'Rosa Pink': '#FF1493', 'Azul': '#4287f5', 'Verde': '#32a852',
-                'Laranja': '#FFA500', 'Vermelho': '#FF0000', 'Preto': '#000000',
-                'Prata': '#C0C0C0', 'Amarelo': '#FFFF00', 'Roxo': '#800080',
-                'Rose Gold': '#B76E79', 'Dourado': '#FFD700', 'Rosa Chiclete': '#FF69B4',
-                'Cobre': '#B87333',
-            };
-            return colors[colorName] || null;
-        }
+        const degradeColorHex = activeCupModel.degradeColor ? DEGRADE_HEX_COLORS[activeCupModel.degradeColor] : null;
 
-        const cupStyle: React.CSSProperties = {
-            WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
-            maskImage: `url(${activeCupModel.imageUrl})`,
+        const overlayStyle: React.CSSProperties = {
+            WebkitMaskImage: `url(${activeCupModel.svgMaskUrl})`,
+            maskImage: `url(${activeCupModel.svgMaskUrl})`,
             WebkitMaskSize: 'contain',
             maskSize: 'contain',
             WebkitMaskRepeat: 'no-repeat',
@@ -208,45 +190,41 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             WebkitMaskPosition: 'center',
             maskPosition: 'center',
         };
-    
-        const degradeColorHex = getDegradeHexColor(activeCupModel.degradeColor);
-    
+
         if (degradeColorHex && activeCupModel.degradePosition && activeCupModel.degradePosition !== 'Nenhum') {
             const direction = activeCupModel.degradePosition === 'Cima' ? 'to bottom' : 'to top';
-            const baseColor = 'rgba(255, 255, 255, 0.7)';
-            
-            let gradient;
-            if (direction === 'to bottom') {
-                gradient = `linear-gradient(to bottom, ${degradeColorHex}, ${baseColor})`;
-            } else {
-                gradient = `linear-gradient(to top, ${degradeColorHex}, ${baseColor})`;
-            }
-            cupStyle.background = gradient;
+            const baseColor = activeCupModel.opacityType === 'Transparente' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)';
+            overlayStyle.background = `linear-gradient(${direction}, ${degradeColorHex}, ${baseColor})`;
         } else {
-            cupStyle.backgroundColor = activeCupModel.colorHex;
-            cupStyle.opacity = activeCupModel.opacityType === 'Transparente' ? 0.75 : 1.0;
+            overlayStyle.backgroundColor = activeCupModel.colorHex;
+            overlayStyle.opacity = activeCupModel.opacityType === 'Transparente' ? 0.6 : 1.0;
         }
 
         return (
-            <Card className="lg:sticky lg:top-24">
+            <Card>
                 <CardHeader>
                     <CardTitle>Pré-visualização</CardTitle>
                 </CardHeader>
-                <CardContent className="flex items-center justify-center p-4 min-h-[400px] md:min-h-[500px] bg-muted/50 rounded-lg checkerboard">
-                    <div className="relative w-56 h-56 sm:w-64 sm:h-64">
-                        {/* Cup Render */}
+                <CardContent className="flex items-center justify-center p-4 min-h-[400px] md:min-h-[500px] bg-muted/50 rounded-lg">
+                    <div className="relative w-56 h-96 sm:w-64 sm:h-[426px]">
+                        
+                        <Image src={activeCupModel.imageUrl} alt={activeCupModel.name} fill className="object-contain" data-ai-hint="white cup" />
+
+                        {/* Color/Gradient Overlay */}
                         <div
-                            className="absolute inset-0"
-                            style={cupStyle}
+                            className="absolute inset-0 mix-blend-multiply"
+                            style={overlayStyle}
                         />
+                        
+                        {/* Rim Render */}
                         {activeCupModel.rimColor !== 'Nenhuma' && (
                             <div
                                 className="absolute inset-0"
                                 style={{
                                     borderColor: getRimHexColor(activeCupModel.rimColor),
                                     borderTopWidth: '8px',
-                                    WebkitMaskImage: `url(${activeCupModel.imageUrl})`,
-                                    maskImage: `url(${activeCupModel.imageUrl})`,
+                                    WebkitMaskImage: `url(${activeCupModel.svgMaskUrl})`,
+                                    maskImage: `url(${activeCupModel.svgMaskUrl})`,
                                     WebkitMaskSize: 'contain',
                                     maskSize: 'contain',
                                     WebkitMaskRepeat: 'no-repeat',
@@ -293,18 +271,18 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 
-                <div className="lg:col-span-1 lg:order-last">
+                <div className="lg:col-span-1 lg:order-last lg:sticky lg:top-24">
                      <PreviewCard />
                 </div>
 
-                <div className="lg:col-span-2 order-first lg:order-first space-y-6">
+                <div className="lg:col-span-2 space-y-6">
                       <div className="space-y-6">
                         {/* Cup Customization */}
                         <Card>
                             <CardHeader><CardTitle>1. Personalize o Copo</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
-                                    <Label className="font-bold">Acabamento</Label>
+                                    <Label className="font-bold">Cor</Label>
                                     <div className="flex gap-2 mt-2">
                                         {opacities.map(opacity => (
                                             <Button key={opacity} variant={selectedOpacity === opacity ? 'secondary' : 'outline'} onClick={() => setSelectedOpacity(opacity)}>
@@ -344,23 +322,37 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                                 <Separator />
                                 <div>
                                     <Label className="font-bold">Degradê</Label>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                                        <div>
-                                            <Label htmlFor="degrade-color" className="text-sm">Cor</Label>
-                                            <Select value={selectedDegradeColor} onValueChange={handleDegradeColorChange}>
-                                                <SelectTrigger id="degrade-color">
-                                                    <SelectValue placeholder="Selecione uma cor" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {DEGRADE_COLORS.map(color => (
-                                                        <SelectItem key={color} value={color}>{color}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+                                    <div className="grid grid-cols-1 gap-4 mt-2">
+                                        <TooltipProvider>
+                                          <div className="flex flex-wrap gap-3">
+                                                {DEGRADE_COLORS.map(color => (
+                                                    <Tooltip key={color}>
+                                                        <TooltipTrigger asChild>
+                                                            <button
+                                                                onClick={() => handleDegradeColorChange(color)}
+                                                                className={cn(
+                                                                    "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all",
+                                                                    selectedDegradeColor === color ? 'border-primary ring-2 ring-primary ring-offset-2 ring-offset-background' : 'border-muted hover:border-foreground/50'
+                                                                )}
+                                                                style={{
+                                                                    background: color === 'Nenhum' ? 'hsl(var(--muted))' : `linear-gradient(to bottom, ${DEGRADE_HEX_COLORS[color]}, hsl(var(--card)))`
+                                                                }}
+                                                            >
+                                                                {selectedDegradeColor === color && <Check className="h-5 w-5 text-white mix-blend-difference" />}
+                                                                {color === 'Nenhum' && selectedDegradeColor !== 'Nenhum' && <Slash className="h-5 w-5 text-muted-foreground" />}
+                                                            </button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{color}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                ))}
+                                            </div>
+                                        </TooltipProvider>
+                                        
                                         {selectedDegradeColor !== 'Nenhum' && (
-                                            <div>
-                                                <Label className="text-sm">Posição</Label>
+                                            <div className="mt-2">
+                                                <Label className="text-sm">Posição do Degradê</Label>
                                                 <RadioGroup
                                                     value={selectedDegradePosition}
                                                     onValueChange={(value) => setSelectedDegradePosition(value as any)}
@@ -368,11 +360,11 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                                                 >
                                                     <div className="flex items-center space-x-2">
                                                         <RadioGroupItem value="Cima" id="pos-cima" />
-                                                        <Label htmlFor="pos-cima" className="font-normal">De Cima</Label>
+                                                        <Label htmlFor="pos-cima" className="font-normal">De Cima para Baixo</Label>
                                                     </div>
                                                     <div className="flex items-center space-x-2">
                                                         <RadioGroupItem value="Baixo" id="pos-baixo" />
-                                                        <Label htmlFor="pos-baixo" className="font-normal">De Baixo</Label>
+                                                        <Label htmlFor="pos-baixo" className="font-normal">De Baixo para Cima</Label>
                                                     </div>
                                                 </RadioGroup>
                                             </div>
