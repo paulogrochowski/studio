@@ -77,7 +77,7 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
                     style={{
                         top: `${initialDetails.art.y}%`,
                         left: `${initialDetails.art.x}%`,
-                        transform: `translate(-50%, -50%) scale(${initialDetails.art.scale}) rotate(${initialDetails.art.rotation}deg)`,
+                        transform: `translate(-50%, -50%) rotate(${initialDetails.art.rotation}deg)`,
                     }}
                 >
                     <Image src={initialDetails.art.imageUrl} alt="Arte escolhida" fill className="object-contain" />

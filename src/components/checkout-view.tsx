@@ -49,7 +49,7 @@ export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProp
                     style={{
                         top: `${orderDetails.art.y}%`,
                         left: `${orderDetails.art.x}%`,
-                        transform: `translate(-50%, -50%) scale(${orderDetails.art.scale}) rotate(${orderDetails.art.rotation}deg)`,
+                        transform: `translate(-50%, -50%) rotate(${orderDetails.art.rotation}deg)`,
                     }}
                 >
                     <Image src={orderDetails.art.imageUrl} alt="Arte escolhida" fill className="object-contain" />

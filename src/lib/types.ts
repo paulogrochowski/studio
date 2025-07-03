@@ -23,7 +23,6 @@ export interface GeneratedArt {
   prompt: string;
   x: number;
   y: number;
-  scale: number;
   rotation: number;
 }
 

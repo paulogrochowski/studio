@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -8,12 +8,11 @@ import { QuoteSummary } from './quote-summary';
 import { CheckoutView } from './checkout-view';
 import { Loader } from './loader';
 import { Separator } from './ui/separator';
-import { ArrowLeft, Edit, Palette, Sparkles, CheckCircle, RefreshCw, Wand2, Paintbrush, Upload, Trash2, Move, Scale, RotateCw } from 'lucide-react';
+import { ArrowLeft, Sparkles, Wand2 } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { Slider } from './ui/slider';
 import { Input } from './ui/input';
-import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration, handleVectorizeArt } from '@/app/actions';
+import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
 
@@ -92,7 +91,6 @@ interface ArtGalleryProps {
 export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProps) {
     const { toast } = useToast();
     const [isGenerating, startGenerationTransition] = useTransition();
-    const [isVectorizing, startVectorizingTransition] = useTransition();
 
     const [view, setView] = useState<'editor' | 'quote' | 'checkout'>('editor');
 
@@ -131,7 +129,6 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                     prompt: artPrompt,
                     x: 50,
                     y: 50,
-                    scale: 1,
                     rotation: 0,
                 };
                 setArt(artData);
@@ -150,24 +147,6 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
             setArt(prev => prev ? { ...prev, ...props } : null);
         }
     }
-
-    const handleVectorize = () => {
-        if (!art) return;
-        startVectorizingTransition(async () => {
-            const result = await handleVectorizeArt(art.imageUrl);
-            if (result.success && result.imageUrl) {
-                updateArtProperty({ imageUrl: result.imageUrl });
-                // Re-run analysis on the new vectorized art
-                const analysisResult = await handleArtAnalysis(result.imageUrl, 'Arte vetorizada a partir de imagem gerada');
-                if (analysisResult.success && analysisResult.analysis) {
-                    setAnalysis(analysisResult.analysis);
-                }
-                toast({ title: 'Sucesso!', description: 'Sua arte foi vetorizada.' });
-            } else {
-                toast({ variant: 'destructive', title: 'Erro ao Vetorizar', description: result.error });
-            }
-        });
-    };
 
     const handleGoToQuote = () => {
         if (!art || !analysis) {
@@ -262,7 +241,7 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                           style={{
                             top: `${art.y}%`,
                             left: `${art.x}%`,
-                            transform: `translate(-50%, -50%) scale(${art.scale}) rotate(${art.rotation}deg)`,
+                            transform: `translate(-50%, -50%) rotate(${art.rotation}deg)`,
                             width: '100%',
                             height: '100%',
                           }}
@@ -275,7 +254,7 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                  </div>
             </CardContent>
             <CardFooter>
-                <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art || isGenerating || isVectorizing}>
+                <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art || isGenerating}>
                      Aprovar Arte e ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
                 </Button>
             </CardFooter>
@@ -349,7 +328,7 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                                 value={artPrompt}
                                 onChange={(e) => setArtPrompt(e.target.value)}
                             />
-                            <Button onClick={handleGenerateArt} disabled={isGenerating || isVectorizing} className="w-full">
+                            <Button onClick={handleGenerateArt} disabled={isGenerating} className="w-full">
                                 {isGenerating ? <Loader className="h-4 w-4" /> : <Wand2 />}
                                 Gerar Arte com IA
                             </Button>
@@ -361,11 +340,6 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                        <Card>
                          <CardHeader><CardTitle>3. Edite a Arte</CardTitle></CardHeader>
                          <CardContent className="space-y-4">
-                            <Button onClick={handleVectorize} disabled={isGenerating || isVectorizing} className="w-full">
-                                {isVectorizing ? <Loader className="h-4 w-4" message="Vetorizando..." /> : <Paintbrush />}
-                                Vetorizar Arte
-                            </Button>
-                            <Separator />
                             <div className="space-y-2">
                                 <Label htmlFor="x-pos">Posição (X, Y)</Label>
                                 <div className="flex gap-2">
@@ -373,13 +347,9 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                                     <Input id="y-pos" type="number" value={art.y} onChange={e => updateArtProperty({ y: parseInt(e.target.value, 10) })} />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="scale-slider">Escala</Label>
-                                <Slider id="scale-slider" value={[art.scale]} onValueChange={([val]) => updateArtProperty({ scale: val })} min={0.2} max={2} step={0.05} />
-                            </div>
                              <div className="space-y-2">
-                                <Label htmlFor="rotation-slider">Rotação</Label>
-                                <Slider id="rotation-slider" value={[art.rotation]} onValueChange={([val]) => updateArtProperty({ rotation: val })} min={-180} max={180} step={1} />
+                                <Label htmlFor="rotation-slider">Rotação (graus)</Label>
+                                <Input id="rotation-slider" type="number" value={art.rotation} onChange={e => updateArtProperty({ rotation: parseInt(e.target.value, 10) || 0 })} min={-180} max={180} step={1} />
                             </div>
                          </CardContent>
                        </Card>
