@@ -4,91 +4,40 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Header } from '@/components/header';
-import { ArrowRight } from 'lucide-react';
-import React from 'react';
-import Autoplay from 'embla-carousel-autoplay';
-
-const LONG_DRINK_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCAxMjAiPjxwYXRoIGQ9Ik01LDAgSDU1IEw1MCwxMjAgSDEwIFoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
-const TWISTER_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MCAxNDAiPjxwYXRoIGQ9Ik0wIDEwaDcwdjE1SDB6TTEwIDMwaDUwbC01IDEwMEgxNXpNMzIgMGg2djEwaC02eiIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+';
-const CALDERETA_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCAxMDAiPjxwYXRoIGQ9Ik01LDAgSDc1IEw2NSwxMDAgSDE1IFoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
-
-const cupTypes = [
-  { name: 'Copo Long Drink', imageUrl: LONG_DRINK_SVG, 'data-ai-hint': 'white cup' },
-  { name: 'Copo Twister com Tampa', imageUrl: TWISTER_SVG, 'data-ai-hint': 'clear cup' },
-  { name: 'Copo Caldereta', imageUrl: CALDERETA_SVG, 'data-ai-hint': 'black cup' },
-];
+import { CUP_TYPES_SUMMARY } from '@/lib/cup-data';
 
 export default function LandingPage() {
-  const autoplayPlugin = React.useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: true })
-  );
-
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-body">
       <Header />
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative w-full h-[50vh] md:h-[65vh] flex items-center justify-center text-center text-white overflow-hidden">
-           <Carousel 
-              className="absolute inset-0 w-full h-full" 
-              opts={{ loop: true }} 
-              plugins={[autoplayPlugin.current]}
-              onMouseEnter={() => autoplayPlugin.current.stop()}
-              onMouseLeave={() => autoplayPlugin.current.reset()}
-            >
-              <CarouselContent className="-ml-0">
-                <CarouselItem className="pl-0 relative">
-                    <Image src="https://placehold.co/1200x700.png" alt="Banner de Festa" fill className="object-cover" data-ai-hint="party event" />
-                </CarouselItem>
-                <CarouselItem className="pl-0 relative">
-                    <Image src="https://placehold.co/1200x700.png" alt="Banner de Casamento" fill className="object-cover" data-ai-hint="wedding celebration" />
-                </CarouselItem>
-                <CarouselItem className="pl-0 relative">
-                    <Image src="https://placehold.co/1200x700.png" alt="Banner Corporativo" fill className="object-cover" data-ai-hint="corporate conference" />
-                </CarouselItem>
-              </CarouselContent>
-            </Carousel>
-
-            {/* Dark overlay for text readability */}
-            <div className="absolute inset-0 bg-black/60 z-10"></div>
-
-            <div className="relative z-20 container mx-auto px-4">
-                 <h1 className="font-headline text-5xl md:text-7xl font-bold text-white drop-shadow-lg tracking-wider uppercase">Dê Vida à sua Ideia</h1>
-                 <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-gray-200 drop-shadow-md">Crie designs exclusivos para copos personalizados com o poder da inteligência artificial.</p>
-                 <Button asChild size="lg" className="mt-8">
-                     <Link href="/create">
-                         Personalize seu Copo Agora
-                         <ArrowRight className="ml-2" />
-                     </Link>
-                 </Button>
-            </div>
+      <main className="flex-1 container mx-auto py-12 md:py-16">
+        <section className="text-center mb-12">
+            <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-wider uppercase">Escolha um Modelo</h1>
+            <p className="mt-2 text-lg text-muted-foreground">Selecione um copo e dê vida à sua ideia com nosso editor IA.</p>
         </section>
 
-        {/* Product Showcase Section */}
-        <section className="container mx-auto py-16 md:py-24">
-            <h2 className="text-3xl md:text-4xl font-bold text-center font-headline uppercase">Nossos Modelos</h2>
-            <p className="text-muted-foreground text-center mt-2 mb-10">Escolha um modelo e comece a criar em segundos.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {cupTypes.map((type) => (
-                    <Card key={type.name} className="flex flex-col items-center p-6 text-center transition-all duration-300 bg-card hover:shadow-xl hover:-translate-y-1.5 hover:border-primary">
-                        <CardHeader>
-                            <CardTitle className="font-sans text-xl">{type.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex-1 flex items-center justify-center w-full">
-                            <div className="relative w-40 h-40 text-foreground">
-                                <Image src={type.imageUrl} alt={type.name} fill className="object-contain" data-ai-hint={type['data-ai-hint']} />
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-            <div className="text-center mt-12">
-                 <Button asChild size="lg">
-                     <Link href="/create">Começar a Personalizar</Link>
-                 </Button>
-            </div>
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            {CUP_TYPES_SUMMARY.map((type) => (
+                <Card key={type.name} className="flex flex-col text-center transition-all duration-300 bg-card hover:shadow-xl hover:-translate-y-1">
+                    <CardHeader>
+                        <CardTitle className="font-sans text-xl h-12 flex items-center justify-center">{type.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex flex-col items-center justify-between gap-4">
+                        <div className="relative w-40 h-40 text-foreground">
+                            <Image src={type.imageUrl} alt={type.name} fill className="object-contain" data-ai-hint={type['data-ai-hint']} />
+                        </div>
+                        <div className='w-full'>
+                            <p className="text-muted-foreground mb-4">
+                                A partir de <span className="font-bold text-foreground">R$ {type.basePrice.toFixed(2).replace('.', ',')}</span>
+                            </p>
+                            <Button asChild size="lg" className="w-full">
+                                <Link href={`/create?cup=${encodeURIComponent(type.name)}`}>Personalizar</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
         </section>
       </main>
       <footer className="border-t bg-card">

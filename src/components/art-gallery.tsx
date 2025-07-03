@@ -8,7 +8,7 @@ import { QuoteSummary } from './quote-summary';
 import { CheckoutView } from './checkout-view';
 import { Loader } from './loader';
 import { Separator } from './ui/separator';
-import { ArrowLeft, Brush, Sparkles } from 'lucide-react';
+import { ArrowLeft, Brush, Check, Slash, Sparkles } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
@@ -18,77 +18,10 @@ import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
 import { vectorizeImage } from '@/ai/flows/vectorize-image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { CUP_CATALOG, ALL_OPACITIES, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS } from '@/lib/cup-data';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { cn } from '@/lib/utils';
 
-
-// Mock data - replace with your actual data fetching
-const LONG_DRINK_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCAxMjAiPjxwYXRoIGQ9Ik01LDAgSDU1IEw1MCwxMjAgSDEwIFoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
-const TWISTER_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MCAxNDAiPjxwYXRoIGQ9Ik0wIDEwaDcwdjE1SDB6TTEwIDMwaDUwbC01IDEwMEgxNXpNMzIgMGg2djEwaC02eiIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+';
-const CALDERETA_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCAxMDAiPjxwYXRoIGQ9Ik01LDAgSDc1IEw2NSwxMDAgSDE1IFoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==';
-
-const ALL_OPACITIES = ['Fosco', 'Transparente'] as const;
-const ALL_RIMS = ['Nenhuma', 'Dourado', 'Prata', 'Rosa Gold'] as const;
-
-const DEGRADE_COLORS = [
-    'Nenhum',
-    'Rosa Pink',
-    'Azul',
-    'Verde',
-    'Laranja',
-    'Vermelho',
-    'Preto',
-    'Prata',
-    'Amarelo',
-    'Roxo',
-    'Rose Gold',
-    'Dourado',
-    'Rosa Chiclete',
-    'Cobre',
-];
-
-const CUP_CATALOG: CupModel[] = [
-    // Long Drink
-    ...ALL_OPACITIES.flatMap(opacity =>
-        ALL_RIMS.map(rim => ({
-            id: `long-drink-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
-            name: 'Copo Long Drink',
-            imageUrl: LONG_DRINK_SVG,
-            basePrice: 3.50 + (rim !== 'Nenhuma' ? 0.75 : 0),
-            colorName: 'Branco', // Default for preview
-            colorHex: '#FFFFFF', // Default for preview
-            opacityType: opacity,
-            rimColor: rim,
-            printableArea: { widthPercent: 80, heightPercent: 40, width_mm: 50, height_mm: 80 },
-        }))
-    ),
-    // Twister
-    ...ALL_OPACITIES.flatMap(opacity =>
-        ALL_RIMS.map(rim => ({
-            id: `twister-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
-            name: 'Copo Twister com Tampa',
-            imageUrl: TWISTER_SVG,
-            basePrice: 4.80 + (rim !== 'Nenhuma' ? 0.90 : 0),
-            colorName: 'Branco', // Default for preview
-            colorHex: '#FFFFFF', // Default for preview
-            opacityType: opacity,
-            rimColor: rim,
-            printableArea: { widthPercent: 85, heightPercent: 35, width_mm: 55, height_mm: 90 },
-        }))
-    ),
-    // Caldereta
-    ...ALL_OPACITIES.flatMap(opacity =>
-        ALL_RIMS.map(rim => ({
-            id: `caldereta-${opacity}-${rim}`.toLowerCase().replace(/\s/g, '-'),
-            name: 'Copo Caldereta',
-            imageUrl: CALDERETA_SVG,
-            basePrice: 3.20 + (rim !== 'Nenhuma' ? 0.70 : 0),
-            colorName: 'Branco', // Default for preview
-            colorHex: '#FFFFFF', // Default for preview
-            opacityType: opacity,
-            rimColor: rim,
-            printableArea: { widthPercent: 75, heightPercent: 50, width_mm: 60, height_mm: 70 },
-        }))
-    ),
-];
 
 const getAvailableCupOptions = (cupName: string) => {
     const allOptions = CUP_CATALOG.filter(c => c.name === cupName);
@@ -99,10 +32,9 @@ const getAvailableCupOptions = (cupName: string) => {
 
 interface ArtGalleryProps {
     selectedCupName: string;
-    onBackToSelector: () => void;
 }
 
-export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProps) {
+export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     const { toast } = useToast();
     const [isGenerating, startGenerationTransition] = useTransition();
     const [isVectorizing, startVectorizingTransition] = useTransition();
@@ -356,8 +288,6 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
     return (
         <div>
             <div className="flex items-center gap-4 mb-8">
-                <Button variant="outline" size="sm" onClick={onBackToSelector}><ArrowLeft className="mr-2 h-4 w-4" /> Voltar para Seleção</Button>
-                <Separator orientation="vertical" className="h-6" />
                 <h2 className="text-xl font-bold">Personalizando: <span className="text-primary">{selectedCupName}</span></h2>
             </div>
             
@@ -386,16 +316,30 @@ export function ArtGallery({ selectedCupName, onBackToSelector }: ArtGalleryProp
                                 </div>
                                 <div>
                                     <Label className="font-bold">Borda</Label>
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                        {rims.map(rim => (
-                                            <Button key={rim} variant={selectedRim === rim ? 'secondary' : 'outline'} onClick={() => setSelectedRim(rim)}>
-                                                {rim === 'Dourado' && <div className="w-4 h-4 mr-2 rounded-full bg-yellow-500" />}
-                                                {rim === 'Prata' && <div className="w-4 h-4 mr-2 rounded-full bg-slate-400" />}
-                                                {rim === 'Rosa Gold' && <div className="w-4 h-4 mr-2 rounded-full bg-rose-400" />}
-                                                {rim}
-                                            </Button>
-                                        ))}
-                                    </div>
+                                    <TooltipProvider>
+                                        <div className="flex flex-wrap gap-3 mt-2">
+                                            {rims.map(rim => (
+                                                <Tooltip key={rim}>
+                                                    <TooltipTrigger asChild>
+                                                        <button
+                                                            onClick={() => setSelectedRim(rim)}
+                                                            className={cn(
+                                                                "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all",
+                                                                selectedRim === rim ? 'border-primary ring-2 ring-primary ring-offset-2 ring-offset-background' : 'border-muted hover:border-foreground/50'
+                                                            )}
+                                                            style={{ backgroundColor: rim === 'Nenhuma' ? 'hsl(var(--muted))' : RIM_COLORS[rim] }}
+                                                        >
+                                                            {selectedRim === rim && <Check className="h-5 w-5 text-white mix-blend-difference" />}
+                                                            {rim === 'Nenhuma' && selectedRim !== 'Nenhuma' && <Slash className="h-5 w-5 text-muted-foreground" />}
+                                                        </button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{rim}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            ))}
+                                        </div>
+                                    </TooltipProvider>
                                 </div>
                                 <Separator />
                                 <div>
