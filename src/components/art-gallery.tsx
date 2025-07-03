@@ -3,24 +3,21 @@
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { QuoteSummary } from './quote-summary';
 import { CheckoutView } from './checkout-view';
 import { Loader } from './loader';
 import { Separator } from './ui/separator';
-import { ArrowLeft, Brush, Check, Slash, Sparkles } from 'lucide-react';
+import { ArrowLeft, Check, Slash, Sparkles } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { Input } from './ui/input';
 import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
-import { vectorizeImage } from '@/ai/flows/vectorize-image';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CUP_CATALOG, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/lib/cup-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
-import { Slider } from './ui/slider';
 
 
 const getAvailableCupOptions = (cupName: string) => {
@@ -37,7 +34,6 @@ interface ArtGalleryProps {
 export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     const { toast } = useToast();
     const [isGenerating, startGenerationTransition] = useTransition();
-    const [isVectorizing, startVectorizingTransition] = useTransition();
 
     const [view, setView] = useState<'editor' | 'quote' | 'checkout'>('editor');
 
@@ -98,29 +94,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             }
         });
     };
-
-    const handleVectorizeArt = () => {
-        if (!art) {
-            toast({ variant: 'destructive', title: 'Atenção', description: 'Gere uma arte primeiro.' });
-            return;
-        }
-        startVectorizingTransition(async () => {
-            const result = await vectorizeImage({ imageDataUri: art.imageUrl });
-            if (result.vectorizedImageDataUri) {
-                updateArtProperty({ imageUrl: result.vectorizedImageDataUri });
-                toast({ title: 'Sucesso', description: 'Sua arte foi vetorizada.' });
-            } else {
-                toast({ variant: 'destructive', title: 'Erro ao Vetorizar', description: 'Não foi possível vetorizar a arte.' });
-            }
-        });
-    };
     
-    const updateArtProperty = (props: Partial<GeneratedArt>) => {
-        if (art) {
-            setArt(prev => prev ? { ...prev, ...props } : null);
-        }
-    }
-
     const handleGoToQuote = () => {
         if (!art || !analysis) {
             toast({ variant: 'destructive', title: 'Atenção', description: 'Você precisa gerar e analisar uma arte antes de prosseguir.' });
@@ -207,8 +181,8 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                 <CardHeader>
                     <CardTitle>Pré-visualização</CardTitle>
                 </CardHeader>
-                <CardContent className="flex items-center justify-center p-4 min-h-[400px] md:min-h-[500px] bg-muted/50 rounded-lg">
-                    <div className="relative w-56 h-96 sm:w-64 sm:h-[426px]">
+                <CardContent className="flex items-center justify-center p-4 min-h-[400px] md:min-h-[500px] bg-muted/50 rounded-lg overflow-hidden">
+                    <div className="relative w-56 h-96 sm:w-64 sm:h-[426px] animate-cup-rotate" style={{ transformStyle: 'preserve-3d' }}>
                         
                         <Image src={activeCupModel.imageUrl} alt={activeCupModel.name} fill className="object-contain" data-ai-hint="white cup" />
 
@@ -255,11 +229,6 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                         )}
                     </div>
                 </CardContent>
-                <CardFooter>
-                    <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art || isGenerating || isVectorizing}>
-                        Aprovar Arte e ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
-                    </Button>
-                </CardFooter>
             </Card>
         );
     }
@@ -406,42 +375,19 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                                     value={artPrompt}
                                     onChange={(e) => setArtPrompt(e.target.value)}
                                 />
-                                <Button onClick={handleGenerateArt} disabled={isGenerating || isVectorizing} className="w-full">
+                                <Button onClick={handleGenerateArt} disabled={isGenerating} className="w-full">
                                     {isGenerating ? <Loader message="Gerando..." /> : <Sparkles />}
                                     Gerar Arte com IA
                                 </Button>
                             </CardContent>
                         </Card>
-
-                        {/* Toolbar */}
-                        {art && (
-                        <Card>
-                            <CardHeader><CardTitle>3. Edite a Arte</CardTitle></CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="x-pos">Posição (X, Y)</Label>
-                                    <div className="flex gap-2">
-                                        <Input id="x-pos" type="number" value={art.x} onChange={e => updateArtProperty({ x: parseInt(e.target.value, 10) })} />
-                                        <Input id="y-pos" type="number" value={art.y} onChange={e => updateArtProperty({ y: parseInt(e.target.value, 10) })} />
-                                    </div>
-                                </div>
-                                 <div className="space-y-2">
-                                    <Label htmlFor="scale-slider">Tamanho ({art.scale.toFixed(2)}x)</Label>
-                                    <Slider id="scale-slider" value={[art.scale]} onValueChange={value => updateArtProperty({ scale: value[0] })} min={0.2} max={2} step={0.05} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="rotation-slider">Rotação ({art.rotation}°)</Label>
-                                    <Slider id="rotation-slider" value={[art.rotation]} onValueChange={value => updateArtProperty({ rotation: value[0] })} min={-180} max={180} step={1} />
-                                </div>
-                                <Button onClick={handleVectorizeArt} disabled={isVectorizing || isGenerating} variant="outline" className="w-full">
-                                    {isVectorizing ? <Loader message="Vetorizando..." /> : <Brush />}
-                                    Vetorizar Arte
-                                </Button>
-                            </CardContent>
-                        </Card>
-                        )}
                     </div>
                 </div>
+            </div>
+            <div className="mt-8 pt-8 border-t">
+                 <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art || isGenerating}>
+                    Aprovar Arte e ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
+                </Button>
             </div>
         </div>
     );

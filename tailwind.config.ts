@@ -86,10 +86,15 @@ export default {
             height: '0',
           },
         },
+        'rotate-y': {
+          '0%, 100%': { transform: 'perspective(1000px) rotateY(20deg)' },
+          '50%': { transform: 'perspective(1000px) rotateY(-20deg)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'cup-rotate': 'rotate-y 10s ease-in-out infinite',
       },
     },
   },
