@@ -151,13 +151,16 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
         )}
       </mesh>
       {rimNode && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
-        <mesh geometry={rimNode.geometry}>
+        <mesh 
+            geometry={rimNode.geometry} 
+            position={[0, 0.001, 0]}
+        >
            <meshStandardMaterial
             color={RIM_COLORS[cupModel.rimColor]}
             emissive={RIM_COLORS[cupModel.rimColor]}
-            emissiveIntensity={0.4}
+            emissiveIntensity={0.5}
             roughness={0.1}
-            metalness={0.8} 
+            metalness={0.9} 
             side={THREE.DoubleSide} />
         </mesh>
       )}

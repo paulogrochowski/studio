@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useRef } from 'react';
@@ -295,11 +296,11 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                                                 >
                                                     <div className="flex items-center space-x-2">
                                                         <RadioGroupItem value="Cima" id="pos-cima" />
-                                                        <Label htmlFor="pos-cima" className="font-normal">De Cima para Baixo</Label>
+                                                        <Label htmlFor="pos-cima" className="font-normal">De Baixo para Cima</Label>
                                                     </div>
                                                     <div className="flex items-center space-x-2">
                                                         <RadioGroupItem value="Baixo" id="pos-baixo" />
-                                                        <Label htmlFor="pos-baixo" className="font-normal">De Baixo para Cima</Label>
+                                                        <Label htmlFor="pos-baixo" className="font-normal">De Cima para Baixo</Label>
                                                     </div>
                                                 </RadioGroup>
                                             </div>
