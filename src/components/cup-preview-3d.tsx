@@ -33,58 +33,24 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
   return new THREE.CanvasTexture(canvas);
 }
 
+// This is a more idiomatic R3F component.
+// It uses declarative JSX for geometries and materials, which is more stable.
 function CupMesh({ cupModel, art }: CupPreview3DProps) {
   const meshRef = useRef<THREE.Group>(null);
   const artTexture = useTexture(art?.imageUrl || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
 
-  // Define cup geometry based on its name
-  let geometry: THREE.BufferGeometry = new THREE.CylinderGeometry(0.4, 0.3, 1.5, 32); 
-  let rimGeometry: THREE.BufferGeometry | null = new THREE.TorusGeometry(0.4, 0.02, 16, 64);
-  let decalPosition = new THREE.Vector3(0, 0, 0.4);
-  let decalScale = new THREE.Vector3(0.7, 0.7, 1);
-
-  switch (cupModel.name) {
-    case 'Copo Twister com Tampa':
-      geometry = new THREE.CylinderGeometry(0.45, 0.35, 1.4, 32);
-      rimGeometry = new THREE.TorusGeometry(0.45, 0.02, 16, 64);
-      decalPosition = new THREE.Vector3(0, -0.1, 0.45);
-      decalScale = new THREE.Vector3(0.8, 0.6, 1);
-      break;
-    case 'Copo Caldereta':
-      geometry = new THREE.CylinderGeometry(0.45, 0.38, 1.2, 32);
-      rimGeometry = new THREE.TorusGeometry(0.45, 0.02, 16, 64);
-      decalPosition = new THREE.Vector3(0, 0, 0.45);
-      decalScale = new THREE.Vector3(0.8, 0.8, 1);
-      break;
-    case 'Taça Gin':
-      geometry = new THREE.SphereGeometry(0.6, 32, 32, 0, Math.PI * 2, 0, Math.PI * 1.8);
-      rimGeometry = new THREE.TorusGeometry(0.6, 0.02, 16, 64);
-      decalPosition = new THREE.Vector3(0, 0, 0.6);
-      decalScale = new THREE.Vector3(0.8, 0.8, 1);
-      break;
-  }
-   // Adjust rim position to be at the top of the geometry
-  if (rimGeometry && 'parameters' in geometry) {
-    const geoParams = geometry.parameters;
-    const rimY = (geoParams.height || 1.5) / 2;
-    rimGeometry.translate(0, rimY, 0);
-  }
-   if (rimGeometry && cupModel.name === 'Taça Gin') {
-      rimGeometry.translate(0, 0.05, 0); // slight adjustment for sphere
-   }
-
-  // Define materials
+  // Define shared material properties
   const isTransparent = cupModel.opacityType === 'Transparente';
   const hasDegrade = cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum';
 
   let map = null;
-  if (hasDegrade) {
+  if (hasDegrade && cupModel.degradePosition) {
       const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
       const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
-      map = createGradientTexture(degradeColorHex, baseColor, cupModel.degradePosition!);
+      map = createGradientTexture(degradeColorHex, baseColor, cupModel.degradePosition);
   }
 
-  const cupMaterial = new THREE.MeshStandardMaterial({
+  const cupMaterialProps = {
     color: hasDegrade ? '#ffffff' : cupModel.colorHex,
     map: map,
     roughness: 0.1,
@@ -92,32 +58,96 @@ function CupMesh({ cupModel, art }: CupPreview3DProps) {
     transparent: true,
     opacity: isTransparent ? 0.4 : 1.0,
     side: THREE.DoubleSide,
-  });
-  
-  let rimMaterial = null;
+  };
+
+  let rimMaterialProps = null;
   if (cupModel.rimColor && cupModel.rimColor !== 'Nenhuma') {
-      rimMaterial = new THREE.MeshStandardMaterial({
+      rimMaterialProps = {
           color: RIM_COLORS[cupModel.rimColor],
           roughness: 0.1,
           metalness: 0.8,
-      });
+      };
+  }
+  
+  // Conditionally render the correct geometry and decal
+  const renderCupGeometry = () => {
+      switch (cupModel.name) {
+          case 'Copo Twister com Tampa':
+              return (
+                  <mesh>
+                      <cylinderGeometry args={[0.45, 0.35, 1.4, 32]} />
+                      <meshStandardMaterial {...cupMaterialProps} />
+                      {art && <Decal position={[0, -0.1, 0.45]} scale={[0.8, 0.6, 1]} map={artTexture} />}
+                  </mesh>
+              );
+          case 'Copo Caldereta':
+              return (
+                  <mesh>
+                      <cylinderGeometry args={[0.45, 0.38, 1.2, 32]} />
+                      <meshStandardMaterial {...cupMaterialProps} />
+                      {art && <Decal position={[0, 0, 0.45]} scale={[0.8, 0.8, 1]} map={artTexture} />}
+                  </mesh>
+              );
+          case 'Taça Gin':
+              return (
+                  <mesh>
+                      <sphereGeometry args={[0.6, 32, 32, 0, Math.PI * 2, 0, Math.PI * 1.8]} />
+                      <meshStandardMaterial {...cupMaterialProps} />
+                      {art && <Decal position={[0, 0, 0.6]} scale={[0.8, 0.8, 1]} map={artTexture} />}
+                  </mesh>
+              );
+          case 'Copo Long Drink':
+          default:
+              return (
+                  <mesh>
+                      <cylinderGeometry args={[0.4, 0.3, 1.5, 32]} />
+                      <meshStandardMaterial {...cupMaterialProps} />
+                      {art && <Decal position={[0, 0, 0.4]} scale={[0.7, 0.7, 1]} map={artTexture} />}
+                  </mesh>
+              );
+      }
+  };
+  
+  const renderRimGeometry = () => {
+    if (!rimMaterialProps) return null;
+    
+    switch (cupModel.name) {
+      case 'Copo Twister com Tampa':
+        return (
+          <mesh position={[0, 1.4 / 2, 0]}>
+            <torusGeometry args={[0.45, 0.02, 16, 64]} />
+            <meshStandardMaterial {...rimMaterialProps} />
+          </mesh>
+        );
+      case 'Copo Caldereta':
+        return (
+          <mesh position={[0, 1.2 / 2, 0]}>
+            <torusGeometry args={[0.45, 0.02, 16, 64]} />
+            <meshStandardMaterial {...rimMaterialProps} />
+          </mesh>
+        );
+      case 'Taça Gin':
+         return (
+          <mesh position={[0, 0.05, 0]}>
+            <torusGeometry args={[0.6, 0.02, 16, 64]} />
+            <meshStandardMaterial {...rimMaterialProps} />
+          </mesh>
+        );
+      case 'Copo Long Drink':
+      default:
+         return (
+          <mesh position={[0, 1.5 / 2, 0]}>
+            <torusGeometry args={[0.4, 0.02, 16, 64]} />
+            <meshStandardMaterial {...rimMaterialProps} />
+          </mesh>
+        );
+    }
   }
 
   return (
     <group ref={meshRef}>
-      <mesh geometry={geometry} material={cupMaterial}>
-        {art && (
-          <Decal
-            position={decalPosition}
-            rotation={[0, 0, 0]}
-            scale={decalScale}
-            map={artTexture}
-          />
-        )}
-      </mesh>
-       {rimMaterial && rimGeometry && (
-         <mesh geometry={rimGeometry} material={rimMaterial} />
-       )}
+      {renderCupGeometry()}
+      {renderRimGeometry()}
     </group>
   );
 }
