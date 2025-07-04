@@ -29,10 +29,20 @@ export default function LandingPage() {
 
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {CUP_TYPES_SUMMARY.map((type) => {
-                const cupModel = CUP_CATALOG.find(c => c.name === type.name);
+                let cupModel = CUP_CATALOG.find(c => c.name === type.name);
 
                 if (!cupModel) {
                     return null; 
+                }
+
+                // Customize the Gin Goblet preview on the landing page to match the user's image.
+                if (type.name === 'Taça Gin') {
+                    cupModel = {
+                        ...cupModel,
+                        opacityType: 'Fosco',
+                        degradeColor: 'Rosa Chiclete',
+                        degradePosition: 'Baixo'
+                    };
                 }
 
                 return (

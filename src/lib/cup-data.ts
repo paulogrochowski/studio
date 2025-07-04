@@ -17,7 +17,7 @@ export const CUP_TYPES_SUMMARY = [
   { name: 'Copo Long Drink', imageUrl: LONG_DRINK_PHOTO, basePrice: 3.50, 'data-ai-hint': 'white cup' },
   { name: 'Copo Twister com Tampa', imageUrl: TWISTER_PHOTO, basePrice: 4.80, 'data-ai-hint': 'clear cup lid' },
   { name: 'Copo Caldereta', imageUrl: CALDERETA_PHOTO, basePrice: 3.20, 'data-ai-hint': 'black cup' },
-  { name: 'Taça Gin', imageUrl: TAÇA_GIN_PHOTO, basePrice: 7.90, 'data-ai-hint': 'gin glass' },
+  { name: 'Taça Gin', imageUrl: TAÇA_GIN_PHOTO, basePrice: 7.90, 'data-ai-hint': 'pink goblet' },
 ];
 
 export const ALL_OPACITIES = ['Fosco', 'Transparente'] as const;
