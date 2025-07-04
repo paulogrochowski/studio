@@ -2,10 +2,15 @@
 
 import * as THREE from 'three';
 import React, { Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
+import dynamic from 'next/dynamic';
 import { OrbitControls, Decal, useTexture, useGLTF } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
+
+// Dynamically import Canvas to ensure it's client-side only, preventing SSR issues.
+const Canvas = dynamic(() => import('@react-three/fiber').then(mod => mod.Canvas), {
+  ssr: false,
+});
 
 // This function creates a gradient texture for the 'degrade' effect.
 // It's safe to run on the client-side as this component is client-only.
