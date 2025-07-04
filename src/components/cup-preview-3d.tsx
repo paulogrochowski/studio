@@ -126,17 +126,7 @@ function CupMesh({ cupModel, art }: CupPreview3DProps) {
             rotation={[0, 0, 0]}
             scale={decalScale}
             map={artTexture}
-          >
-             {/* This material ensures the decal itself has a transparent background */}
-             <meshStandardMaterial
-                polygonOffset
-                polygonOffsetFactor={-1}
-                map={artTexture}
-                transparent
-                depthTest={true}
-                depthWrite={false}
-             />
-          </Decal>
+          />
         )}
       </mesh>
        {rimMaterial && rimGeometry && (
@@ -155,7 +145,7 @@ export default function CupPreview3D(props: CupPreview3DProps) {
       <Suspense fallback={null}>
         <CupMesh {...props} />
       </Suspense>
-      <OrbitControls enableZoom={true} autoRotate autoRotateSpeed={0.5} />
+      <OrbitControls enableZoom={true} />
     </Canvas>
   );
 }
