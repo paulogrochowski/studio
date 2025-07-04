@@ -116,36 +116,6 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
     return newGeometry;
   }, [cupNode?.geometry]);
 
-  const modifiedRimGeometry = useMemo(() => {
-    if (!cupNode?.geometry || !rimNode?.geometry) return null;
-
-    const cupGeom = cupNode.geometry.clone();
-    cupGeom.computeBoundingBox();
-    const cupBbox = cupGeom.boundingBox!;
-    const cupHeight = cupBbox.max.y - cupBbox.min.y;
-    const cupTopY = cupBbox.max.y;
-
-    const targetRimHeight = cupHeight / 12;
-
-    const rimGeom = rimNode.geometry.clone();
-    rimGeom.computeVertexNormals(); // Smooth the rim as well
-    rimGeom.computeBoundingBox();
-    const rimBbox = rimGeom.boundingBox!;
-    const rimInitialHeight = rimBbox.max.y - rimBbox.min.y;
-
-    const scaleY = rimInitialHeight > 0.001 ? targetRimHeight / rimInitialHeight : 1;
-    
-    const newRimGeom = rimGeom.clone();
-    newRimGeom.scale(1, scaleY, 1);
-    newRimGeom.computeBoundingBox();
-    const newRimBbox = newRimGeom.boundingBox!;
-
-    const translationY = cupTopY - newRimBbox.max.y;
-    newRimGeom.translate(0, translationY, 0);
-
-    return newRimGeom;
-  }, [cupNode?.geometry, rimNode?.geometry]);
-
 
   const isTransparent = cupModel.opacityType === 'Transparente';
   const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
@@ -174,15 +144,15 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
           opacity={isTransparent ? 0.6 : 1.0}
           side={THREE.DoubleSide}
         />
-        {art && (
+        {art && art.id !== 'no-art' && (
             <Suspense fallback={null}>
               <ArtDecal art={art} scale={artScale} positionY={artPositionY} />
             </Suspense>
         )}
       </mesh>
-      {cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && modifiedRimGeometry && (
+      {rimNode && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
         <mesh
-          geometry={modifiedRimGeometry}
+          geometry={rimNode.geometry}
           material-color={RIM_COLORS[cupModel.rimColor]}
           material-roughness={0.1}
           material-metalness={0.8}

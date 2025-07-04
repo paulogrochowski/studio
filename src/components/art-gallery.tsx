@@ -3,12 +3,12 @@
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { QuoteSummary } from './quote-summary';
 import { CheckoutView } from './checkout-view';
 import { Loader } from './loader';
 import { Separator } from './ui/separator';
-import { ArrowLeft, Check, Slash, Sparkles } from 'lucide-react';
+import { ArrowLeft, Check, Download, Slash, Sparkles } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/app/actions';
@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 import { cn } from '@/lib/utils';
 import { PreviewCard } from './preview-card';
 import { Slider } from './ui/slider';
+import { ScrollArea } from './ui/scroll-area';
 
 interface ArtGalleryProps {
     selectedCupName: string;
@@ -99,10 +100,6 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     };
     
     const handleGoToQuote = () => {
-        if (!art || !analysis) {
-            toast({ variant: 'destructive', title: 'Atenção', description: 'Você precisa gerar e analisar uma arte antes de prosseguir.' });
-            return;
-        }
         setView('quote');
     }
 
@@ -134,25 +131,44 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             setSelectedDegradePosition('Nenhum');
         }
     }
+    
+    const handleSaveArt = () => {
+        if (!art?.imageUrl || art.imageUrl.startsWith('data:image/gif')) return;
+        const link = document.createElement('a');
+        link.href = art.imageUrl;
+        link.download = `copos-mania-arte-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast({ title: 'Sucesso', description: 'Sua arte foi salva no seu dispositivo.' });
+    };
 
     if (view === 'checkout' && finalOrder) {
         return <CheckoutView orderDetails={finalOrder} onStartNewOrder={resetFlow} />;
     }
 
-    if (view === 'quote' && art && analysis) {
-        const finalArt: GeneratedArt = {
+    if (view === 'quote') {
+        const finalArt: GeneratedArt = art ? {
             ...art,
             scale: artScale,
             positionY: artPositionY
+        } : {
+            id: 'no-art',
+            imageUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', // transparent pixel
+            prompt: 'Sem arte',
+            scale: 0,
+            positionY: 0,
         };
+
+        const finalAnalysis = analysis ? { score: analysis.score, reasoning: analysis.reasoning } : { score: 0, reasoning: 'Nenhuma arte para analisar.' };
 
         return (
             <QuoteSummary
                 initialDetails={{
                     cupModel: activeCupModel,
-                    eventDescription: art.prompt,
+                    eventDescription: art?.prompt || 'Sem arte',
                     art: finalArt,
-                    artComplexity: { score: analysis.score, reasoning: analysis.reasoning },
+                    artComplexity: finalAnalysis,
                 }}
                 onFinalize={handleFinalize}
                 onBack={() => setView('editor')}
@@ -168,7 +184,8 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 
-                <div className="order-2 lg:order-1 lg:col-span-2 space-y-6">
+                <div className="order-2 lg:order-1 lg:col-span-2">
+                    <ScrollArea className="h-[calc(100vh-160px)] pr-4">
                       <div className="space-y-6">
                         {/* Cup Customization */}
                         <Card>
@@ -323,10 +340,17 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                                         <Slider id="art-position" value={[artPositionY]} onValueChange={(v) => setArtPositionY(v[0])} min={-0.3} max={0.5} step={0.01} />
                                     </div>
                                 </CardContent>
+                                <CardFooter>
+                                    <Button variant="outline" className="w-full" onClick={handleSaveArt} disabled={!art?.imageUrl || art.imageUrl.startsWith('data:image/gif')}>
+                                        <Download className="mr-2" />
+                                        Salvar Arte
+                                    </Button>
+                                </CardFooter>
                             </Card>
                          )}
 
-                    </div>
+                      </div>
+                    </ScrollArea>
                 </div>
 
                  <div className="order-1 lg:order-2 lg:col-span-1">
@@ -336,8 +360,8 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                 </div>
             </div>
             <div className="mt-8 pt-8 border-t">
-                 <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={!art || isGenerating}>
-                    Aprovar Arte e ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
+                 <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={isGenerating}>
+                    Ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
                 </Button>
             </div>
         </div>

@@ -114,15 +114,17 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
           </div>
 
           {/* Art Details */}
-          <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-            <div className="relative w-24 h-24 rounded-md overflow-hidden border bg-white shadow-inner shrink-0 checkerboard">
-                <Image src={art.imageUrl} alt="Arte escolhida" fill className="object-contain" />
+          {art.id !== 'no-art' && (
+            <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                <div className="relative w-24 h-24 rounded-md overflow-hidden border bg-white shadow-inner shrink-0 checkerboard">
+                    <Image src={art.imageUrl} alt="Arte escolhida" fill className="object-contain" />
+                </div>
+                 <div>
+                  <h3 className="font-bold">Arte Personalizada</h3>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-3"><strong>Descrição:</strong> {initialDetails.eventDescription}</p>
+                </div>
             </div>
-             <div>
-              <h3 className="font-bold">Arte Personalizada</h3>
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-3"><strong>Descrição:</strong> {initialDetails.eventDescription}</p>
-            </div>
-          </div>
+          )}
           
           <Separator />
           <div className="space-y-4">

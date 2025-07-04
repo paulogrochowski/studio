@@ -49,17 +49,19 @@ export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProp
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-2">
-            <h3 className="font-bold text-lg text-center">Arte Final para Produção</h3>
-            <Card className="p-4 checkerboard">
-                <div className="relative aspect-square max-w-sm mx-auto">
-                    <Image src={orderDetails.art.imageUrl} alt="Arte final para produção" fill className="object-contain" />
-                </div>
-            </Card>
-            <CardDescription className="text-center text-xs">Esta imagem será usada na produção do seu copo.</CardDescription>
-        </div>
-
-        <Separator />
+        {orderDetails.art.id !== 'no-art' && (
+            <div className="space-y-2">
+                <h3 className="font-bold text-lg text-center">Arte Final para Produção</h3>
+                <Card className="p-4 checkerboard">
+                    <div className="relative aspect-square max-w-sm mx-auto">
+                        <Image src={orderDetails.art.imageUrl} alt="Arte final para produção" fill className="object-contain" />
+                    </div>
+                </Card>
+                <CardDescription className="text-center text-xs">Esta imagem será usada na produção do seu copo.</CardDescription>
+            </div>
+        )}
+        
+        {orderDetails.art.id !== 'no-art' && <Separator />}
         
         <div className="bg-secondary/50 rounded-lg p-6 space-y-4">
           <h3 className="font-bold text-lg text-center">Resumo do Pedido</h3>
