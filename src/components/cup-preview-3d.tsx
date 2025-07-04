@@ -47,13 +47,18 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
   canvas.height = 256;
   const context = canvas.getContext('2d')!;
   const gradient = context.createLinearGradient(0, 0, 0, 256);
-  if (position === 'Cima') {
-    gradient.addColorStop(0, color1);
-    gradient.addColorStop(1, color2);
-  } else {
-    gradient.addColorStop(0, color2);
-    gradient.addColorStop(1, color1);
+
+  // This logic is inverted to compensate for the flipped Y-coordinate system
+  // between the 2D canvas texture and the 3D model's UV mapping.
+  // This ensures the visual result matches the UI text.
+  if (position === 'Cima') { // "De Baixo para Cima" -> Color starts at bottom of cup
+    gradient.addColorStop(0, color2); // Cup top (canvas top) gets base color
+    gradient.addColorStop(1, color1); // Cup bottom (canvas bottom) gets degrade color
+  } else { // "De Cima para Baixo" -> Color starts at top of cup
+    gradient.addColorStop(0, color1); // Cup top (canvas top) gets degrade color
+    gradient.addColorStop(1, color2); // Cup bottom (canvas bottom) gets base color
   }
+
   context.fillStyle = gradient;
   context.fillRect(0, 0, 2, 256);
   return new THREE.CanvasTexture(canvas);
