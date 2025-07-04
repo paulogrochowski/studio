@@ -51,11 +51,11 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
   // Inverting the logic again based on user feedback. The V-coordinate mapping
   // between canvas and model can be tricky. This should now align with the UI.
   if (position === 'Cima') { // UI says "De Baixo para Cima"
-    gradient.addColorStop(0, color1);
-    gradient.addColorStop(1, color2);
-  } else { // UI says "De Cima para Baixo"
     gradient.addColorStop(0, color2);
     gradient.addColorStop(1, color1);
+  } else { // UI says "De Cima para Baixo"
+    gradient.addColorStop(0, color1);
+    gradient.addColorStop(1, color2);
   }
 
   context.fillStyle = gradient;
@@ -173,16 +173,21 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
 interface CupPreview3DProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
-  artScale: number;
-  artPositionY: number;
+  artScale?: number;
+  artPositionY?: number;
 }
 
-export default function CupPreview3D({ cupModel, art, artScale, artPositionY }: CupPreview3DProps) {
+export default function CupPreview3D({ cupModel, art, artScale = 0.6, artPositionY = 0.1 }: CupPreview3DProps) {
   const [modelExists, setModelExists] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // Check if the model file exists and is the correct file type.
+    // This prevents trying to load a 404 HTML page as a model.
     fetch('/models/cup.glb')
-      .then(response => setModelExists(response.ok))
+      .then(response => {
+        const contentType = response.headers.get("content-type");
+        setModelExists(response.ok && !contentType?.includes('text/html'));
+      })
       .catch(() => setModelExists(false));
   }, []);
 
