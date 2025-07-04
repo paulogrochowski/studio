@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,6 +58,11 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     
     // Final Order State
     const [finalOrder, setFinalOrder] = useState<OrderDetails | null>(null);
+    const finalActionsRef = useRef<HTMLDivElement>(null);
+
+    const handleScrollToActions = () => {
+        finalActionsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     const baseCupModel = CUP_CATALOG.find(c =>
         c.name === selectedCupName &&
@@ -355,11 +360,17 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
 
                  <div className="order-1 lg:order-2 lg:col-span-1">
                     <div className="sticky top-24">
-                        <PreviewCard cupModel={activeCupModel} art={art} artScale={artScale} artPositionY={artPositionY} />
+                        <PreviewCard 
+                            cupModel={activeCupModel} 
+                            art={art} 
+                            artScale={artScale} 
+                            artPositionY={artPositionY} 
+                            onScrollDown={handleScrollToActions} 
+                        />
                     </div>
                 </div>
             </div>
-            <div className="mt-8 pt-8 border-t">
+            <div ref={finalActionsRef} className="mt-8 pt-8 border-t">
                  <Button onClick={handleGoToQuote} size="lg" className="w-full" disabled={isGenerating}>
                     Ir para Orçamento <ArrowLeft className="ml-2 -rotate-180" />
                 </Button>

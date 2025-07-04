@@ -5,12 +5,15 @@ import dynamic from 'next/dynamic';
 import type { CupModel, GeneratedArt } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader } from './loader';
+import { Button } from './ui/button';
+import { ChevronDown } from 'lucide-react';
 
 interface PreviewCardProps {
     cupModel: CupModel;
     art: GeneratedArt | null;
     artScale: number;
     artPositionY: number;
+    onScrollDown: () => void;
 }
 
 // Dynamically import the 3D preview component with SSR turned off.
@@ -24,16 +27,27 @@ const CupPreview3D = dynamic(() => import('./cup-preview-3d'), {
     )
 });
 
-export function PreviewCard({ cupModel, art, artScale, artPositionY }: PreviewCardProps) {
+export function PreviewCard({ cupModel, art, artScale, artPositionY, onScrollDown }: PreviewCardProps) {
     return (
-        <Card className="overflow-hidden">
-            <CardHeader>
-                <CardTitle>Pré-visualização do Copo</CardTitle>
-                <CardDescription>Interaja com o modelo 3D para ver todos os ângulos.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0 h-[400px] md:h-[500px]">
-                 <CupPreview3D cupModel={cupModel} art={art} artScale={artScale} artPositionY={artPositionY} />
-            </CardContent>
-        </Card>
+        <div className="relative">
+            <Card className="overflow-hidden">
+                <CardHeader>
+                    <CardTitle>Pré-visualização do Copo</CardTitle>
+                    <CardDescription>Interaja com o modelo 3D para ver todos os ângulos.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0 h-[400px] md:h-[500px]">
+                    <CupPreview3D cupModel={cupModel} art={art} artScale={artScale} artPositionY={artPositionY} />
+                </CardContent>
+            </Card>
+            <Button
+                variant="secondary"
+                size="icon"
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 rounded-full h-12 w-12 shadow-lg animate-bounce"
+                onClick={onScrollDown}
+                aria-label="Rolar para baixo"
+            >
+                <ChevronDown className="h-8 w-8" />
+            </Button>
+        </div>
     );
 }
