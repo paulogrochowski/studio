@@ -1,21 +1,9 @@
-'use client';
-
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/header';
-import { CUP_TYPES_SUMMARY, CUP_CATALOG } from '@/lib/cup-data';
-import { Loader } from '@/components/loader';
-
-const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
-    ssr: false,
-    loading: () => (
-        <div className="w-full h-full flex items-center justify-center">
-            <Loader message="Carregando..." />
-        </div>
-    )
-});
+import { CUP_TYPES_SUMMARY } from '@/lib/cup-data';
 
 export default function LandingPage() {
   return (
@@ -28,31 +16,22 @@ export default function LandingPage() {
         </section>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {CUP_TYPES_SUMMARY.map((type) => {
-                let cupModel = CUP_CATALOG.find(c => c.name === type.name);
-
-                if (!cupModel) {
-                    return null; 
-                }
-
-                // Customize the Gin Goblet preview on the landing page to match the user's image.
-                if (type.name === 'Taça Gin') {
-                    cupModel = {
-                        ...cupModel,
-                        opacityType: 'Fosco',
-                        degradeColor: 'Rosa Chiclete',
-                        degradePosition: 'Baixo'
-                    };
-                }
-
+            {CUP_TYPES_SUMMARY.map((type, index) => {
                 return (
                     <Card key={type.name} className="flex flex-col text-center transition-all duration-300 bg-card hover:shadow-xl hover:-translate-y-1">
                         <CardHeader>
                             <CardTitle className="font-sans text-xl h-12 flex items-center justify-center">{type.name}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex-1 flex flex-col items-center justify-between gap-4">
-                            <div className="relative w-full h-56 text-foreground">
-                                <CupPreview3D cupModel={cupModel} art={null} />
+                            <div className="relative w-full h-56">
+                                <Image
+                                    src={type.imageUrl}
+                                    alt={type.name}
+                                    fill
+                                    className="object-contain"
+                                    data-ai-hint={type['data-ai-hint']}
+                                    priority={index === 0}
+                                />
                             </div>
                             <div className='w-full'>
                                 <p className="text-muted-foreground mb-4">
