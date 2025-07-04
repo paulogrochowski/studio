@@ -1,7 +1,7 @@
 'use client';
 
 import * as THREE from 'three';
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Decal, useTexture, useGLTF } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
@@ -96,6 +96,20 @@ interface CupPreview3DProps {
 
 // The main export is the Canvas containing the scene.
 export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    // This hook only runs on the client, after the component has mounted.
+    setIsClient(true);
+  }, []);
+
+  // Render a fallback on the server and on the initial client render.
+  // This ensures the 3D-heavy part is never touched by the server.
+  if (!isClient) {
+    // The parent dynamic import already provides a loader, so returning null is perfect.
+    return null;
+  }
+  
   return (
     <Canvas camera={{ position: [0, 0, 2.2], fov: 50 }}>
       <ambientLight intensity={1.2} />
