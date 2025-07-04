@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import React, { Suspense, Component, ReactNode, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Decal, useTexture, useGLTF } from '@react-three/drei';
+import { OrbitControls, Decal, useTexture, useGLTF, Stage } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 import { Loader } from './loader';
@@ -24,6 +24,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
 
     static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+        console.error("Caught a 3D rendering error:", error);
         return { hasError: true };
     }
 
@@ -91,7 +92,7 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
 
   return (
     <group dispose={null}>
-      <mesh geometry={cupNode.geometry}>
+      <mesh geometry={cupNode.geometry} castShadow receiveShadow>
         <meshStandardMaterial
           color={hasDegrade ? '#ffffff' : cupModel.colorHex}
           map={map}
@@ -162,14 +163,13 @@ export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
   
   return (
     <ErrorBoundary fallback={ErrorFallback}>
-      <Canvas camera={{ position: [0, 0, 2.2], fov: 50 }}>
-        <ambientLight intensity={1.2} />
-        <directionalLight position={[5, 5, 5]} intensity={1} />
-        <directionalLight position={[-5, -5, -5]} intensity={0.5} />
+      <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }}>
         <Suspense fallback={null}>
-          <CupMesh cupModel={cupModel} art={art} />
+          <Stage environment="city" intensity={0.6} adjustCamera={1.2} shadows={{ type: 'contact', opacity: 0.5, blur: 2 }}>
+            <CupMesh cupModel={cupModel} art={art} />
+          </Stage>
         </Suspense>
-        <OrbitControls enableZoom={true} autoRotate autoRotateSpeed={0.5} />
+        <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} minPolarAngle={Math.PI / 4} maxPolarAngle={Math.PI / 1.8} />
       </Canvas>
     </ErrorBoundary>
   );
