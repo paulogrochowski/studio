@@ -35,7 +35,12 @@ const generateCupArtFlow = ai.defineFlow(
     outputSchema: GenerateCupArtOutputSchema,
   },
   async (input) => {
-    const fullPrompt = `Gere uma arte vetorial/clipart com base na seguinte descrição: "${input.eventDescription}". A arte deve ser adequada para impressão em um copo. O fundo DEVE ser transparente. Não inclua o formato do copo ou qualquer texto na imagem, apenas a arte solicitada.`;
+    const fullPrompt = `Gere uma arte no estilo vetorial/clipart para ser impressa em um copo, com base na seguinte descrição: "${input.eventDescription}".
+
+REGRAS IMPORTANTES:
+1. A imagem gerada NÃO DEVE, em nenhuma hipótese, conter o desenho de um copo. Gere apenas a arte.
+2. O fundo da imagem DEVE ser transparente.
+3. Não inclua textos, a menos que seja pedido na descrição.`;
     
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
