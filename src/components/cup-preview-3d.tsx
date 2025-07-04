@@ -48,15 +48,14 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
   const context = canvas.getContext('2d')!;
   const gradient = context.createLinearGradient(0, 0, 0, 256);
 
-  // This logic is inverted to compensate for the flipped Y-coordinate system
-  // between the 2D canvas texture and the 3D model's UV mapping.
-  // This ensures the visual result matches the UI text.
-  if (position === 'Cima') { // "De Baixo para Cima" -> Color starts at bottom of cup
-    gradient.addColorStop(0, color2); // Cup top (canvas top) gets base color
-    gradient.addColorStop(1, color1); // Cup bottom (canvas bottom) gets degrade color
-  } else { // "De Cima para Baixo" -> Color starts at top of cup
-    gradient.addColorStop(0, color1); // Cup top (canvas top) gets degrade color
-    gradient.addColorStop(1, color2); // Cup bottom (canvas bottom) gets base color
+  // Inverting the logic again based on user feedback. The V-coordinate mapping
+  // between canvas and model can be tricky. This should now align with the UI.
+  if (position === 'Cima') { // UI says "De Baixo para Cima"
+    gradient.addColorStop(0, color1);
+    gradient.addColorStop(1, color2);
+  } else { // UI says "De Cima para Baixo"
+    gradient.addColorStop(0, color2);
+    gradient.addColorStop(1, color1);
   }
 
   context.fillStyle = gradient;
@@ -160,13 +159,11 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
             geometry={rimNode.geometry} 
             position={[0, 0.001, 0]}
         >
-           <meshStandardMaterial
+           {/* Switching to meshBasicMaterial to ensure visibility, ignoring lighting. This is a robust way to fix rendering issues. */}
+           <meshBasicMaterial
             color={RIM_COLORS[cupModel.rimColor]}
-            emissive={RIM_COLORS[cupModel.rimColor]}
-            emissiveIntensity={0.5}
-            roughness={0.1}
-            metalness={0.9} 
-            side={THREE.DoubleSide} />
+            side={THREE.DoubleSide}
+          />
         </mesh>
       )}
     </group>
