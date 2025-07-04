@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,6 @@ import { cn } from '@/lib/utils';
 
 const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
     ssr: false,
-    loading: () => <Loader message="Carregando 3D..." />,
 });
 
 const getAvailableCupOptions = (cupName: string) => {
@@ -159,7 +158,9 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
           <CardDescription>Clique e arraste para girar</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center p-0 h-[400px] md:h-[500px] bg-muted/50 touch-none">
-          <CupPreview3D cupModel={activeCupModel} art={art} />
+            <Suspense fallback={<Loader message="Carregando 3D..." />}>
+                <CupPreview3D cupModel={activeCupModel} art={art} />
+            </Suspense>
         </CardContent>
       </Card>
     );
