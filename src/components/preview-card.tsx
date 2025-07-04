@@ -9,6 +9,8 @@ import { Loader } from './loader';
 interface PreviewCardProps {
     cupModel: CupModel;
     art: GeneratedArt | null;
+    artScale: number;
+    artPositionY: number;
 }
 
 // Dynamically import the 3D preview component with SSR turned off.
@@ -22,7 +24,7 @@ const CupPreview3D = dynamic(() => import('./cup-preview-3d'), {
     )
 });
 
-export function PreviewCard({ cupModel, art }: PreviewCardProps) {
+export function PreviewCard({ cupModel, art, artScale, artPositionY }: PreviewCardProps) {
     return (
         <Card className="overflow-hidden">
             <CardHeader>
@@ -30,7 +32,7 @@ export function PreviewCard({ cupModel, art }: PreviewCardProps) {
                 <CardDescription>Interaja com o modelo 3D para ver todos os ângulos.</CardDescription>
             </CardHeader>
             <CardContent className="p-0 h-[400px] md:h-[500px]">
-                 <CupPreview3D cupModel={cupModel} art={art} />
+                 <CupPreview3D cupModel={cupModel} art={art} artScale={artScale} artPositionY={artPositionY} />
             </CardContent>
         </Card>
     );

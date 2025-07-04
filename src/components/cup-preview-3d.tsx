@@ -59,14 +59,16 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
   return new THREE.CanvasTexture(canvas);
 }
 
-// ArtDecal sub-component to handle texture loading with Suspense, preventing race condition errors.
-const ArtDecal = ({ art }: { art: GeneratedArt }) => {
+// ArtDecal sub-component to handle texture loading with Suspense and dynamic controls.
+const ArtDecal = ({ art, scale, positionY }: { art: GeneratedArt, scale: number, positionY: number }) => {
     const artTexture = useTexture(art.imageUrl);
+    // Maintain a consistent aspect ratio for the decal based on original values
+    const decalScale = [scale, scale * (5/6), scale];
     return (
         <Decal
-            position={[0, 0.1, 0.4]}
+            position={[0, positionY, 0.4]}
             rotation={[0, 0, 0]}
-            scale={[0.6, 0.5, 0.6]}
+            scale={decalScale}
             map={artTexture}
         />
     );
@@ -76,9 +78,11 @@ const ArtDecal = ({ art }: { art: GeneratedArt }) => {
 interface CupMeshProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
+  artScale: number;
+  artPositionY: number;
 }
 
-function CupMesh({ cupModel, art }: CupMeshProps) {
+function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
   const { nodes } = useGLTF('/models/cup.glb');
   const cupNode = nodes.Cup as THREE.Mesh;
   const rimNode = nodes.Rim as THREE.Mesh;
@@ -141,7 +145,7 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
         />
         {art && (
             <Suspense fallback={null}>
-              <ArtDecal art={art} />
+              <ArtDecal art={art} scale={artScale} positionY={artPositionY} />
             </Suspense>
         )}
       </mesh>
@@ -160,9 +164,11 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
 interface CupPreview3DProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
+  artScale: number;
+  artPositionY: number;
 }
 
-export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
+export default function CupPreview3D({ cupModel, art, artScale, artPositionY }: CupPreview3DProps) {
   const [modelExists, setModelExists] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -200,7 +206,7 @@ export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
         <Suspense fallback={null}>
             <ambientLight intensity={0.7} />
             <directionalLight intensity={1.5} position={[5, 5, 5]} castShadow />
-            <CupMesh cupModel={cupModel} art={art} />
+            <CupMesh cupModel={cupModel} art={art} artScale={artScale} artPositionY={artPositionY}/>
             <Environment preset="city" />
         </Suspense>
         <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} minPolarAngle={Math.PI / 4} maxPolarAngle={Math.PI / 1.8} />

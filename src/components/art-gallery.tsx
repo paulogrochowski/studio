@@ -19,6 +19,7 @@ import { CUP_CATALOG, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/l
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 import { PreviewCard } from './preview-card';
+import { Slider } from './ui/slider';
 
 interface ArtGalleryProps {
     selectedCupName: string;
@@ -50,6 +51,9 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     const [art, setArt] = useState<GeneratedArt | null>(null);
     const [artPrompt, setArtPrompt] = useState('');
     const [analysis, setAnalysis] = useState<{ score: number; reasoning: string } | null>(null);
+    const [artScale, setArtScale] = useState(0.6);
+    const [artPositionY, setArtPositionY] = useState(0.1);
+
     
     // Final Order State
     const [finalOrder, setFinalOrder] = useState<OrderDetails | null>(null);
@@ -80,6 +84,8 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                     prompt: artPrompt,
                 };
                 setArt(artData);
+                setArtScale(0.6);
+                setArtPositionY(0.1);
                 const analysisResult = await handleArtAnalysis(result.imageUrl, artPrompt);
                 if (analysisResult.success && analysisResult.analysis) {
                     setAnalysis(analysisResult.analysis);
@@ -134,12 +140,18 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     }
 
     if (view === 'quote' && art && analysis) {
+        const finalArt: GeneratedArt = {
+            ...art,
+            scale: artScale,
+            positionY: artPositionY
+        };
+
         return (
             <QuoteSummary
                 initialDetails={{
                     cupModel: activeCupModel,
                     eventDescription: art.prompt,
-                    art,
+                    art: finalArt,
                     artComplexity: { score: analysis.score, reasoning: analysis.reasoning },
                 }}
                 onFinalize={handleFinalize}
@@ -280,7 +292,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                             <CardHeader><CardTitle>2. Crie sua Arte</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
                                 <Textarea
-                                    placeholder="Ex: um leão com uma coroa, tema de safari, com a escrita 'Rei da festa'"
+                                    placeholder="Ex: um leão com uma coroa, tema de safari"
                                     rows={4}
                                     value={artPrompt}
                                     onChange={(e) => setArtPrompt(e.target.value)}
@@ -291,12 +303,35 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                                 </Button>
                             </CardContent>
                         </Card>
+
+                         {art && (
+                            <Card>
+                                <CardHeader><CardTitle>3. Ajuste a Arte</CardTitle></CardHeader>
+                                <CardContent className="space-y-8 pt-4">
+                                     <div className="space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <Label htmlFor="art-size">Tamanho da Arte</Label>
+                                            <span className="text-sm font-medium text-muted-foreground">{(artScale / 0.6 * 100).toFixed(0)}%</span>
+                                        </div>
+                                        <Slider id="art-size" value={[artScale]} onValueChange={(v) => setArtScale(v[0])} min={0.2} max={1.2} step={0.02} />
+                                    </div>
+                                    <div className="space-y-2">
+                                         <div className="flex justify-between items-center">
+                                            <Label htmlFor="art-position">Posição Vertical</Label>
+                                            <span className="text-sm font-medium text-muted-foreground">{(artPositionY * 100).toFixed(0)}</span>
+                                        </div>
+                                        <Slider id="art-position" value={[artPositionY]} onValueChange={(v) => setArtPositionY(v[0])} min={-0.3} max={0.5} step={0.01} />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                         )}
+
                     </div>
                 </div>
 
                  <div className="order-1 lg:order-2 lg:col-span-1">
                     <div className="sticky top-24">
-                        <PreviewCard cupModel={activeCupModel} art={art} />
+                        <PreviewCard cupModel={activeCupModel} art={art} artScale={artScale} artPositionY={artPositionY} />
                     </div>
                 </div>
             </div>

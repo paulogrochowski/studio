@@ -24,6 +24,8 @@ export interface GeneratedArt {
   id: string;
   imageUrl: string;
   prompt: string;
+  scale?: number;
+  positionY?: number;
 }
 
 export interface OrderDetails {
