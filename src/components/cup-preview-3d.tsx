@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import React, { Suspense, Component, ReactNode, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Decal, useTexture, useGLTF, Stage } from '@react-three/drei';
+import { OrbitControls, Decal, useTexture, useGLTF } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 import { Loader } from './loader';
@@ -92,7 +92,7 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
 
   return (
     <group dispose={null}>
-      <mesh geometry={cupNode.geometry} castShadow receiveShadow>
+      <mesh geometry={cupNode.geometry} castShadow>
         <meshStandardMaterial
           color={hasDegrade ? '#ffffff' : cupModel.colorHex}
           map={map}
@@ -165,9 +165,9 @@ export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
     <ErrorBoundary fallback={ErrorFallback}>
       <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }}>
         <Suspense fallback={null}>
-          <Stage environment="city" intensity={0.6} adjustCamera={1.2} shadows={{ type: 'contact', opacity: 0.5, blur: 2 }}>
+            <ambientLight intensity={0.7} />
+            <directionalLight intensity={1.5} position={[5, 5, 5]} castShadow />
             <CupMesh cupModel={cupModel} art={art} />
-          </Stage>
         </Suspense>
         <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} minPolarAngle={Math.PI / 4} maxPolarAngle={Math.PI / 1.8} />
       </Canvas>
