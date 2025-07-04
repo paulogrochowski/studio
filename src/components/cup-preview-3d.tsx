@@ -1,7 +1,7 @@
 'use client';
 
 import * as THREE from 'three';
-import React, { useMemo, useRef, useEffect, Suspense } from 'react';
+import React, { useMemo, useRef, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Decal, useTexture } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
@@ -35,7 +35,7 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
 
 function CupMesh({ cupModel, art }: CupPreview3DProps) {
   const meshRef = useRef<THREE.Group>(null);
-  const artTexture = useTexture(art?.imageUrl || '');
+  const artTexture = useTexture(art?.imageUrl || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
 
   // Define cup geometry based on its name
   const { geometry, rimGeometry, decalPosition, decalScale } = useMemo(() => {
@@ -146,7 +146,7 @@ function CupMesh({ cupModel, art }: CupPreview3DProps) {
   );
 }
 
-export function CupPreview3D(props: CupPreview3DProps) {
+export default function CupPreview3D(props: CupPreview3DProps) {
   return (
     <Canvas camera={{ position: [0, 0, 2.5], fov: 50 }}>
       <ambientLight intensity={1.5} />

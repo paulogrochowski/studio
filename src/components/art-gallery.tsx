@@ -20,7 +20,7 @@ import { CUP_CATALOG, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS }
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 
-const CupPreview3D = dynamic(() => import('./cup-preview-3d').then(mod => mod.CupPreview3D), {
+const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
     ssr: false,
     loading: () => <Loader message="Carregando 3D..." />,
 });
