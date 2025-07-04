@@ -1,11 +1,43 @@
+
 'use client';
 
 import * as THREE from 'three';
-import React, { Suspense } from 'react';
+import React, { Suspense, Component, ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Decal, useTexture, useGLTF } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
+
+// Error Boundary Component
+interface ErrorBoundaryProps {
+    children: ReactNode;
+    fallback: ReactNode;
+}
+interface ErrorBoundaryState {
+    hasError: boolean;
+}
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    constructor(props: ErrorBoundaryProps) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        console.error("Uncaught error in 3D preview:", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return this.props.fallback;
+        }
+        return this.props.children;
+    }
+}
+
 
 // This function creates a gradient texture for the 'degrade' effect.
 // It can only run on the client-side.
@@ -95,15 +127,28 @@ interface CupPreview3DProps {
 }
 
 export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
+  const ErrorFallback = (
+    <div className="flex items-center justify-center h-full text-center p-4 bg-card">
+        <div className="bg-destructive text-destructive-foreground p-4 rounded-md shadow-lg">
+            <h3 className="font-bold">Falha ao Carregar Modelo 3D</h3>
+            <p className="text-sm mt-2">
+                Verifique se o arquivo <strong>cup.glb</strong> existe dentro da pasta <strong>public/models/</strong> na raiz do seu projeto.
+            </p>
+        </div>
+    </div>
+  );
+
   return (
-    <Canvas camera={{ position: [0, 0, 2.2], fov: 50 }}>
-      <ambientLight intensity={1.2} />
-      <directionalLight position={[5, 5, 5]} intensity={1} />
-      <directionalLight position={[-5, -5, -5]} intensity={0.5} />
-      <Suspense fallback={null}>
-        <CupMesh cupModel={cupModel} art={art} />
-      </Suspense>
-      <OrbitControls enableZoom={true} autoRotate autoRotateSpeed={0.5} />
-    </Canvas>
+    <ErrorBoundary fallback={ErrorFallback}>
+      <Canvas camera={{ position: [0, 0, 2.2], fov: 50 }}>
+        <ambientLight intensity={1.2} />
+        <directionalLight position={[5, 5, 5]} intensity={1} />
+        <directionalLight position={[-5, -5, -5]} intensity={0.5} />
+        <Suspense fallback={null}>
+          <CupMesh cupModel={cupModel} art={art} />
+        </Suspense>
+        <OrbitControls enableZoom={true} autoRotate autoRotateSpeed={0.5} />
+      </Canvas>
+    </ErrorBoundary>
   );
 }
