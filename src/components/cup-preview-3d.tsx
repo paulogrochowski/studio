@@ -2,11 +2,12 @@
 'use client';
 
 import * as THREE from 'three';
-import React, { Suspense, Component, ReactNode } from 'react';
+import React, { Suspense, Component, ReactNode, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Decal, useTexture, useGLTF } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
+import { Loader } from './loader';
 
 // Error Boundary Component
 interface ErrorBoundaryProps {
@@ -127,17 +128,38 @@ interface CupPreview3DProps {
 }
 
 export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
+  const [modelExists, setModelExists] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // Pre-flight check to see if the model file exists before trying to load it with useGLTF
+    fetch('/models/cup.glb')
+      .then(response => setModelExists(response.ok))
+      .catch(() => setModelExists(false));
+  }, []);
+
   const ErrorFallback = (
     <div className="flex items-center justify-center h-full text-center p-4 bg-card">
         <div className="bg-destructive text-destructive-foreground p-4 rounded-md shadow-lg">
-            <h3 className="font-bold">Falha ao Carregar Modelo 3D</h3>
+            <h3 className="font-bold">Modelo 3D Não Encontrado</h3>
             <p className="text-sm mt-2">
-                Verifique se o arquivo <strong>cup.glb</strong> existe dentro da pasta <strong>public/models/</strong> na raiz do seu projeto.
+                Para ativar o preview 3D, crie a pasta <code className="bg-destructive-foreground/20 p-1 rounded">public/models</code> e adicione seu arquivo <code className="bg-destructive-foreground/20 p-1 rounded">cup.glb</code> nela.
             </p>
         </div>
     </div>
   );
 
+  if (modelExists === null) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader message="Carregando preview 3D..." />
+      </div>
+    );
+  }
+
+  if (!modelExists) {
+    return ErrorFallback;
+  }
+  
   return (
     <ErrorBoundary fallback={ErrorFallback}>
       <Canvas camera={{ position: [0, 0, 2.2], fov: 50 }}>
