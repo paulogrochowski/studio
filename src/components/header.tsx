@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
+import { Button } from "./ui/button";
 
 export function Header() {
   return (
@@ -11,6 +12,9 @@ export function Header() {
           </h1>
         </Link>
         <div className="flex items-center gap-2">
+          <Button variant="ghost" asChild>
+            <Link href="/how-to-customize">Como Funciona</Link>
+          </Button>
           <ThemeToggle />
         </div>
       </div>
