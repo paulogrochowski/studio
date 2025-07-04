@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, Suspense } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CUP_CATALOG, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/lib/cup-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
+import { CupPreview3D } from './cup-preview-3d';
 
 
 const getAvailableCupOptions = (cupName: string) => {
@@ -77,10 +78,6 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                     id: `art-${Date.now()}`,
                     imageUrl: result.imageUrl,
                     prompt: artPrompt,
-                    x: 50,
-                    y: 50,
-                    rotation: 0,
-                    scale: 1,
                 };
                 setArt(artData);
                 const analysisResult = await handleArtAnalysis(result.imageUrl, artPrompt);
@@ -151,152 +148,19 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
         );
     }
     
-    const PreviewCard = () => {
-        const [rotation, setRotation] = useState(20);
-        const isDragging = useRef(false);
-        const dragStart = useRef(0);
-        const rotationStart = useRef(0);
-
-        const getRimHexColor = (rimColor: CupModel['rimColor']) => RIM_COLORS[rimColor] || 'transparent';
-
-        const degradeColorHex = activeCupModel.degradeColor ? DEGRADE_HEX_COLORS[activeCupModel.degradeColor] : null;
-
-        const overlayStyle: React.CSSProperties = {
-            WebkitMaskImage: `url(${activeCupModel.svgMaskUrl})`,
-            maskImage: `url(${activeCupModel.svgMaskUrl})`,
-            WebkitMaskSize: 'contain',
-            maskSize: 'contain',
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat',
-            WebkitMaskPosition: 'center',
-            maskPosition: 'center',
-        };
-
-        if (degradeColorHex && activeCupModel.degradePosition && activeCupModel.degradePosition !== 'Nenhum') {
-            const direction = activeCupModel.degradePosition === 'Cima' ? 'to bottom' : 'to top';
-            const baseColor = activeCupModel.opacityType === 'Transparente' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)';
-            overlayStyle.background = `linear-gradient(${direction}, ${degradeColorHex}, ${baseColor})`;
-        } else {
-            overlayStyle.backgroundColor = activeCupModel.colorHex;
-            overlayStyle.opacity = activeCupModel.opacityType === 'Transparente' ? 0.6 : 1.0;
-        }
-
-        const handleInteractionStart = (clientX: number, currentRotation: number) => {
-            isDragging.current = true;
-            dragStart.current = clientX;
-            rotationStart.current = currentRotation;
-        };
-
-        const handleInteractionMove = (clientX: number) => {
-            if (!isDragging.current) return;
-            const deltaX = clientX - dragStart.current;
-            setRotation(rotationStart.current + deltaX * 0.5); // Sensitivity factor
-        };
-
-        const handleInteractionEnd = () => {
-            isDragging.current = false;
-        };
-
-        const ArtCylinder = ({ art }: { art: GeneratedArt }) => {
-            const NUM_FACES = 20;
-            // These values are tuned to approximate the printable area of the cup model
-            const faceWidth = 35; // width of each cylinder face in px
-            const radius = 55; // calculated radius for the cylinder
-            const totalTextureWidth = faceWidth * NUM_FACES;
-
-            return (
-                <div
-                    className="absolute"
-                    style={{
-                        top: `${art.y}%`,
-                        left: `${art.x}%`,
-                        width: `calc(${activeCupModel.printableArea?.widthPercent || 80}%)`,
-                        height: `calc(${activeCupModel.printableArea?.heightPercent || 40}%)`,
-                        transform: `translate(-50%, -50%) scale(${art.scale || 1})`,
-                        transformStyle: 'preserve-3d',
-                    }}
-                >
-                    <div className="w-full h-full" style={{ transformStyle: 'preserve-3d' }}>
-                        {Array.from({ length: NUM_FACES }).map((_, i) => {
-                            const angle = i * (360 / NUM_FACES);
-                            const backgroundPositionX = -i * faceWidth;
-
-                            return (
-                                <div
-                                    key={i}
-                                    style={{
-                                        position: 'absolute',
-                                        width: `${faceWidth}px`,
-                                        height: '100%',
-                                        left: `calc(50% - ${faceWidth / 2}px)`,
-                                        backgroundImage: `url(${art.imageUrl})`,
-                                        backgroundSize: `${totalTextureWidth}px 100%`,
-                                        backgroundPosition: `${backgroundPositionX}px 0`,
-                                        transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
-                                        backfaceVisibility: 'hidden',
-                                    }}
-                                />
-                            );
-                        })}
-                    </div>
-                </div>
-            );
-        };
-
-
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Pré-visualização</CardTitle>
-                    <CardDescription>Clique e arraste para girar</CardDescription>
-                </CardHeader>
-                <CardContent className="flex items-center justify-center p-4 min-h-[400px] md:min-h-[500px] bg-muted/50 rounded-lg overflow-hidden">
-                    <div 
-                        className="relative w-56 h-96 sm:w-64 sm:h-[426px] cursor-grab active:cursor-grabbing"
-                        style={{ transform: `perspective(1000px) rotateY(${rotation}deg)`, transformStyle: 'preserve-3d' }}
-                        onMouseDown={(e) => handleInteractionStart(e.clientX, rotation)}
-                        onMouseMove={(e) => handleInteractionMove(e.clientX)}
-                        onMouseUp={handleInteractionEnd}
-                        onMouseLeave={handleInteractionEnd}
-                        onTouchStart={(e) => handleInteractionStart(e.touches[0].clientX, rotation)}
-                        onTouchMove={(e) => handleInteractionMove(e.touches[0].clientX)}
-                        onTouchEnd={handleInteractionEnd}
-                    >
-                        
-                        <Image src={activeCupModel.imageUrl} alt={activeCupModel.name} fill className="object-contain" data-ai-hint="white cup" />
-
-                        {/* Color/Gradient Overlay */}
-                        <div
-                            className="absolute inset-0 mix-blend-multiply"
-                            style={overlayStyle}
-                        />
-                        
-                        {/* Rim Render */}
-                        {activeCupModel.rimColor !== 'Nenhuma' && (
-                            <div
-                                className="absolute inset-0"
-                                style={{
-                                    borderColor: getRimHexColor(activeCupModel.rimColor),
-                                    borderTopWidth: '8px',
-                                    WebkitMaskImage: `url(${activeCupModel.svgMaskUrl})`,
-                                    maskImage: `url(${activeCupModel.svgMaskUrl})`,
-                                    WebkitMaskSize: 'contain',
-                                    maskSize: 'contain',
-                                    WebkitMaskRepeat: 'no-repeat',
-                                    maskRepeat: 'no-repeat',
-                                    WebkitMaskPosition: 'center',
-                                    maskPosition: 'center',
-                                }}
-                            />
-                        )}
-                        {/* Art Render */}
-                        {art && <ArtCylinder art={art} />}
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
-
+    const PreviewCard = () => (
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <CardTitle>Pré-visualização 3D</CardTitle>
+          <CardDescription>Clique e arraste para girar</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center p-0 h-[400px] md:h-[500px] bg-muted/50 touch-none">
+          <Suspense fallback={<Loader message="Carregando 3D..." />}>
+            <CupPreview3D cupModel={activeCupModel} art={art} />
+          </Suspense>
+        </CardContent>
+      </Card>
+    );
 
     return (
         <div>

@@ -81,21 +81,21 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
         <div className="space-y-6">
-          <div className="flex items-start gap-4">
+          <h3 className="font-bold">Itens do Pedido</h3>
+           {/* Cup Details */}
+          <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
              <div className="relative w-24 h-36 rounded-md overflow-hidden border bg-white shadow-inner shrink-0">
                 <Image src={cup.imageUrl} alt={cup.name} fill className="object-contain" />
                 <div className="absolute inset-0 mix-blend-multiply" style={overlayStyle} />
                  <div
                     className="absolute w-full h-full"
                     style={{
-                        top: `${art.y}%`,
-                        left: `${art.x}%`,
-                        transform: `translate(-50%, -50%) rotate(${art.rotation}deg)`,
-                        width: `calc(${cup.printableArea?.widthPercent || 80}%)`,
-                        height: `calc(${cup.printableArea?.heightPercent || 40}%)`,
+                        borderColor: rimColorHex,
+                        borderTopWidth: '5px',
+                        WebkitMaskImage: `url(${cup.svgMaskUrl})`,
+                        maskImage: `url(${cup.svgMaskUrl})`,
                     }}
                 >
-                    <Image src={art.imageUrl} alt="Arte escolhida" fill className="object-contain" />
                 </div>
             </div>
 
@@ -110,10 +110,20 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
               {cup.rimColor && cup.rimColor !== 'Nenhuma' && (
                 <p className="text-sm text-muted-foreground">Borda: {cup.rimColor}</p>
               )}
-              <p className="text-sm text-muted-foreground">Arte Personalizada</p>
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2"><strong>Descrição:</strong> {initialDetails.eventDescription}</p>
             </div>
           </div>
+
+          {/* Art Details */}
+          <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+            <div className="relative w-24 h-24 rounded-md overflow-hidden border bg-white shadow-inner shrink-0 checkerboard">
+                <Image src={art.imageUrl} alt="Arte escolhida" fill className="object-contain" />
+            </div>
+             <div>
+              <h3 className="font-bold">Arte Personalizada</h3>
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-3"><strong>Descrição:</strong> {initialDetails.eventDescription}</p>
+            </div>
+          </div>
+          
           <Separator />
           <div className="space-y-4">
             <div>
@@ -147,7 +157,7 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
             <div className="flex justify-between text-sm"><span>Copo ({cup.name})</span><span>R$ {cup.basePrice.toFixed(2)} / un.</span></div>
             <div className="flex justify-between text-sm"><span>Complexidade da Arte ({initialDetails.artComplexity.score}/10)</span><span>R$ {(initialDetails.artComplexity.score * COMPLEXITY_PRICE_PER_POINT).toFixed(2)} / un.</span></div>
             <div className="flex justify-between text-sm"><span>Quantidade</span><span>x{quantity}</span></div>
-            {isUrgent && <div className="flex justify-between text-sm text-accent"><span>Taxa de Urgência</span><span>+ R$ {(((cup.basePrice + initialDetails.artComplexity.score * COMPLEXITY_PRICE_PER_POINT) * quantity) * (URGENCY_MULTIPLIER - 1)).toFixed(2)}</span></div>}
+            {isUrgent && <div className="flex justify-between text-sm text-accent-foreground/80"><span>Taxa de Urgência</span><span>+ R$ {(((cup.basePrice + initialDetails.artComplexity.score * COMPLEXITY_PRICE_PER_POINT) * quantity) * (URGENCY_MULTIPLIER - 1)).toFixed(2)}</span></div>}
             <div className="flex justify-between text-sm"><span>Frete</span><span>R$ {SHIPPING_COST.toFixed(2)}</span></div>
            </div>
            <Separator />

@@ -10,7 +10,8 @@ import { validateImageBackground } from '@/ai/flows/validate-image-background';
 export async function handleArtGeneration(prompt: string) {
   try {
     const result = await generateCupArt({ eventDescription: prompt });
-    return { success: true, imageUrl: result.imageUrl };
+    // This is now simplified, as 3D controls handle placement.
+    return { success: true, imageUrl: result.imageUrl, prompt: prompt };
   } catch (error) {
     console.error(error);
     return { success: false, error: 'Falha ao gerar a arte. Tente novamente.' };

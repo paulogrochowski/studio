@@ -24,10 +24,6 @@ export interface GeneratedArt {
   id: string;
   imageUrl: string;
   prompt: string;
-  x: number;
-  y: number;
-  rotation: number;
-  scale: number;
 }
 
 export interface OrderDetails {
