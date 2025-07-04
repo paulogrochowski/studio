@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 
 const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
     ssr: false,
+    loading: () => <Loader message="Carregando 3D..." />,
 });
 
 const getAvailableCupOptions = (cupName: string) => {
@@ -158,9 +159,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
           <CardDescription>Clique e arraste para girar</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center p-0 h-[400px] md:h-[500px] bg-muted/50 touch-none">
-            <Suspense fallback={<Loader message="Carregando 3D..." />}>
-                <CupPreview3D cupModel={activeCupModel} art={art} />
-            </Suspense>
+            <CupPreview3D cupModel={activeCupModel} art={art} />
         </CardContent>
       </Card>
     );
