@@ -154,6 +154,8 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
         <mesh geometry={rimNode.geometry}>
            <meshStandardMaterial
             color={RIM_COLORS[cupModel.rimColor]}
+            emissive={RIM_COLORS[cupModel.rimColor]}
+            emissiveIntensity={0.4}
             roughness={0.1}
             metalness={0.8} 
             side={THREE.DoubleSide} />
