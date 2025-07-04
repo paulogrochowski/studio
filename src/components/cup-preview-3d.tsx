@@ -59,6 +59,20 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
   return new THREE.CanvasTexture(canvas);
 }
 
+// ArtDecal sub-component to handle texture loading with Suspense, preventing race condition errors.
+const ArtDecal = ({ art }: { art: GeneratedArt }) => {
+    const artTexture = useTexture(art.imageUrl);
+    return (
+        <Decal
+            position={[0, 0.1, 0.4]}
+            rotation={[0, 0, 0]}
+            scale={[0.6, 0.5, 0.6]}
+            map={artTexture}
+        />
+    );
+};
+
+
 interface CupMeshProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
@@ -69,11 +83,34 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
   const cupNode = nodes.Cup as THREE.Mesh;
   const rimNode = nodes.Rim as THREE.Mesh;
   
-  // Load the AI-generated art texture here. It will suspend the component until loaded.
-  // We use a tiny transparent pixel as a placeholder to avoid errors when no art is present.
-  const artTextureUrl = art?.imageUrl ?? 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-  const artTexture = useTexture(artTextureUrl);
+  // This memoized block recalculates geometry to fix gradient and smoothing issues.
+  const modifiedGeometry = useMemo(() => {
+    if (!cupNode?.geometry) return null;
 
+    const newGeometry = cupNode.geometry.clone();
+    
+    // KEY FIX: Smooths the model's surface to prevent the "face by face" gradient rendering.
+    newGeometry.computeVertexNormals();
+    
+    newGeometry.computeBoundingBox();
+    const { min, max } = newGeometry.boundingBox!;
+    const height = max.y - min.y;
+
+    // Ensure UV attribute exists for texture mapping.
+    if (!newGeometry.attributes.uv) {
+        newGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(newGeometry.attributes.position.count * 2), 2));
+    }
+    const uvAttribute = newGeometry.attributes.uv as THREE.BufferAttribute;
+
+    // Generate UVs for a uniform vertical gradient.
+    for (let i = 0; i < uvAttribute.count; i++) {
+        const y = newGeometry.attributes.position.getY(i);
+        const v = (y - min.y) / height;
+        uvAttribute.setXY(i, 0.5, v);
+    }
+    uvAttribute.needsUpdate = true;
+    return newGeometry;
+  }, [cupNode?.geometry]);
 
   const isTransparent = cupModel.opacityType === 'Transparente';
   const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
@@ -85,31 +122,27 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
     return createGradientTexture(degradeColorHex, baseColor, cupModel.degradePosition!);
   }, [hasDegrade, cupModel.degradeColor, cupModel.degradePosition, isTransparent]);
 
-  if (!cupNode?.geometry) {
+  if (!modifiedGeometry) {
     console.error("3D Model Error: The 'Cup' mesh or its geometry is missing in /models/cup.glb.");
     return null; 
   }
 
   return (
     <group dispose={null}>
-      <mesh geometry={cupNode.geometry} castShadow>
+      <mesh geometry={modifiedGeometry} castShadow>
         <meshStandardMaterial
           color={hasDegrade ? '#ffffff' : cupModel.colorHex}
           map={gradientTexture}
           roughness={0.2}
           metalness={0.1}
-          transparent={true} // Always true to handle opacity and gradient transparency
+          transparent={true}
           opacity={isTransparent ? 0.6 : 1.0}
           side={THREE.DoubleSide}
         />
-        {/* The Decal is only rendered if art exists. The texture is pre-loaded above. */}
         {art && (
-            <Decal
-                position={[0, 0.1, 0.4]}
-                rotation={[0, 0, 0]}
-                scale={[0.6, 0.5, 0.6]}
-                map={artTexture}
-            />
+            <Suspense fallback={null}>
+              <ArtDecal art={art} />
+            </Suspense>
         )}
       </mesh>
       {rimNode && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
@@ -164,7 +197,6 @@ export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
   return (
     <ErrorBoundary fallback={ErrorFallback}>
       <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }}>
-        {/* Suspense now correctly wraps all async 3D assets (model, textures, environment) */}
         <Suspense fallback={null}>
             <ambientLight intensity={0.7} />
             <directionalLight intensity={1.5} position={[5, 5, 5]} castShadow />
