@@ -9,6 +9,21 @@ import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 import { Loader } from './loader';
 
+// This component isolates the texture loading for the AI-generated art.
+// By wrapping it in Suspense, we ensure the decal is only applied when the texture is ready.
+function ArtDecal({ art }: { art: GeneratedArt }) {
+    const artTexture = useTexture(art.imageUrl);
+    
+    return (
+        <Decal
+            position={[0, 0.1, 0.4]}
+            rotation={[0, 0, 0]}
+            scale={[0.6, 0.5, 0.6]}
+            map={artTexture}
+        />
+    );
+}
+
 // Error Boundary Component
 interface ErrorBoundaryProps {
     children: ReactNode;
@@ -72,8 +87,6 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
   const cupNode = nodes.Cup as THREE.Mesh;
   const rimNode = nodes.Rim as THREE.Mesh;
 
-  const artTexture = useTexture(art?.imageUrl || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
-
   if (!cupNode) {
     console.error("3D Model Error: The GLB file at /models/cup.glb must contain a mesh named 'Cup'.");
     return null;
@@ -103,12 +116,9 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
           side={THREE.DoubleSide}
         />
         {art && (
-          <Decal
-            position={[0, 0.1, 0.4]}
-            rotation={[0, 0, 0]}
-            scale={[0.6, 0.5, 0.6]}
-            map={artTexture}
-          />
+          <Suspense fallback={null}>
+            <ArtDecal art={art} />
+          </Suspense>
         )}
       </mesh>
       {rimNode && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
