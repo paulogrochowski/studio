@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef, Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import { useState, useTransition, useRef } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,14 +15,9 @@ import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/a
 import { useToast } from '@/hooks/use-toast';
 import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { CUP_CATALOG, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/lib/cup-data';
+import { CUP_CATALOG, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/lib/cup-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
-
-const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
-    ssr: false,
-    loading: () => <Loader message="Carregando 3D..." />,
-});
 
 const getAvailableCupOptions = (cupName: string) => {
     const allOptions = CUP_CATALOG.filter(c => c.name === cupName);
@@ -152,17 +146,75 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
         );
     }
     
-    const PreviewCard = () => (
-      <Card className="overflow-hidden">
-        <CardHeader>
-          <CardTitle>Pré-visualização 3D</CardTitle>
-          <CardDescription>Clique e arraste para girar</CardDescription>
-        </CardHeader>
-        <CardContent className="flex items-center justify-center p-0 h-[400px] md:h-[500px] bg-muted/50 touch-none">
-            <CupPreview3D cupModel={activeCupModel} art={art} />
-        </CardContent>
-      </Card>
-    );
+    const PreviewCard = () => {
+        const cup = activeCupModel;
+        const rimColorHex = RIM_COLORS[cup.rimColor!] || 'transparent';
+
+        const overlayStyle: React.CSSProperties = {
+            WebkitMaskImage: `url(${cup.svgMaskUrl})`,
+            maskImage: `url(${cup.svgMaskUrl})`,
+            WebkitMaskSize: 'contain',
+            maskSize: 'contain',
+            WebkitMaskRepeat: 'no-repeat',
+            maskRepeat: 'no-repeat',
+            WebkitMaskPosition: 'center',
+            maskPosition: 'center',
+        };
+
+        const degradeColorHex = cup.degradeColor ? DEGRADE_HEX_COLORS[cup.degradeColor] : null;
+        if (degradeColorHex && cup.degradePosition && cup.degradePosition !== 'Nenhum') {
+            const direction = cup.degradePosition === 'Cima' ? 'to bottom' : 'to top';
+            const baseColor = cup.opacityType === 'Transparente' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)';
+            overlayStyle.background = `linear-gradient(${direction}, ${degradeColorHex}, ${baseColor})`;
+        } else {
+            overlayStyle.backgroundColor = cup.colorHex;
+            overlayStyle.opacity = cup.opacityType === 'Transparente' ? 0.6 : 1.0;
+        }
+
+        const rimStyle: React.CSSProperties = {
+            borderColor: rimColorHex,
+            borderTopWidth: '8px', // Make it a bit thicker for visibility
+            WebkitMaskImage: `url(${cup.svgMaskUrl})`,
+            maskImage: `url(${cup.svgMaskUrl})`,
+            WebkitMaskSize: 'contain',
+            maskSize: 'contain',
+            WebkitMaskRepeat: 'no-repeat',
+            maskRepeat: 'no-repeat',
+            WebkitMaskPosition: 'center',
+            maskPosition: 'center',
+        };
+
+        return (
+            <Card className="overflow-hidden">
+                <CardHeader>
+                    <CardTitle>Pré-visualização 2D</CardTitle>
+                    <CardDescription>A imagem abaixo é uma simulação.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center p-4 h-[400px] md:h-[500px] bg-card checkerboard">
+                    <div className="relative w-[60%] h-full">
+                        <Image
+                            src={cup.imageUrl}
+                            alt={cup.name}
+                            fill
+                            className="object-contain"
+                            priority
+                        />
+                        <div className="absolute inset-0 mix-blend-multiply" style={overlayStyle} />
+                        {cup.rimColor !== 'Nenhuma' && (
+                            <div className="absolute inset-0" style={rimStyle} />
+                        )}
+                        {art && (
+                             <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="relative w-[70%] h-[40%]">
+                                     <Image src={art.imageUrl} alt="Sua arte" fill className="object-contain" />
+                                 </div>
+                             </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    };
 
     return (
         <div>
