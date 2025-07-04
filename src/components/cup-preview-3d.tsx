@@ -1,8 +1,8 @@
 'use client';
 
 import * as THREE from 'three';
-import React, { useMemo, useRef, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { useMemo, useRef, useEffect, Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Decal, useTexture } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
