@@ -2,29 +2,14 @@
 'use client';
 
 import * as THREE from 'three';
-import React, { Suspense, Component, ReactNode, useState, useEffect } from 'react';
+import React, { Suspense, Component, ReactNode, useState, useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Decal, useTexture, useGLTF } from '@react-three/drei';
+import { OrbitControls, Decal, useTexture, useGLTF, Environment } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 import { Loader } from './loader';
 
-// This component isolates the texture loading for the AI-generated art.
-// By wrapping it in Suspense, we ensure the decal is only applied when the texture is ready.
-function ArtDecal({ art }: { art: GeneratedArt }) {
-    const artTexture = useTexture(art.imageUrl);
-    
-    return (
-        <Decal
-            position={[0, 0.1, 0.4]}
-            rotation={[0, 0, 0]}
-            scale={[0.6, 0.5, 0.6]}
-            map={artTexture}
-        />
-    );
-}
-
-// Error Boundary Component
+// Error Boundary Component remains the same
 interface ErrorBoundaryProps {
     children: ReactNode;
     fallback: ReactNode;
@@ -55,9 +40,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
 }
 
-
-// This function creates a gradient texture for the 'degrade' effect.
-// It can only run on the client-side.
+// This function creates a gradient texture. It's stable and can stay outside.
 function createGradientTexture(color1: string, color2: string, position: 'Cima' | 'Baixo') {
   const canvas = document.createElement('canvas');
   canvas.width = 2;
@@ -82,25 +65,29 @@ interface CupMeshProps {
 }
 
 function CupMesh({ cupModel, art }: CupMeshProps) {
-  // IMPORTANT: Your GLB file must contain meshes named 'Cup' and, optionally, 'Rim'.
   const { nodes } = useGLTF('/models/cup.glb');
   const cupNode = nodes.Cup as THREE.Mesh;
   const rimNode = nodes.Rim as THREE.Mesh;
+  
+  // Load the AI-generated art texture here. It will suspend the component until loaded.
+  // We use a tiny transparent pixel as a placeholder to avoid errors when no art is present.
+  const artTextureUrl = art?.imageUrl ?? 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  const artTexture = useTexture(artTextureUrl);
 
-  if (!cupNode) {
-    console.error("3D Model Error: The GLB file at /models/cup.glb must contain a mesh named 'Cup'.");
-    return null;
-  }
 
   const isTransparent = cupModel.opacityType === 'Transparente';
-  const hasDegrade = cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum';
-  let map = null;
+  const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
 
-  if (hasDegrade && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum') {
+  const gradientTexture = useMemo(() => {
+    if (!hasDegrade) return null;
     const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
     const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
-    const texture = createGradientTexture(degradeColorHex, baseColor, cupModel.degradePosition);
-    if (texture) map = texture;
+    return createGradientTexture(degradeColorHex, baseColor, cupModel.degradePosition!);
+  }, [hasDegrade, cupModel.degradeColor, cupModel.degradePosition, isTransparent]);
+
+  if (!cupNode?.geometry) {
+    console.error("3D Model Error: The 'Cup' mesh or its geometry is missing in /models/cup.glb.");
+    return null; 
   }
 
   return (
@@ -108,17 +95,21 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
       <mesh geometry={cupNode.geometry} castShadow>
         <meshStandardMaterial
           color={hasDegrade ? '#ffffff' : cupModel.colorHex}
-          map={map}
+          map={gradientTexture}
           roughness={0.2}
           metalness={0.1}
-          transparent={true}
+          transparent={true} // Always true to handle opacity and gradient transparency
           opacity={isTransparent ? 0.6 : 1.0}
           side={THREE.DoubleSide}
         />
+        {/* The Decal is only rendered if art exists. The texture is pre-loaded above. */}
         {art && (
-          <Suspense fallback={null}>
-            <ArtDecal art={art} />
-          </Suspense>
+            <Decal
+                position={[0, 0.1, 0.4]}
+                rotation={[0, 0, 0]}
+                scale={[0.6, 0.5, 0.6]}
+                map={artTexture}
+            />
         )}
       </mesh>
       {rimNode && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
@@ -142,7 +133,6 @@ export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
   const [modelExists, setModelExists] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Pre-flight check to see if the model file exists before trying to load it with useGLTF
     fetch('/models/cup.glb')
       .then(response => setModelExists(response.ok))
       .catch(() => setModelExists(false));
@@ -174,10 +164,12 @@ export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
   return (
     <ErrorBoundary fallback={ErrorFallback}>
       <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }}>
+        {/* Suspense now correctly wraps all async 3D assets (model, textures, environment) */}
         <Suspense fallback={null}>
             <ambientLight intensity={0.7} />
             <directionalLight intensity={1.5} position={[5, 5, 5]} castShadow />
             <CupMesh cupModel={cupModel} art={art} />
+            <Environment preset="city" />
         </Suspense>
         <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} minPolarAngle={Math.PI / 4} maxPolarAngle={Math.PI / 1.8} />
       </Canvas>
