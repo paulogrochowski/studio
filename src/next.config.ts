@@ -18,6 +18,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  serverActions: {
+    bodySizeLimit: '5mb',
+  },
   allowedDevOrigins: ['https://*.cloudworkstations.dev'],
 };
 
