@@ -1,19 +1,15 @@
 'use client';
 
 import * as THREE from 'three';
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Decal, useTexture, useGLTF } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 
 // This function creates a gradient texture for the 'degrade' effect.
-// It needs to be guarded against running on the server.
+// It can only run on the client-side.
 function createGradientTexture(color1: string, color2: string, position: 'Cima' | 'Baixo') {
-  if (typeof document === 'undefined') {
-    // This check is crucial for SSR safety
-    return null;
-  }
   const canvas = document.createElement('canvas');
   canvas.width = 2;
   canvas.height = 256;
@@ -98,22 +94,7 @@ interface CupPreview3DProps {
   art: GeneratedArt | null;
 }
 
-// The main export is the Canvas containing the scene.
 export default function CupPreview3D({ cupModel, art }: CupPreview3DProps) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    // This hook only runs on the client, after the component has mounted.
-    setIsClient(true);
-  }, []);
-
-  // Render a fallback on the server and on the initial client render.
-  // This ensures the 3D-heavy part is never touched by the server.
-  if (!isClient) {
-    // The parent dynamic import already provides a loader, so returning null is perfect.
-    return null;
-  }
-  
   return (
     <Canvas camera={{ position: [0, 0, 2.2], fov: 50 }}>
       <ambientLight intensity={1.2} />
