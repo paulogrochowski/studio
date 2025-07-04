@@ -314,7 +314,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                             <CardHeader><CardTitle>2. Crie sua Arte</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
                                 <Textarea
-                                    placeholder="Ex: um leão com uma coroa, tema de safari"
+                                    placeholder="Ex: festa 15 anos, escrito 'Júlia' em rosa com uma coroa"
                                     rows={4}
                                     value={artPrompt}
                                     onChange={(e) => setArtPrompt(e.target.value)}

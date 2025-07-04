@@ -38,7 +38,7 @@ const generateCupArtFlow = ai.defineFlow(
     const fullPrompt = `Gere uma arte no estilo vetorial/clipart para ser impressa em um copo, com base na seguinte descrição: "${input.eventDescription}".
 
 REGRAS CRÍTICAS DE SAÍDA:
-1. **NÃO INCLUA UM COPO:** A imagem gerada deve conter APENAS a arte descrita. NUNCA desenhe o copo.
+1. **FOCO EXCLUSIVO NA ARTE:** A imagem gerada deve conter APENAS a arte descrita. É estritamente proibido desenhar o copo ou qualquer objeto que se pareça com um copo. O resultado deve ser a arte isolada, contendo apenas os objetos e escritos solicitados.
 2. **FUNDO TRANSPARENTE OBRIGATÓRIO:** O fundo da imagem final DEVE ser 100% transparente. Não use branco, preto ou qualquer outra cor de fundo. A saída deve ser um PNG com um canal alfa.
 3. **SEM TEXTO, A MENOS QUE SOLICITADO:** Não inclua nenhuma palavra ou texto, a menos que seja especificamente pedido na descrição.`;
     
