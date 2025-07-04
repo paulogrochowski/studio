@@ -24,6 +24,14 @@ interface ArtGalleryProps {
     selectedCupName: string;
 }
 
+// Helper function moved outside the component to fix initialization error and improve performance.
+const getAvailableCupOptions = (cupName: string) => {
+    const allOptions = CUP_CATALOG.filter(c => c.name === cupName);
+    const opacities = [...new Set(allOptions.map(c => c.opacityType!))];
+    const rims = [...new Set(allOptions.map(c => c.rimColor!))];
+    return { opacities, rims };
+};
+
 export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     const { toast } = useToast();
     const [isGenerating, startGenerationTransition] = useTransition();
@@ -56,13 +64,6 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
         ...baseCupModel,
         degradeColor: selectedDegradeColor,
         degradePosition: selectedDegradePosition,
-    };
-
-    const getAvailableCupOptions = (cupName: string) => {
-        const allOptions = CUP_CATALOG.filter(c => c.name === cupName);
-        const opacities = [...new Set(allOptions.map(c => c.opacityType!))];
-        const rims = [...new Set(allOptions.map(c => c.rimColor!))];
-        return { opacities, rims };
     };
 
     const handleGenerateArt = () => {
