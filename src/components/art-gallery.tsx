@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,18 +18,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CUP_CATALOG, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/lib/cup-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
-
-const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
-    ssr: false,
-    loading: () => <Loader message="Carregando Preview 3D..." />,
-});
-
-const getAvailableCupOptions = (cupName: string) => {
-    const allOptions = CUP_CATALOG.filter(c => c.name === cupName);
-    const opacities = [...new Set(allOptions.map(c => c.opacityType!))];
-    const rims = [...new Set(allOptions.map(c => c.rimColor!))];
-    return { opacities, rims };
-};
+import { PreviewCard } from './preview-card';
 
 interface ArtGalleryProps {
     selectedCupName: string;
@@ -68,6 +56,13 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
         ...baseCupModel,
         degradeColor: selectedDegradeColor,
         degradePosition: selectedDegradePosition,
+    };
+
+    const getAvailableCupOptions = (cupName: string) => {
+        const allOptions = CUP_CATALOG.filter(c => c.name === cupName);
+        const opacities = [...new Set(allOptions.map(c => c.opacityType!))];
+        const rims = [...new Set(allOptions.map(c => c.rimColor!))];
+        return { opacities, rims };
     };
 
     const handleGenerateArt = () => {
@@ -151,20 +146,6 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             />
         );
     }
-    
-    const PreviewCard = () => {
-        return (
-            <Card className="overflow-hidden">
-                <CardHeader>
-                    <CardTitle>Pré-visualização 3D</CardTitle>
-                    <CardDescription>Interaja com o modelo. Gire para ver todos os ângulos.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex items-center justify-center p-0 h-[400px] md:h-[500px]">
-                    <CupPreview3D cupModel={activeCupModel} art={art} />
-                </CardContent>
-            </Card>
-        );
-    };
 
     return (
         <div>
@@ -314,7 +295,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
 
                  <div className="order-1 lg:order-2 lg:col-span-1">
                     <div className="sticky top-24">
-                        <PreviewCard />
+                        <PreviewCard cupModel={activeCupModel} art={art} />
                     </div>
                 </div>
             </div>
