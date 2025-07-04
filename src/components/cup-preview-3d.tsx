@@ -7,9 +7,6 @@ import { OrbitControls, Decal, useTexture, useGLTF } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 
-// Preloading the model can help show it faster.
-useGLTF.preload('/models/cup.glb');
-
 // This function creates a gradient texture for the 'degrade' effect.
 // It's safe to run on the client-side as this component is client-only.
 function createGradientTexture(color1: string, color2: string, position: 'Cima' | 'Baixo') {
