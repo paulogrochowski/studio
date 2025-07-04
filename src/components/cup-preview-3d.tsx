@@ -1,7 +1,7 @@
 'use client';
 
 import * as THREE from 'three';
-import React, { useMemo, useRef, Suspense } from 'react';
+import React, { useRef, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Decal, useTexture } from '@react-three/drei';
 import type { CupModel, GeneratedArt } from '@/lib/types';
@@ -38,84 +38,70 @@ function CupMesh({ cupModel, art }: CupPreview3DProps) {
   const artTexture = useTexture(art?.imageUrl || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
 
   // Define cup geometry based on its name
-  const { geometry, rimGeometry, decalPosition, decalScale } = useMemo(() => {
-    // Default: Long Drink
-    let geo = new THREE.CylinderGeometry(0.4, 0.3, 1.5, 32); 
-    let rimGeo = new THREE.TorusGeometry(0.4, 0.02, 16, 64);
-    let decPos = new THREE.Vector3(0, 0, 0.4);
-    let decScl = new THREE.Vector3(0.7, 0.7, 1);
+  let geometry: THREE.BufferGeometry = new THREE.CylinderGeometry(0.4, 0.3, 1.5, 32); 
+  let rimGeometry: THREE.BufferGeometry | null = new THREE.TorusGeometry(0.4, 0.02, 16, 64);
+  let decalPosition = new THREE.Vector3(0, 0, 0.4);
+  let decalScale = new THREE.Vector3(0.7, 0.7, 1);
 
-    switch (cupModel.name) {
-      case 'Copo Twister com Tampa':
-        // A bit wider and shorter
-        geo = new THREE.CylinderGeometry(0.45, 0.35, 1.4, 32);
-        rimGeo = new THREE.TorusGeometry(0.45, 0.02, 16, 64);
-        decPos = new THREE.Vector3(0, -0.1, 0.45);
-        decScl = new THREE.Vector3(0.8, 0.6, 1);
-        break;
-      case 'Copo Caldereta':
-        // Shorter and wider base
-        geo = new THREE.CylinderGeometry(0.45, 0.38, 1.2, 32);
-        rimGeo = new THREE.TorusGeometry(0.45, 0.02, 16, 64);
-        decPos = new THREE.Vector3(0, 0, 0.45);
-        decScl = new THREE.Vector3(0.8, 0.8, 1);
-        break;
-      case 'Taça Gin':
-        // Bowl shape is complex, approximating with a sphere
-        geo = new THREE.SphereGeometry(0.6, 32, 32, 0, Math.PI * 2, 0, Math.PI * 1.8);
-        rimGeo = new THREE.TorusGeometry(0.6, 0.02, 16, 64);
-        // We'd add a stem and base for a real model, but this works for decal
-        decPos = new THREE.Vector3(0, 0, 0.6);
-        decScl = new THREE.Vector3(0.8, 0.8, 1);
-        break;
-    }
-     // Adjust rim position to be at the top of the geometry
-    if (rimGeo && 'parameters' in geo) {
-      const geoParams = geo.parameters;
-      const rimY = (geoParams.height || 1.5) / 2;
-      rimGeo.translate(0, rimY, 0);
-    }
-     if (rimGeo && cupModel.name === 'Taça Gin') {
-        rimGeo.translate(0, 0.05, 0); // slight adjustment for sphere
-     }
-    
-    return { geometry: geo, rimGeometry: rimGeo, decalPosition: decPos, decalScale: decScl };
-  }, [cupModel.name]);
-
+  switch (cupModel.name) {
+    case 'Copo Twister com Tampa':
+      geometry = new THREE.CylinderGeometry(0.45, 0.35, 1.4, 32);
+      rimGeometry = new THREE.TorusGeometry(0.45, 0.02, 16, 64);
+      decalPosition = new THREE.Vector3(0, -0.1, 0.45);
+      decalScale = new THREE.Vector3(0.8, 0.6, 1);
+      break;
+    case 'Copo Caldereta':
+      geometry = new THREE.CylinderGeometry(0.45, 0.38, 1.2, 32);
+      rimGeometry = new THREE.TorusGeometry(0.45, 0.02, 16, 64);
+      decalPosition = new THREE.Vector3(0, 0, 0.45);
+      decalScale = new THREE.Vector3(0.8, 0.8, 1);
+      break;
+    case 'Taça Gin':
+      geometry = new THREE.SphereGeometry(0.6, 32, 32, 0, Math.PI * 2, 0, Math.PI * 1.8);
+      rimGeometry = new THREE.TorusGeometry(0.6, 0.02, 16, 64);
+      decalPosition = new THREE.Vector3(0, 0, 0.6);
+      decalScale = new THREE.Vector3(0.8, 0.8, 1);
+      break;
+  }
+   // Adjust rim position to be at the top of the geometry
+  if (rimGeometry && 'parameters' in geometry) {
+    const geoParams = geometry.parameters;
+    const rimY = (geoParams.height || 1.5) / 2;
+    rimGeometry.translate(0, rimY, 0);
+  }
+   if (rimGeometry && cupModel.name === 'Taça Gin') {
+      rimGeometry.translate(0, 0.05, 0); // slight adjustment for sphere
+   }
 
   // Define materials
-  const { cupMaterial, rimMaterial } = useMemo(() => {
-    const isTransparent = cupModel.opacityType === 'Transparente';
-    const hasDegrade = cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum';
+  const isTransparent = cupModel.opacityType === 'Transparente';
+  const hasDegrade = cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum';
 
-    let map = null;
-    if (hasDegrade) {
-        const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
-        const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
-        map = createGradientTexture(degradeColorHex, baseColor, cupModel.degradePosition!);
-    }
+  let map = null;
+  if (hasDegrade) {
+      const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
+      const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
+      map = createGradientTexture(degradeColorHex, baseColor, cupModel.degradePosition!);
+  }
 
-    const mat = new THREE.MeshStandardMaterial({
-      color: hasDegrade ? '#ffffff' : cupModel.colorHex,
-      map: map,
-      roughness: 0.1,
-      metalness: 0.1,
-      transparent: true,
-      opacity: isTransparent ? 0.4 : 1.0,
-      side: THREE.DoubleSide,
-    });
-    
-    let rimMat = null;
-    if (cupModel.rimColor && cupModel.rimColor !== 'Nenhuma') {
-        rimMat = new THREE.MeshStandardMaterial({
-            color: RIM_COLORS[cupModel.rimColor],
-            roughness: 0.1,
-            metalness: 0.8,
-        });
-    }
-
-    return { cupMaterial: mat, rimMaterial: rimMat };
-  }, [cupModel]);
+  const cupMaterial = new THREE.MeshStandardMaterial({
+    color: hasDegrade ? '#ffffff' : cupModel.colorHex,
+    map: map,
+    roughness: 0.1,
+    metalness: 0.1,
+    transparent: true,
+    opacity: isTransparent ? 0.4 : 1.0,
+    side: THREE.DoubleSide,
+  });
+  
+  let rimMaterial = null;
+  if (cupModel.rimColor && cupModel.rimColor !== 'Nenhuma') {
+      rimMaterial = new THREE.MeshStandardMaterial({
+          color: RIM_COLORS[cupModel.rimColor],
+          roughness: 0.1,
+          metalness: 0.8,
+      });
+  }
 
   return (
     <group ref={meshRef}>
