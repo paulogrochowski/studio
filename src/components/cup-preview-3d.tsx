@@ -8,8 +8,10 @@ import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 
 // This function creates a gradient texture for the 'degrade' effect.
+// It needs to be guarded against running on the server.
 function createGradientTexture(color1: string, color2: string, position: 'Cima' | 'Baixo') {
   if (typeof document === 'undefined') {
+    // This check is crucial for SSR safety
     return null;
   }
   const canvas = document.createElement('canvas');
@@ -39,6 +41,7 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
   const { nodes } = useGLTF('/models/cup.glb');
   const cupNode = nodes.Cup as THREE.Mesh;
   const rimNode = nodes.Rim as THREE.Mesh;
+
   const artTexture = useTexture(art?.imageUrl || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
 
   if (!cupNode) {
@@ -49,6 +52,7 @@ function CupMesh({ cupModel, art }: CupMeshProps) {
   const isTransparent = cupModel.opacityType === 'Transparente';
   const hasDegrade = cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum';
   let map = null;
+
   if (hasDegrade && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum') {
     const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
     const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
