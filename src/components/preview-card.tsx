@@ -18,8 +18,8 @@ interface PreviewCardProps {
 }
 
 // Dynamically import the 3D preview component with SSR turned off.
-// This is the key to preventing server-side rendering errors.
-const CupPreview3D = dynamic(() => import('./cup-preview-3d'), {
+// Using an absolute path alias to prevent chunk loading errors.
+const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
     ssr: false,
     loading: () => (
         <div className="flex items-center justify-center w-full h-full">
