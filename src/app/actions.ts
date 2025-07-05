@@ -55,3 +55,23 @@ export async function handleValidateArtBackground(imageDataUri: string) {
         return { success: false, error: 'Falha ao validar a imagem.' };
     }
 }
+
+
+export async function handleShippingCalculation(cep: string) {
+    if (!cep || cep.replace(/\D/g, '').length !== 8) {
+        return { success: false, error: 'CEP inválido. Por favor, digite um CEP com 8 dígitos.' };
+    }
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Mocked response
+    const randomCost = 15 + Math.random() * 30; // Random cost between 15 and 45
+    const randomTime = 3 + Math.floor(Math.random() * 10); // Random time between 3 and 12 days
+
+    return { 
+        success: true, 
+        shippingCost: randomCost, 
+        deliveryTime: `${randomTime} dias úteis` 
+    };
+}

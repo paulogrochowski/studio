@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/header';
 import { CUP_TYPES_SUMMARY } from '@/lib/cup-data';
+import { ShippingCalculator } from '@/components/shipping-calculator';
 
 export default function LandingPage() {
   return (
@@ -45,6 +46,10 @@ export default function LandingPage() {
                     </Card>
                 );
             })}
+        </section>
+
+        <section className="mt-16">
+            <ShippingCalculator />
         </section>
       </main>
       <footer className="border-t bg-card">
