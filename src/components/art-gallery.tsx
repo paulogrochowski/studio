@@ -9,10 +9,10 @@ import { QuoteSummary } from './quote-summary';
 import { CheckoutView } from './checkout-view';
 import { Loader } from './loader';
 import { Separator } from './ui/separator';
-import { ArrowLeft, Check, Download, Slash, Sparkles } from 'lucide-react';
+import { ArrowLeft, Check, Download, Layers, Loader2, Slash, Sparkles } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/app/actions';
+import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration, handleRefineArt } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -38,6 +38,7 @@ const getAvailableCupOptions = (cupName: string) => {
 export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     const { toast } = useToast();
     const [isGenerating, startGenerationTransition] = useTransition();
+    const [isRefining, startRefiningTransition] = useTransition();
 
     const [view, setView] = useState<'editor' | 'quote' | 'checkout'>('editor');
 
@@ -147,6 +148,24 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
         link.click();
         document.body.removeChild(link);
         toast({ title: 'Sucesso', description: 'Sua arte foi salva no seu dispositivo.' });
+    };
+
+    const handleRemoveBg = () => {
+        if (!art?.imageUrl) return;
+
+        startRefiningTransition(async () => {
+            const result = await handleRefineArt(art.imageUrl, "Remova completamente o fundo desta imagem, deixando-o 100% transparente. Mantenha apenas o objeto principal da arte.");
+            if (result.success && result.imageUrl) {
+                setArt(prev => prev ? { ...prev, imageUrl: result.imageUrl! } : null);
+                toast({ title: 'Sucesso!', description: 'O fundo da arte foi removido.' });
+            } else {
+                toast({
+                    variant: 'destructive',
+                    title: 'Erro ao remover fundo',
+                    description: result.error ?? 'Não foi possível processar a imagem. Tente novamente.',
+                });
+            }
+        });
     };
 
     if (view === 'checkout' && finalOrder) {
@@ -346,10 +365,14 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                                         <Slider id="art-position" value={[artPositionY]} onValueChange={(v) => setArtPositionY(v[0])} min={-0.3} max={0.5} step={0.01} />
                                     </div>
                                 </CardContent>
-                                <CardFooter>
-                                    <Button variant="outline" className="w-full" onClick={handleSaveArt} disabled={!art?.imageUrl || art.imageUrl.startsWith('data:image/gif')}>
-                                        <Download className="mr-2" />
+                                <CardFooter className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <Button variant="outline" className="w-full" onClick={handleSaveArt} disabled={isRefining || !art?.imageUrl || art.imageUrl.startsWith('data:image/gif')}>
+                                        <Download className="mr-2 h-4 w-4" />
                                         Salvar Arte
+                                    </Button>
+                                    <Button variant="outline" className="w-full" onClick={handleRemoveBg} disabled={isRefining || isGenerating || !art}>
+                                        {isRefining ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Layers className="mr-2 h-4 w-4" />}
+                                        Remover Fundo
                                     </Button>
                                 </CardFooter>
                             </Card>
