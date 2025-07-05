@@ -75,3 +75,28 @@ export async function handleShippingCalculation(cep: string) {
         deliveryTime: `${randomTime} dias úteis` 
     };
 }
+
+export async function handleAdminAddProduct(formData: FormData) {
+    const name = formData.get('name') as string;
+    const basePrice = formData.get('basePrice') as string;
+    const imageUrl = formData.get('imageUrl') as string;
+
+    if (!name || !basePrice || !imageUrl) {
+        return { success: false, error: "Todos os campos são obrigatórios." };
+    }
+    
+    // In a real app, this would save the new product to a database.
+    console.log('New Product to be added:', {
+      name,
+      basePrice: parseFloat(basePrice),
+      imageUrl,
+    });
+    
+    // Simulate database delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Here you would revalidate the path to update the product list
+    // revalidatePath('/admin/products');
+
+    return { success: true };
+}

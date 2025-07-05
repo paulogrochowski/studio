@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -8,14 +8,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { CUP_TYPES_SUMMARY } from '@/lib/cup-data';
 import Image from 'next/image';
-import { FilePlus2, MoreHorizontal, Trash2 } from 'lucide-react';
+import { FilePlus2, MoreHorizontal, Trash2, Loader2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { handleAdminAddProduct } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
 
 
 export default function AdminProductsPage() {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const { toast } = useToast();
+  const [isAddProductDialogOpen, setAddProductDialogOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const formRef = useRef<HTMLFormElement>(null);
+
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
@@ -38,12 +48,23 @@ export default function AdminProductsPage() {
   const isAllSelected = selectedProductIds.length > 0 && selectedProductIds.length === CUP_TYPES_SUMMARY.length;
   const isSomeSelected = selectedProductIds.length > 0 && !isAllSelected;
     
-  async function handleAddProduct(formData: FormData) {
-    'use server';
-    console.log('New Product Data:', {
-      name: formData.get('name'),
-      basePrice: formData.get('basePrice'),
-      imageUrl: formData.get('imageUrl'),
+  const clientAction = async (formData: FormData) => {
+    startTransition(async () => {
+        const result = await handleAdminAddProduct(formData);
+        if (result.success) {
+            toast({
+                title: "Produto Adicionado!",
+                description: "O novo produto foi adicionado (simulação).",
+            });
+            setAddProductDialogOpen(false);
+            formRef.current?.reset();
+        } else {
+            toast({
+                title: "Erro ao adicionar produto",
+                description: result.error,
+                variant: "destructive",
+            });
+        }
     });
   }
 
@@ -70,12 +91,47 @@ export default function AdminProductsPage() {
           <Button size="sm" variant="outline">
             Exportar
           </Button>
-          <Button size="sm" className="h-8 gap-1">
-            <FilePlus2 className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Adicionar Produto
-            </span>
-          </Button>
+          <Dialog open={isAddProductDialogOpen} onOpenChange={setAddProductDialogOpen}>
+            <DialogTrigger asChild>
+                <Button size="sm" className="h-8 gap-1">
+                    <FilePlus2 className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Adicionar Produto
+                    </span>
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                 <form ref={formRef} action={clientAction}>
+                    <DialogHeader>
+                        <DialogTitle>Adicionar Novo Produto</DialogTitle>
+                        <DialogDescription>
+                            Preencha os detalhes do novo produto. Clique em salvar para adicionar.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">Nome</Label>
+                            <Input id="name" name="name" className="col-span-3" required />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="basePrice" className="text-right">Preço Base</Label>
+                            <Input id="basePrice" name="basePrice" type="number" step="0.01" className="col-span-3" required />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="imageUrl" className="text-right">URL da Imagem</Label>
+                            <Input id="imageUrl" name="imageUrl" placeholder="https://placehold.co/400x600.png" className="col-span-3" required />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
+                        <Button type="submit" disabled={isPending}>
+                            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Salvar Produto
+                        </Button>
+                    </DialogFooter>
+                 </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       <TabsContent value="all">

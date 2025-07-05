@@ -1,7 +1,27 @@
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DollarSign, Users, Package, Activity } from 'lucide-react';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 
-// This would be a server component fetching data in a real app.
+
+const chartData = [
+  { month: 'Jan', revenue: 1860.45 },
+  { month: 'Fev', revenue: 3050.89 },
+  { month: 'Mar', revenue: 2370.00 },
+  { month: 'Abr', revenue: 7300.50 },
+  { month: 'Mai', revenue: 5490.10 },
+  { month: 'Jun', revenue: 9845.67 },
+];
+
+const chartConfig = {
+  revenue: {
+    label: 'Receita',
+    color: 'hsl(var(--chart-1))',
+  },
+} satisfies ChartConfig;
+
 export default function AdminDashboardPage() {
     return (
         <div className="space-y-8">
@@ -50,10 +70,32 @@ export default function AdminDashboardPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Visão Geral de Vendas</CardTitle>
-                    <CardDescription>Gráfico de vendas (demonstração).</CardDescription>
+                    <CardDescription>Receita mensal dos últimos 6 meses.</CardDescription>
                 </CardHeader>
-                <CardContent className="h-96 flex items-center justify-center bg-secondary/50 rounded-md">
-                     <p className="text-muted-foreground">Área para gráficos</p>
+                <CardContent className="h-96">
+                     <ChartContainer config={chartConfig} className="w-full h-full">
+                        <BarChart data={chartData} accessibilityLayer>
+                            <CartesianGrid vertical={false} />
+                            <XAxis 
+                                dataKey="month" 
+                                tickLine={false} 
+                                tickMargin={10} 
+                                axisLine={false} 
+                            />
+                             <YAxis
+                                stroke="#888888"
+                                fontSize={12}
+                                tickLine={false}
+                                axisLine={false}
+                                tickFormatter={(value) => `R$${value / 1000}k`}
+                            />
+                            <ChartTooltip 
+                                cursor={false} 
+                                content={<ChartTooltipContent formatter={(value) => `R$ ${Number(value).toFixed(2)}`} />} 
+                            />
+                            <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
+                        </BarChart>
+                    </ChartContainer>
                 </CardContent>
             </Card>
         </div>
