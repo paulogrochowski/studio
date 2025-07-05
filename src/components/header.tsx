@@ -54,13 +54,6 @@ export function Header() {
                 <DropdownMenuItem asChild>
                     <Link href="/register">Cadastrar</Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                    <Link href="/admin/login">
-                        <Wrench className="mr-2 h-4 w-4" />
-                        <span>Admin</span>
-                    </Link>
-                </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
