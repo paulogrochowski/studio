@@ -4,15 +4,17 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { CUP_TYPES_SUMMARY, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/lib/cup-data';
+import { CUP_TYPES_SUMMARY, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS, CUP_CATALOG } from '@/lib/cup-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, PlusCircle } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowLeft, PlusCircle, UploadCloud } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { PreviewCard } from '@/components/preview-card';
+import type { CupModel } from '@/lib/types';
+
 
 interface EditProductPageProps {
   params: {
@@ -22,7 +24,8 @@ interface EditProductPageProps {
 
 export default function EditProductPage({ params }: EditProductPageProps) {
   const { id } = params;
-  const product = CUP_TYPES_SUMMARY.find((p) => p.id === id);
+  const productSummary = CUP_TYPES_SUMMARY.find((p) => p.id === id);
+  const productDetails = CUP_CATALOG.find((p) => p.name === productSummary?.name);
 
   const [isRimDialogOpen, setRimDialogOpen] = useState(false);
   const [isDegradeDialogOpen, setDegradeDialogOpen] = useState(false);
@@ -49,10 +52,22 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [newBaseColorHex, setNewBaseColorHex] = useState('');
 
 
-  if (!product) {
+  if (!productSummary || !productDetails) {
     notFound();
   }
   
+  const previewModel: CupModel = {
+    ...productDetails,
+    name: productSummary.name,
+    basePrice: productSummary.basePrice,
+    imageUrl: productSummary.imageUrl,
+    colorHex: '#FFFFFF',
+    opacityType: 'Fosco',
+    rimColor: 'Nenhuma',
+    degradeColor: 'Nenhum',
+  };
+
+
   const combinedRimColors: Record<string, string> = { ...RIM_COLORS, ...dynamicRimColors };
   const combinedDegradeColors: Record<string, string> = { ...DEGRADE_HEX_COLORS, ...dynamicDegradeColors };
 
@@ -99,7 +114,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             </Button>
         </Link>
         <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-          Editar: {product.name}
+          Editar: {productSummary.name}
         </h1>
         <div className="hidden items-center gap-2 md:ml-auto md:flex">
             <Link href="/admin/products">
@@ -120,11 +135,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 <CardContent className="space-y-4">
                      <div className="space-y-2">
                         <Label htmlFor="name">Nome do Produto</Label>
-                        <Input id="name" defaultValue={product.name} />
+                        <Input id="name" defaultValue={productSummary.name} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="basePrice">Preço Base (R$)</Label>
-                        <Input id="basePrice" type="number" step="0.01" defaultValue={product.basePrice} />
+                        <Input id="basePrice" type="number" step="0.01" defaultValue={productSummary.basePrice} />
                     </div>
                 </CardContent>
             </Card>
@@ -321,37 +336,29 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             </Card>
         </div>
         <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Imagem do Produto</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                    <Card className="aspect-square w-full overflow-hidden">
-                        <Image
-                            alt={product.name}
-                            className="aspect-square w-full object-cover"
-                            height="200"
-                            src={product.imageUrl}
-                            width="200"
-                        />
-                    </Card>
-                    <Button variant="outline" size="sm" className="mt-4 w-full">
-                        Alterar imagem
-                    </Button>
-                </CardContent>
-            </Card>
+            <PreviewCard 
+                cupModel={previewModel} 
+                art={null} 
+                showScrollDownButton={false}
+            />
             <Card>
                 <CardHeader>
                     <CardTitle>Modelo 3D</CardTitle>
                     <CardDescription>
-                        Faça o upload do arquivo .glb para a pré-visualização 3D.
+                        Arraste e solte ou clique para carregar o arquivo .glb.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid gap-2">
-                        <Label htmlFor="model-file" className="sr-only">Upload</Label>
-                        <Input id="model-file" type="file" accept=".glb" />
-                    </div>
+                    <div className="flex items-center justify-center w-full">
+                        <label htmlFor="model-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
+                                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste e solte</p>
+                                <p className="text-xs text-muted-foreground">Arquivo .GLB</p>
+                            </div>
+                            <Input id="model-file" type="file" accept=".glb" className="hidden" />
+                        </label>
+                    </div> 
                 </CardContent>
             </Card>
              <Card>

@@ -11,9 +11,10 @@ import { ChevronDown } from 'lucide-react';
 interface PreviewCardProps {
     cupModel: CupModel;
     art: GeneratedArt | null;
-    artScale: number;
-    artPositionY: number;
-    onScrollDown: () => void;
+    artScale?: number;
+    artPositionY?: number;
+    onScrollDown?: () => void;
+    showScrollDownButton?: boolean;
 }
 
 // Dynamically import the 3D preview component with SSR turned off.
@@ -27,7 +28,7 @@ const CupPreview3D = dynamic(() => import('./cup-preview-3d'), {
     )
 });
 
-export function PreviewCard({ cupModel, art, artScale, artPositionY, onScrollDown }: PreviewCardProps) {
+export function PreviewCard({ cupModel, art, artScale = 0.6, artPositionY = 0.1, onScrollDown, showScrollDownButton = true }: PreviewCardProps) {
     return (
         <div className="relative">
             <Card className="overflow-hidden">
@@ -39,15 +40,17 @@ export function PreviewCard({ cupModel, art, artScale, artPositionY, onScrollDow
                     <CupPreview3D cupModel={cupModel} art={art} artScale={artScale} artPositionY={artPositionY} />
                 </CardContent>
             </Card>
-            <Button
-                variant="secondary"
-                size="icon"
-                className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 rounded-full h-12 w-12 shadow-lg animate-bounce"
-                onClick={onScrollDown}
-                aria-label="Rolar para baixo"
-            >
-                <ChevronDown className="h-8 w-8" />
-            </Button>
+            {showScrollDownButton && onScrollDown && (
+                <Button
+                    variant="secondary"
+                    size="icon"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 rounded-full h-12 w-12 shadow-lg animate-bounce"
+                    onClick={onScrollDown}
+                    aria-label="Rolar para baixo"
+                >
+                    <ChevronDown className="h-8 w-8" />
+                </Button>
+            )}
         </div>
     );
 }
