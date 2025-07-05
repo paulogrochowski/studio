@@ -1,9 +1,13 @@
+
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { DollarSign, Users, Package, Activity } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 
 const chartData = [
@@ -21,6 +25,14 @@ const chartConfig = {
     color: 'hsl(var(--chart-1))',
   },
 } satisfies ChartConfig;
+
+const recentSales = [
+  { name: 'João Silva', email: 'joao.silva@example.com', total: 75.50 },
+  { name: 'Maria Oliveira', email: 'maria.o@example.com', total: 120.00 },
+  { name: 'Carlos Pereira', email: 'carlos.p@example.com', total: 80.00 },
+  { name: 'Ana Costa', email: 'ana.costa@example.com', total: 250.00 },
+  { name: 'Pedro Martins', email: 'pedro.m@example.com', total: 25.00 },
+];
 
 export default function AdminDashboardPage() {
     return (
@@ -67,37 +79,67 @@ export default function AdminDashboardPage() {
                     </CardContent>
                 </Card>
             </div>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Visão Geral de Vendas</CardTitle>
-                    <CardDescription>Receita mensal dos últimos 6 meses.</CardDescription>
-                </CardHeader>
-                <CardContent className="h-96">
-                     <ChartContainer config={chartConfig} className="w-full h-full">
-                        <BarChart data={chartData} accessibilityLayer>
-                            <CartesianGrid vertical={false} />
-                            <XAxis 
-                                dataKey="month" 
-                                tickLine={false} 
-                                tickMargin={10} 
-                                axisLine={false} 
-                            />
-                             <YAxis
-                                stroke="#888888"
-                                fontSize={12}
-                                tickLine={false}
-                                axisLine={false}
-                                tickFormatter={(value) => `R$${value / 1000}k`}
-                            />
-                            <ChartTooltip 
-                                cursor={false} 
-                                content={<ChartTooltipContent formatter={(value) => `R$ ${Number(value).toFixed(2)}`} />} 
-                            />
-                            <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
-                        </BarChart>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Visão Geral de Vendas</CardTitle>
+                        <CardDescription>Receita mensal dos últimos 6 meses.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-[400px]">
+                        <ChartContainer config={chartConfig} className="w-full h-full">
+                            <BarChart data={chartData} accessibilityLayer>
+                                <CartesianGrid vertical={false} />
+                                <XAxis 
+                                    dataKey="month" 
+                                    tickLine={false} 
+                                    tickMargin={10} 
+                                    axisLine={false} 
+                                />
+                                <YAxis
+                                    stroke="#888888"
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(value) => `R$${value / 1000}k`}
+                                />
+                                <ChartTooltip 
+                                    cursor={false} 
+                                    content={<ChartTooltipContent formatter={(value) => `R$ ${Number(value).toFixed(2)}`} />} 
+                                />
+                                <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
+                            </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Vendas Recentes</CardTitle>
+                        <CardDescription>As últimas 5 vendas da sua loja.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-6">
+                        {recentSales.map((sale, index) => (
+                        <div key={index} className="flex items-center gap-4">
+                            <Avatar className="h-9 w-9">
+                                <AvatarImage src={`https://avatar.vercel.sh/${sale.email}.png`} alt={sale.name} />
+                                <AvatarFallback>{sale.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            </Avatar>
+                            <div className="grid gap-1">
+                            <p className="text-sm font-medium leading-none">{sale.name}</p>
+                            <p className="text-sm text-muted-foreground">{sale.email}</p>
+                            </div>
+                            <div className="ml-auto font-medium">
+                            +R$ {sale.total.toFixed(2).replace('.', ',')}
+                            </div>
+                        </div>
+                        ))}
+                    </CardContent>
+                    <CardFooter>
+                        <Button asChild size="sm" className="w-full">
+                            <Link href="/admin/orders">Ver Todas as Vendas</Link>
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
         </div>
     )
 }
