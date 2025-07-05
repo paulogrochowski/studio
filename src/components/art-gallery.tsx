@@ -185,10 +185,10 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     return (
         <div>
             <div className="flex items-center gap-4 mb-8">
-                <h2 className="text-xl font-bold">Personalizando: <span className="text-primary">{selectedCupName}</span></h2>
+                <h2 className="text-xl">Personalizando: <span className="font-bold text-primary">{selectedCupName}</span></h2>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
                 
                 <div className="order-2 lg:order-1 lg:col-span-2">
                     <ScrollArea className="h-[calc(100vh-160px)] pr-4">
@@ -359,7 +359,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                     </ScrollArea>
                 </div>
 
-                 <div className="order-1 lg:order-2 lg:col-span-1">
+                 <div className="order-1 lg:order-2 lg:col-span-3">
                     <div className="sticky top-24">
                         <PreviewCard 
                             cupModel={activeCupModel} 
