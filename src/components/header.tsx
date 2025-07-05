@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
-import { User, Wrench } from "lucide-react";
+import { User, Wrench, ShoppingCart } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,9 +20,21 @@ export function Header() {
             Copos Mania
           </h1>
         </Link>
-        <div className="flex items-center gap-2">
+        <nav className="hidden md:flex items-center gap-2">
+           <Button variant="ghost" asChild>
+            <Link href="/">Início</Link>
+          </Button>
           <Button variant="ghost" asChild>
+            <Link href="/about">Sobre Nós</Link>
+          </Button>
+           <Button variant="ghost" asChild>
             <Link href="/how-to-customize">Como Funciona</Link>
+          </Button>
+        </nav>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon">
+              <ShoppingCart className="h-[1.2rem] w-[1.2rem]" />
+              <span className="sr-only">Carrinho</span>
           </Button>
           
           <DropdownMenu>
