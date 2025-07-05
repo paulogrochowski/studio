@@ -14,10 +14,42 @@ export const TAÇA_GIN_PHOTO = 'https://placehold.co/500x700.png';
 
 
 export const CUP_TYPES_SUMMARY = [
-  { id: 'copo-long-drink', name: 'Copo Long Drink', imageUrl: LONG_DRINK_PHOTO, basePrice: 3.50, 'data-ai-hint': 'white cup' },
-  { id: 'copo-twister-com-tampa', name: 'Copo Twister com Tampa', imageUrl: TWISTER_PHOTO, basePrice: 4.80, 'data-ai-hint': 'clear cup lid' },
-  { id: 'copo-caldereta', name: 'Copo Caldereta', imageUrl: CALDERETA_PHOTO, basePrice: 3.20, 'data-ai-hint': 'black cup' },
-  { id: 'taca-gin', name: 'Taça Gin', imageUrl: TAÇA_GIN_PHOTO, basePrice: 7.90, 'data-ai-hint': 'pink goblet' },
+  { 
+    id: 'copo-long-drink', 
+    name: 'Copo Long Drink', 
+    imageUrl: LONG_DRINK_PHOTO, 
+    basePrice: 3.50, 
+    'data-ai-hint': 'white cup',
+    summary: 'O clássico para festas e eventos.',
+    description: 'O Copo Long Drink é perfeito para servir drinks, refrigerantes e sucos. Com capacidade de 350ml, é resistente e possui um design versátil que combina com qualquer celebração.'
+  },
+  { 
+    id: 'copo-twister-com-tampa', 
+    name: 'Copo Twister com Tampa', 
+    imageUrl: TWISTER_PHOTO, 
+    basePrice: 4.80, 
+    'data-ai-hint': 'clear cup lid',
+    summary: 'Diversão e praticidade com tampa e canudo.',
+    description: 'O Copo Twister de 500ml vem com tampa e canudo, ideal para festas infantis, passeios e para o dia a dia. Seu design espiral é um charme e evita derramamentos.'
+  },
+  { 
+    id: 'copo-caldereta', 
+    name: 'Copo Caldereta', 
+    imageUrl: CALDERETA_PHOTO, 
+    basePrice: 3.20, 
+    'data-ai-hint': 'black cup',
+    summary: 'Robusto e ideal para cervejas e chopp.',
+    description: 'Com 300ml, o Copo Caldereta é a escolha preferida para servir cervejas e chopp em bares e festas. Seu formato robusto garante uma pegada firme e mantém a temperatura.'
+  },
+  { 
+    id: 'taca-gin', 
+    name: 'Taça Gin', 
+    imageUrl: TAÇA_GIN_PHOTO, 
+    basePrice: 7.90, 
+    'data-ai-hint': 'pink goblet',
+    summary: 'Elegância para seus drinks de gin.',
+    description: 'A Taça Gin de 700ml é sinônimo de sofisticação. Com espaço de sobra para gelo e especiarias, ela é perfeita para preparar e servir Gin Tônica e outros coquetéis com estilo.'
+  },
 ];
 
 export const ALL_OPACITIES = ['Fosco', 'Transparente'] as const;

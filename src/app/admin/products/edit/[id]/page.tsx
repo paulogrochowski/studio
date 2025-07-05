@@ -14,6 +14,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { PreviewCard } from '@/components/preview-card';
 import type { CupModel } from '@/lib/types';
+import { Textarea } from '@/components/ui/textarea';
 
 
 interface EditProductPageProps {
@@ -136,6 +137,14 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                      <div className="space-y-2">
                         <Label htmlFor="name">Nome do Produto</Label>
                         <Input id="name" defaultValue={productSummary.name} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="summary">Resumo do Produto</Label>
+                        <Input id="summary" placeholder="Uma frase curta que descreve o produto." defaultValue={productSummary.summary || ''} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="description">Descrição Completa</Label>
+                        <Textarea id="description" placeholder="Descreva em detalhes o produto, seus usos, materiais e características." defaultValue={productSummary.description || ''} rows={5} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="basePrice">Preço Base (R$)</Label>
