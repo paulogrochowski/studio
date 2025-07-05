@@ -26,21 +26,52 @@ interface EditProductPageProps {
 export default function EditProductPage({ params }: EditProductPageProps) {
   const { id } = params;
   const product = CUP_TYPES_SUMMARY.find((p) => p.id === id);
+
   const [isRimDialogOpen, setRimDialogOpen] = useState(false);
   const [isDegradeDialogOpen, setDegradeDialogOpen] = useState(false);
+  
+  // State for dynamic options
+  const [availableRims, setAvailableRims] = useState<string[]>([...ALL_RIMS]);
+  const [availableDegrades, setAvailableDegrades] = useState<string[]>([...DEGRADE_COLORS]);
+  
+  const [dynamicRimColors, setDynamicRimColors] = useState<Record<string, string>>({});
+  const [dynamicDegradeColors, setDynamicDegradeColors] = useState<Record<string, string>>({});
+
+  const [newRimName, setNewRimName] = useState('');
+  const [newRimHex, setNewRimHex] = useState('');
+
+  const [newDegradeName, setNewDegradeName] = useState('');
+  const [newDegradeHex, setNewDegradeHex] = useState('');
 
   if (!product) {
     notFound();
   }
   
-  const availableRims = ALL_RIMS;
-  const availableDegrades = DEGRADE_COLORS;
+  const combinedRimColors: Record<string, string> = { ...RIM_COLORS, ...dynamicRimColors };
+  const combinedDegradeColors: Record<string, string> = { ...DEGRADE_HEX_COLORS, ...dynamicDegradeColors };
+
 
   const handleAddNewOption = (type: 'rim' | 'degrade') => {
-    // In a real app, this would submit to a server action to save the new option.
-    console.log(`Simulating adding a new ${type}`);
-    if (type === 'rim') setRimDialogOpen(false);
-    if (type === 'degrade') setDegradeDialogOpen(false);
+    if (type === 'rim') {
+        if (!newRimName || !newRimHex) return; 
+        if (!availableRims.includes(newRimName)) {
+            setAvailableRims(prev => [...prev, newRimName]);
+        }
+        setDynamicRimColors(prev => ({ ...prev, [newRimName]: newRimHex }));
+        setNewRimName('');
+        setNewRimHex('');
+        setRimDialogOpen(false);
+    }
+    if (type === 'degrade') {
+        if (!newDegradeName || !newDegradeHex) return;
+        if (!availableDegrades.includes(newDegradeName)) {
+            setAvailableDegrades(prev => [...prev, newDegradeName]);
+        }
+        setDynamicDegradeColors(prev => ({ ...prev, [newDegradeName]: newDegradeHex }));
+        setNewDegradeName('');
+        setNewDegradeHex('');
+        setDegradeDialogOpen(false);
+    }
   }
 
   return (
@@ -131,7 +162,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                                             "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all",
                                                             'border-primary ring-2 ring-primary ring-offset-2 ring-offset-background'
                                                         )}
-                                                        style={{ backgroundColor: rim === 'Nenhuma' ? 'hsl(var(--muted))' : RIM_COLORS[rim] }}
+                                                        style={{ backgroundColor: rim === 'Nenhuma' ? 'hsl(var(--muted))' : combinedRimColors[rim] }}
                                                     >
                                                         {rim === 'Nenhuma' && <Slash className="h-5 w-5 text-muted-foreground" />}
                                                     </button>
@@ -155,11 +186,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                                 <div className="space-y-4 py-2">
                                                     <div className="space-y-2">
                                                         <Label htmlFor="rim-name">Nome da Cor</Label>
-                                                        <Input id="rim-name" placeholder="Ex: Cobre Metálico" />
+                                                        <Input id="rim-name" placeholder="Ex: Cobre Metálico" value={newRimName} onChange={(e) => setNewRimName(e.target.value)} />
                                                     </div>
                                                     <div className="space-y-2">
                                                         <Label htmlFor="rim-hex">Cor (Hex)</Label>
-                                                        <Input id="rim-hex" placeholder="#B87333" />
+                                                        <Input id="rim-hex" placeholder="#B87333" value={newRimHex} onChange={(e) => setNewRimHex(e.target.value)} />
                                                     </div>
                                                 </div>
                                                 <DialogFooter>
@@ -183,7 +214,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                                 <TooltipTrigger asChild>
                                                     <button
                                                         className={cn("w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all", 'border-primary ring-2 ring-primary ring-offset-2 ring-offset-background')}
-                                                        style={{ background: `linear-gradient(to bottom, ${DEGRADE_HEX_COLORS[color]}, hsl(var(--card)))` }}
+                                                        style={{ background: `linear-gradient(to bottom, ${combinedDegradeColors[color]}, hsl(var(--card)))` }}
                                                     />
                                                 </TooltipTrigger>
                                                 <TooltipContent><p>{color}</p></TooltipContent>
@@ -198,15 +229,18 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                             <DialogContent>
                                                 <DialogHeader>
                                                     <DialogTitle>Adicionar Nova Cor de Degradê</DialogTitle>
+                                                     <DialogDescription>
+                                                        Esta nova cor de degradê ficará disponível para seleção nos produtos.
+                                                    </DialogDescription>
                                                 </DialogHeader>
                                                  <div className="space-y-4 py-2">
                                                     <div className="space-y-2">
                                                         <Label htmlFor="degrade-name">Nome da Cor</Label>
-                                                        <Input id="degrade-name" placeholder="Ex: Verde Esmeralda" />
+                                                        <Input id="degrade-name" placeholder="Ex: Verde Esmeralda" value={newDegradeName} onChange={(e) => setNewDegradeName(e.target.value)} />
                                                     </div>
                                                     <div className="space-y-2">
                                                         <Label htmlFor="degrade-hex">Cor (Hex)</Label>
-                                                        <Input id="degrade-hex" placeholder="#50C878" />
+                                                        <Input id="degrade-hex" placeholder="#50C878" value={newDegradeHex} onChange={(e) => setNewDegradeHex(e.target.value)} />
                                                     </div>
                                                 </div>
                                                 <DialogFooter>
