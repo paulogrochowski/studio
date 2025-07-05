@@ -1,93 +1,118 @@
-import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CUP_TYPES_SUMMARY } from '@/lib/cup-data';
 import Image from 'next/image';
+import { FilePlus2, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 export default function AdminProductsPage() {
     
   async function handleAddProduct(formData: FormData) {
     'use server';
-    // In a real app, this would save the new product to a database.
-    // For this prototype, we'll just log the data.
     console.log('New Product Data:', {
       name: formData.get('name'),
       basePrice: formData.get('basePrice'),
       imageUrl: formData.get('imageUrl'),
     });
-    // In a real app, you would revalidate the path to show the new product.
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-body">
-      <Header />
-      <main className="flex-1 container mx-auto p-4 md:p-8">
-        <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-wider uppercase mb-8">Gerenciar Produtos</h1>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div className="lg:col-span-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Produtos Atuais</CardTitle>
-                        <CardDescription>Lista de produtos exibidos na loja.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Imagem</TableHead>
-                                    <TableHead>Nome</TableHead>
-                                    <TableHead>Preço Base</TableHead>
-                                    <TableHead>Ações</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {CUP_TYPES_SUMMARY.map((product) => (
-                                    <TableRow key={product.name}>
-                                        <TableCell>
-                                            <Image src={product.imageUrl} alt={product.name} width={40} height={60} className="object-contain rounded-md" />
-                                        </TableCell>
-                                        <TableCell>{product.name}</TableCell>
-                                        <TableCell>R$ {product.basePrice.toFixed(2)}</TableCell>
-                                        <TableCell>
-                                            <Button variant="outline" size="sm">Editar</Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-            </div>
-            <div>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Adicionar Novo Produto</CardTitle>
-                        <CardDescription>Este formulário é uma demonstração. Os dados não serão salvos permanentemente.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form action={handleAddProduct} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Nome do Produto</Label>
-                                <Input id="name" name="name" required />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="basePrice">Preço Base (ex: 4.50)</Label>
-                                <Input id="basePrice" name="basePrice" type="number" step="0.01" required />
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="imageUrl">URL da Imagem</Label>
-                                <Input id="imageUrl" name="imageUrl" placeholder="https://placehold.co/400x600.png" required />
-                            </div>
-                            <Button type="submit" className="w-full">Adicionar Produto</Button>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
+    <Tabs defaultValue="all">
+      <div className="flex items-center">
+        <TabsList>
+          <TabsTrigger value="all">Todos</TabsTrigger>
+          <TabsTrigger value="active">Ativos</TabsTrigger>
+          <TabsTrigger value="draft">Rascunhos</TabsTrigger>
+          <TabsTrigger value="archived" className="hidden sm:flex">
+            Arquivados
+          </TabsTrigger>
+        </TabsList>
+        <div className="ml-auto flex items-center gap-2">
+          <Button size="sm" variant="outline">
+            Exportar
+          </Button>
+          <Button size="sm" className="h-8 gap-1">
+            <FilePlus2 className="h-3.5 w-3.5" />
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              Adicionar Produto
+            </span>
+          </Button>
         </div>
-      </main>
-    </div>
+      </div>
+      <TabsContent value="all">
+        <Card>
+            <CardHeader>
+                <CardTitle>Produtos</CardTitle>
+                <CardDescription>Gerencie seus produtos e visualize suas vendas.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="hidden w-[100px] sm:table-cell">
+                                <span className="sr-only">Imagem</span>
+                            </TableHead>
+                            <TableHead>Nome</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Preço Base</TableHead>
+                            <TableHead className="hidden md:table-cell">Estoque</TableHead>
+                            <TableHead className="hidden md:table-cell">Criado em</TableHead>
+                             <TableHead>
+                                <span className="sr-only">Ações</span>
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {CUP_TYPES_SUMMARY.map((product) => (
+                            <TableRow key={product.name}>
+                                <TableCell className="hidden sm:table-cell">
+                                    <Image src={product.imageUrl} alt={product.name} width={64} height={64} className="aspect-square rounded-md object-cover" />
+                                </TableCell>
+                                <TableCell className="font-medium">{product.name}</TableCell>
+                                <TableCell>
+                                    <Badge variant="outline">Ativo</Badge>
+                                </TableCell>
+                                <TableCell>R$ {product.basePrice.toFixed(2)}</TableCell>
+                                <TableCell className="hidden md:table-cell">250</TableCell>
+                                <TableCell className="hidden md:table-cell">2023-07-12 10:42</TableCell>
+                                <TableCell>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                        <Button
+                                            aria-haspopup="true"
+                                            size="icon"
+                                            variant="ghost"
+                                        >
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            <span className="sr-only">Toggle menu</span>
+                                        </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                        <DropdownMenuItem>Editar</DropdownMenuItem>
+                                        <DropdownMenuItem>Duplicar</DropdownMenuItem>
+                                        <DropdownMenuItem className="text-destructive">
+                                            Deletar
+                                        </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+            <CardFooter>
+                <div className="text-xs text-muted-foreground">
+                    Mostrando <strong>1-4</strong> de <strong>4</strong> produtos
+                </div>
+            </CardFooter>
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
 }

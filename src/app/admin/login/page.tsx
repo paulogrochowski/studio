@@ -22,7 +22,7 @@ export default function AdminLoginPage({
     // This is a prototype-only login.
     // In a real application, use a secure authentication provider.
     if (email === 'admin@coposmania.com' && password === '12345') {
-      redirect('/admin/products');
+      redirect('/admin');
     } else {
       redirect('/admin/login?error=true');
     }
