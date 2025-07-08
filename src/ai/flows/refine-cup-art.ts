@@ -41,7 +41,9 @@ const refineCupArtFlow = ai.defineFlow(
     outputSchema: RefineCupArtOutputSchema,
   },
   async input => {
-    const fullInstructions = `Refine a imagem com base nas seguintes instruções: "${input.refinementInstructions}". INSTRUÇÃO CRÍTICA E OBRIGATÓRIA: O resultado final DEVE ter um fundo 100% transparente para que possa ser aplicado em um copo. Não adicione nenhum fundo colorido ou branco.`;
+    const fullInstructions = `Refine a imagem com base nas seguintes instruções: "${input.refinementInstructions}".
+
+INSTRUÇÃO CRÍTICA E NÃO-NEGOCIÁVEL: Independentemente das outras instruções, o resultado final DEVE ter um fundo 100% transparente para que possa ser aplicado em um copo. Não adicione nenhum fundo colorido ou branco. A arte deve permanecer isolada.`;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',

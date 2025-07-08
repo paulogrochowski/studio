@@ -35,11 +35,11 @@ const generateCupArtFlow = ai.defineFlow(
     outputSchema: GenerateCupArtOutputSchema,
   },
   async (input) => {
-    const fullPrompt = `INSTRUÇÕES CRÍTICAS E OBRIGATÓRIAS:
-1.  **NÃO DESENHE O COPO:** A imagem final deve conter APENAS a arte para ser estampada. É estritamente proibido desenhar o copo, sua forma, ou qualquer coisa que se assemelhe a um copo. A arte deve ser totalmente ISOLADA.
-2.  **FUNDO 100% TRANSPARENTE:** Esta é a regra mais importante. A imagem gerada DEVE ter um fundo completamente transparente (canal alfa). NÃO inclua nenhum fundo branco, preto, colorido, com gradiente ou qualquer outro tipo. O fundo precisa ser VAZIO para que a arte possa ser aplicada corretamente sobre o copo.
+    const fullPrompt = `INSTRUÇÃO CRÍTICA: Você é uma IA de design gráfico criando uma arte para um produto físico. A regra mais importante de todas é que a imagem de saída DEVE ter um fundo 100% transparente. NÃO use branco ou qualquer outra cor no fundo. A arte deve estar completamente isolada. Falhar em fornecer um fundo transparente torna a imagem inútil.
 
-Agora, gere uma arte no estilo vetorial/clipart, limpa e de alta qualidade, com base na seguinte descrição: "${input.eventDescription}".`;
+Com essa regra crítica em mente, gere uma arte limpa, de alta qualidade, no estilo vetorial/clipart para um copo, com base na seguinte descrição: "${input.eventDescription}".
+
+NÃO desenhe o copo. Gere apenas a arte isolada com um fundo transparente.`;
     
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
