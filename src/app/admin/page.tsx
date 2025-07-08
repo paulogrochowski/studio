@@ -37,7 +37,7 @@ const recentSales = [
 export default function AdminDashboardPage() {
     return (
         <div className="space-y-8">
-            <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
@@ -79,13 +79,13 @@ export default function AdminDashboardPage() {
                     </CardContent>
                 </Card>
             </div>
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Visão Geral de Vendas</CardTitle>
                         <CardDescription>Receita mensal dos últimos 6 meses.</CardDescription>
                     </CardHeader>
-                    <CardContent className="h-[400px]">
+                    <CardContent className="h-[400px] w-full">
                         <ChartContainer config={chartConfig} className="w-full h-full">
                             <BarChart data={chartData} accessibilityLayer>
                                 <CartesianGrid vertical={false} />

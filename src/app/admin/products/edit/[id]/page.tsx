@@ -3,7 +3,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { notFound, useSearchParams } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { CUP_TYPES_SUMMARY, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS, CUP_CATALOG } from '@/lib/cup-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -41,6 +41,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const productSummary = CUP_TYPES_SUMMARY.find((p) => p.id === id);
   const productDetails = CUP_CATALOG.find((p) => p.name === productSummary?.name);
 
+  // States must be at the top level, before any early returns.
+  const [productName, setProductName] = useState(productSummary?.name || '');
+  const [productSummaryText, setProductSummaryText] = useState(productSummary?.summary || '');
+  const [productDescription, setProductDescription] = useState(productSummary?.description || '');
+
   const [isRimDialogOpen, setRimDialogOpen] = useState(false);
   const [isDegradeDialogOpen, setDegradeDialogOpen] = useState(false);
   
@@ -61,7 +66,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [metaDescription, setMetaDescription] = useState('');
   const [keywords, setKeywords] = useState('');
 
-
+  // Now we can safely check and exit if the product is not found.
   if (!productSummary || !productDetails) {
     notFound();
   }
@@ -107,10 +112,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
   const handleOptimizeSeo = () => {
     startSeoTransition(async () => {
-        const productName = (document.getElementById('name') as HTMLInputElement)?.value || productSummary.name;
-        const productSummaryText = (document.getElementById('summary') as HTMLInputElement)?.value || productSummary.summary || '';
-        const productDescription = (document.getElementById('description') as HTMLTextAreaElement)?.value || productSummary.description || '';
-        
         const result = await handleSeoOptimization({
             productName,
             productSummary: productSummaryText,
@@ -133,7 +134,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             });
         }
     });
-};
+  };
 
   return (
     <div className="mx-auto grid max-w-4xl flex-1 auto-rows-max gap-4">
@@ -145,7 +146,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             </Button>
         </Link>
         <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-          Editar: {productSummary.name}
+          Editar: {productName}
         </h1>
         <div className="hidden items-center gap-2 md:ml-auto md:flex">
             <Link href="/admin/products">
@@ -166,15 +167,15 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 <CardContent className="space-y-4">
                      <div className="space-y-2">
                         <Label htmlFor="name">Nome do Produto</Label>
-                        <Input id="name" defaultValue={productSummary.name} />
+                        <Input id="name" value={productName} onChange={(e) => setProductName(e.target.value)} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="summary">Resumo do Produto</Label>
-                        <Input id="summary" placeholder="Uma frase curta que descreve o produto." defaultValue={productSummary.summary || ''} />
+                        <Input id="summary" placeholder="Uma frase curta que descreve o produto." value={productSummaryText} onChange={(e) => setProductSummaryText(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="description">Descrição Completa</Label>
-                        <Textarea id="description" placeholder="Descreva em detalhes o produto, seus usos, materiais e características." defaultValue={productSummary.description || ''} rows={5} />
+                        <Textarea id="description" placeholder="Descreva em detalhes o produto, seus usos, materiais e características." value={productDescription} onChange={(e) => setProductDescription(e.target.value)} rows={5} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="basePrice">Preço Base (R$)</Label>
