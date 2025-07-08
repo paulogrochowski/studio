@@ -20,7 +20,6 @@ import { CUP_CATALOG, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/l
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 import { PreviewCard } from './preview-card';
-import { Slider } from './ui/slider';
 import { ScrollArea } from './ui/scroll-area';
 
 interface ArtGalleryProps {
@@ -217,7 +216,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                       <div className="space-y-6">
                         {/* Cup Customization */}
                         <Card>
-                            <CardHeader><CardTitle>1. Personalize o Copo</CardTitle></CardHeader>
+                            <CardHeader><CardTitle>Personalize o Copo</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
                                     <Label className="font-bold">Cor</Label>
@@ -334,7 +333,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
 
                         {/* Art Generation */}
                         <Card>
-                            <CardHeader><CardTitle>2. Crie sua Arte</CardTitle></CardHeader>
+                            <CardHeader><CardTitle>Crie sua Arte</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
                                 <Textarea
                                     placeholder="Ex: festa 15 anos, escrito 'Júlia' em rosa com uma coroa"
@@ -349,38 +348,6 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                             </CardContent>
                         </Card>
 
-                         {art && (
-                            <Card>
-                                <CardHeader><CardTitle>3. Ajuste a Arte</CardTitle></CardHeader>
-                                <CardContent className="space-y-8 pt-4">
-                                     <div className="space-y-2">
-                                        <div className="flex justify-between items-center">
-                                            <Label htmlFor="art-size">Tamanho da Arte</Label>
-                                            <span className="text-sm font-medium text-muted-foreground">{(artScale / 0.6 * 100).toFixed(0)}%</span>
-                                        </div>
-                                        <Slider id="art-size" value={[artScale]} onValueChange={(v) => setArtScale(v[0])} min={0.2} max={1.2} step={0.02} />
-                                    </div>
-                                    <div className="space-y-2">
-                                         <div className="flex justify-between items-center">
-                                            <Label htmlFor="art-position">Posição Vertical</Label>
-                                            <span className="text-sm font-medium text-muted-foreground">{(artPositionY * 100).toFixed(0)}</span>
-                                        </div>
-                                        <Slider id="art-position" value={[artPositionY]} onValueChange={(v) => setArtPositionY(v[0])} min={-0.3} max={0.5} step={0.01} />
-                                    </div>
-                                </CardContent>
-                                <CardFooter className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                    <Button variant="outline" className="w-full" onClick={handleSaveArt} disabled={isRefining || !art?.imageUrl || art.imageUrl.startsWith('data:image/gif')}>
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Salvar Arte
-                                    </Button>
-                                    <Button variant="outline" className="w-full" onClick={handleRemoveBg} disabled={isRefining || isGenerating || !art}>
-                                        {isRefining ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Layers className="mr-2 h-4 w-4" />}
-                                        Remover Fundo
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                         )}
-
                       </div>
                     </ScrollArea>
                 </div>
@@ -391,8 +358,14 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                             cupModel={activeCupModel} 
                             art={art} 
                             artScale={artScale} 
+                            setArtScale={setArtScale}
                             artPositionY={artPositionY} 
+                            setArtPositionY={setArtPositionY}
                             onScrollDown={handleScrollToActions} 
+                            handleSaveArt={handleSaveArt}
+                            handleRemoveBg={handleRemoveBg}
+                            isRefining={isRefining}
+                            isGenerating={isGenerating}
                         />
                     </div>
                 </div>
