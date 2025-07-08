@@ -6,7 +6,7 @@ import type { CupModel, GeneratedArt } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader } from './loader';
 import { Button } from './ui/button';
-import { ChevronDown, Download, Layers, Loader2 } from 'lucide-react';
+import { ChevronDown, Download } from 'lucide-react';
 import { Label } from './ui/label';
 import { Slider } from './ui/slider';
 
@@ -21,8 +21,6 @@ interface PreviewCardProps {
     onScrollDown?: () => void;
     showScrollDownButton?: boolean;
     handleSaveArt: () => void;
-    handleRemoveBg: () => void;
-    isRefining: boolean;
     isGenerating: boolean;
 }
 
@@ -47,8 +45,6 @@ export function PreviewCard({
     onScrollDown, 
     showScrollDownButton = true,
     handleSaveArt,
-    handleRemoveBg,
-    isRefining,
     isGenerating
 }: PreviewCardProps) {
     return (
@@ -77,14 +73,10 @@ export function PreviewCard({
                             </div>
                             <Slider id="art-position" value={[artPositionY]} onValueChange={(v) => setArtPositionY(v[0])} min={-0.3} max={0.5} step={0.01} />
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full pt-2">
-                            <Button variant="outline" className="w-full" onClick={handleSaveArt} disabled={isRefining || !art?.imageUrl || art.imageUrl.startsWith('data:image/gif')}>
+                        <div className="w-full pt-2">
+                            <Button variant="outline" className="w-full" onClick={handleSaveArt} disabled={isGenerating || !art?.imageUrl || art.imageUrl.startsWith('data:image/gif')}>
                                 <Download className="mr-2 h-4 w-4" />
                                 Salvar Arte
-                            </Button>
-                            <Button variant="outline" className="w-full" onClick={handleRemoveBg} disabled={isRefining || isGenerating || !art}>
-                                {isRefining ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Layers className="mr-2 h-4 w-4" />}
-                                Remover Fundo
                             </Button>
                         </div>
                     </CardFooter>

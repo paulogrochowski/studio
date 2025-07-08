@@ -9,10 +9,10 @@ import { QuoteSummary } from './quote-summary';
 import { CheckoutView } from './checkout-view';
 import { Loader } from './loader';
 import { Separator } from './ui/separator';
-import { ArrowLeft, Check, Download, Layers, Loader2, Slash, Sparkles } from 'lucide-react';
+import { ArrowLeft, Check, Download, Loader2, Slash, Sparkles } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration, handleRefineArt } from '@/app/actions';
+import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -20,7 +20,6 @@ import { CUP_CATALOG, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/l
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 import { PreviewCard } from './preview-card';
-import { ScrollArea } from './ui/scroll-area';
 
 interface ArtGalleryProps {
     selectedCupName: string;
@@ -37,7 +36,6 @@ const getAvailableCupOptions = (cupName: string) => {
 export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     const { toast } = useToast();
     const [isGenerating, startGenerationTransition] = useTransition();
-    const [isRefining, startRefiningTransition] = useTransition();
 
     const [view, setView] = useState<'editor' | 'quote' | 'checkout'>('editor');
 
@@ -150,24 +148,6 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
         link.click();
         document.body.removeChild(link);
         toast({ title: 'Sucesso', description: 'Sua arte foi salva no seu dispositivo.' });
-    };
-
-    const handleRemoveBg = () => {
-        if (!art?.imageUrl) return;
-
-        startRefiningTransition(async () => {
-            const result = await handleRefineArt(art.imageUrl, "Remova completamente o fundo desta imagem, deixando-o 100% transparente. Mantenha apenas o objeto principal da arte.");
-            if (result.success && result.imageUrl) {
-                setArt(prev => prev ? { ...prev, imageUrl: result.imageUrl! } : null);
-                toast({ title: 'Sucesso!', description: 'O fundo da arte foi removido.' });
-            } else {
-                toast({
-                    variant: 'destructive',
-                    title: 'Erro ao remover fundo',
-                    description: result.error ?? 'Não foi possível processar a imagem. Tente novamente.',
-                });
-            }
-        });
     };
 
     if (view === 'checkout' && finalOrder) {
@@ -361,8 +341,6 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                             setArtPositionY={setArtPositionY}
                             onScrollDown={handleScrollToActions} 
                             handleSaveArt={handleSaveArt}
-                            handleRemoveBg={handleRemoveBg}
-                            isRefining={isRefining}
                             isGenerating={isGenerating}
                         />
                     </div>

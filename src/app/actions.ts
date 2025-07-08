@@ -5,9 +5,7 @@ import { cookies } from 'next/headers';
 import { generateCupArt } from '@/ai/flows/generate-cup-art';
 import { analyzeArtComplexity } from '@/ai/flows/analyze-art-complexity';
 import type { OrderDetails } from '@/lib/types';
-import { refineCupArt } from '@/ai/flows/refine-cup-art';
 import { validateImageBackground } from '@/ai/flows/validate-image-background';
-import { vectorizeImage } from '@/ai/flows/vectorize-image';
 import { optimizeProductSeo } from '@/ai/flows/optimize-product-seo';
 import type { OptimizeProductSeoInput } from '@/ai/flows/optimize-product-seo';
 import { generateAdCreative } from '@/ai/flows/generate-ad-creative';
@@ -20,37 +18,18 @@ import type { AnalyzeMarketingQualityInput } from '@/ai/flows/analyze-marketing-
 
 export async function handleArtGeneration(prompt: string) {
   try {
-    // Step 1: Generate the initial art
-    const generationResult = await generateCupArt({ eventDescription: prompt });
+    // "Reset" the AI by simplifying the flow to a single, direct generation call.
+    // The prompt in generateCupArt is heavily optimized for transparency.
+    const result = await generateCupArt({ eventDescription: prompt });
     
-    if (!generationResult.imageUrl) {
-        throw new Error('A IA não conseguiu gerar a imagem inicial.');
-    }
-    
-    // Step 2: Vectorize the art for a cleaner look.
-    const vectorizationResult = await vectorizeImage({ imageDataUri: generationResult.imageUrl });
-    let finalImageUrl = vectorizationResult.vectorizedImageDataUri;
-
-    // Step 3: Force a final refinement pass to *ensure* the background is transparent.
-    // This is a robust way to handle cases where the model might ignore the initial transparency instruction.
-    const refinementResult = await refineCupArt({
-        baseImageDataUri: finalImageUrl,
-        refinementInstructions: "A tarefa mais importante é remover 100% do fundo, deixando-o totalmente transparente. Mantenha apenas o objeto principal da arte, sem sombras ou bordas extras."
-    });
-
-    if (refinementResult.refinedImageDataUri) {
-        finalImageUrl = refinementResult.refinedImageDataUri;
-    } else {
-        console.error("Background removal step failed. The image might have a background.");
-        // Fallback to the vectorized image, but the user may still see a background.
+    if (!result.imageUrl) {
+        throw new Error('A IA não conseguiu gerar a imagem.');
     }
 
-    // Return the final, transparent image URL
-    return { success: true, imageUrl: finalImageUrl, prompt: prompt };
+    return { success: true, imageUrl: result.imageUrl, prompt: prompt };
   } catch (error) {
-    console.error('Art generation/processing error:', error);
-    // Provide a more generic error to the user
-    return { success: false, error: 'Falha ao processar a arte. Tente novamente ou com uma descrição diferente.' };
+    console.error('Art generation error:', error);
+    return { success: false, error: 'Falha ao gerar a arte. Tente novamente ou com uma descrição diferente.' };
   }
 }
 
@@ -69,16 +48,6 @@ export async function handleFinalizeOrder(details: OrderDetails) {
     console.log("Order finalized:", details);
     // In a real app, this would save to a database, process payment, etc.
     return { success: true };
-}
-
-export async function handleRefineArt(baseImageDataUri: string, refinementInstructions: string) {
-    try {
-        const result = await refineCupArt({ baseImageDataUri, refinementInstructions });
-        return { success: true, imageUrl: result.refinedImageDataUri };
-    } catch (error) {
-        console.error(error);
-        return { success: false, error: 'Falha ao refinar a arte. Tente novamente.' };
-    }
 }
 
 export async function handleValidateArtBackground(imageDataUri: string) {
