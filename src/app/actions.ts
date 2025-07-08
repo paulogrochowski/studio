@@ -5,6 +5,7 @@ import { analyzeArtComplexity } from '@/ai/flows/analyze-art-complexity';
 import type { OrderDetails } from '@/lib/types';
 import { refineCupArt } from '@/ai/flows/refine-cup-art';
 import { validateImageBackground } from '@/ai/flows/validate-image-background';
+import { optimizeProductSeo, type OptimizeProductSeoInput } from '@/ai/flows/optimize-product-seo';
 
 
 export async function handleArtGeneration(prompt: string) {
@@ -56,6 +57,15 @@ export async function handleValidateArtBackground(imageDataUri: string) {
     }
 }
 
+export async function handleSeoOptimization(input: OptimizeProductSeoInput) {
+    try {
+        const result = await optimizeProductSeo(input);
+        return { success: true, seoData: result };
+    } catch (error) {
+        console.error('Error optimizing SEO:', error);
+        return { success: false, error: 'Falha ao otimizar o SEO. Tente novamente.' };
+    }
+}
 
 export async function handleShippingCalculation(cep: string) {
     if (!cep || cep.replace(/\D/g, '').length !== 8) {

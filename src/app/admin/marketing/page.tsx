@@ -37,7 +37,11 @@ const coupons = [
 ];
 
 
-export default function AdminMarketingPage() {
+export default function AdminMarketingPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
+  const productName = searchParams?.product_name as string | undefined;
+  const emailSubjectDefault = productName ? `Oferta especial no nosso ${decodeURIComponent(productName)}!` : "Ex: Novidades e ofertas imperdíveis!";
+  const emailBodyDefault = productName ? `Olá!\n\nTemos uma oferta incrível para você no nosso ${decodeURIComponent(productName)}. É a escolha perfeita para o seu próximo evento.\n\nClique aqui e personalize o seu agora mesmo!\n\nAbraços,\nEquipe Copos Mania` : "Escreva sua mensagem aqui. Você pode usar HTML.";
+
   return (
     <Tabs defaultValue="campaigns" className="w-full">
       <TabsList className="grid w-full grid-cols-3">
@@ -148,7 +152,7 @@ export default function AdminMarketingPage() {
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="email-subject">Assunto do Email</Label>
-                <Input id="email-subject" placeholder="Ex: Novidades e ofertas imperdíveis!" />
+                <Input id="email-subject" defaultValue={emailSubjectDefault} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email-audience">Enviar Para</Label>
@@ -167,7 +171,7 @@ export default function AdminMarketingPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email-body">Corpo do Email</Label>
-              <Textarea id="email-body" rows={10} placeholder="Escreva sua mensagem aqui. Você pode usar HTML." />
+              <Textarea id="email-body" rows={10} defaultValue={emailBodyDefault} />
             </div>
           </CardContent>
           <CardFooter>

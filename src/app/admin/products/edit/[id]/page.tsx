@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -10,12 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, PlusCircle, UploadCloud } from 'lucide-react';
+import { ArrowLeft, PlusCircle, UploadCloud, Sparkles, Rocket, Loader2 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { PreviewCard } from '@/components/preview-card';
 import type { CupModel } from '@/lib/types';
 import { Textarea } from '@/components/ui/textarea';
+import { handleSeoOptimization } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
 
 
 interface EditProductPageProps {
@@ -26,13 +27,13 @@ interface EditProductPageProps {
 
 export default function EditProductPage({ params }: EditProductPageProps) {
   const { id } = params;
+  const { toast } = useToast();
   const productSummary = CUP_TYPES_SUMMARY.find((p) => p.id === id);
   const productDetails = CUP_CATALOG.find((p) => p.name === productSummary?.name);
 
   const [isRimDialogOpen, setRimDialogOpen] = useState(false);
   const [isDegradeDialogOpen, setDegradeDialogOpen] = useState(false);
   
-  // State for dynamic options
   const [availableRims, setAvailableRims] = useState<string[]>([...ALL_RIMS]);
   const [availableDegrades, setAvailableDegrades] = useState<string[]>([...DEGRADE_COLORS]);
   
@@ -44,6 +45,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
   const [newDegradeName, setNewDegradeName] = useState('');
   const [newDegradeHex, setNewDegradeHex] = useState('');
+
+  const [isOptimizing, startSeoTransition] = useTransition();
+  const [seoTitle, setSeoTitle] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
+  const [keywords, setKeywords] = useState('');
 
 
   if (!productSummary || !productDetails) {
@@ -88,6 +94,36 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         setDegradeDialogOpen(false);
     }
   }
+
+  const handleOptimizeSeo = () => {
+    startSeoTransition(async () => {
+        const productName = (document.getElementById('name') as HTMLInputElement)?.value || productSummary.name;
+        const productSummaryText = (document.getElementById('summary') as HTMLInputElement)?.value || productSummary.summary || '';
+        const productDescription = (document.getElementById('description') as HTMLTextAreaElement)?.value || productSummary.description || '';
+        
+        const result = await handleSeoOptimization({
+            productName,
+            productSummary: productSummaryText,
+            productDescription
+        });
+
+        if (result.success && result.seoData) {
+            setSeoTitle(result.seoData.seoTitle);
+            setMetaDescription(result.seoData.metaDescription);
+            setKeywords(result.seoData.keywords);
+            toast({
+                title: 'SEO Otimizado!',
+                description: 'Os campos de SEO foram preenchidos com sugestões da IA.',
+            });
+        } else {
+            toast({
+                title: 'Erro na Otimização',
+                description: result.error,
+                variant: 'destructive',
+            });
+        }
+    });
+};
 
   return (
     <div className="mx-auto grid max-w-4xl flex-1 auto-rows-max gap-4">
@@ -273,6 +309,49 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                         </DialogContent>
                                     </Dialog>
                                 </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle>SEO e Marketing</CardTitle>
+                    <CardDescription>Otimize a visibilidade do seu produto e crie campanhas.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Accordion type="multiple" className="w-full">
+                        <AccordionItem value="seo">
+                            <AccordionTrigger>Otimização para Buscadores (SEO)</AccordionTrigger>
+                            <AccordionContent className="space-y-4 pt-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="seoTitle">Título para SEO</Label>
+                                    <Input id="seoTitle" placeholder="Ex: Copo Long Drink Personalizado para Festas" value={seoTitle} onChange={(e) => setSeoTitle(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="metaDescription">Meta Descrição</Label>
+                                    <Textarea id="metaDescription" placeholder="Descreva o produto de forma atraente para os buscadores." value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} rows={3}/>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="keywords">Palavras-chave</Label>
+                                    <Input id="keywords" placeholder="Ex: copo para festa, copo 350ml, long drink" value={keywords} onChange={(e) => setKeywords(e.target.value)} />
+                                </div>
+                                <Button onClick={handleOptimizeSeo} disabled={isOptimizing} variant="outline" className="w-full">
+                                    {isOptimizing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                    Otimizar com IA
+                                </Button>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="marketing">
+                            <AccordionTrigger>Marketing e Anúncios</AccordionTrigger>
+                            <AccordionContent className="space-y-4 pt-4">
+                                <p className="text-sm text-muted-foreground">Promova este produto criando um anúncio ou campanha de email marketing.</p>
+                                <Button asChild className="w-full">
+                                    <Link href={`/admin/marketing?product_id=${id}&product_name=${encodeURIComponent(productSummary.name)}`}>
+                                        <Rocket className="mr-2 h-4 w-4" />
+                                        Criar Anúncio / Campanha
+                                    </Link>
+                                </Button>
                             </AccordionContent>
                         </AccordionItem>
                     </Accordion>
