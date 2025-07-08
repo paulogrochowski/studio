@@ -1,8 +1,9 @@
 
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CUP_TYPES_SUMMARY, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS, CUP_CATALOG } from '@/lib/cup-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,6 +46,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [productName, setProductName] = useState(productSummary?.name || '');
   const [productSummaryText, setProductSummaryText] = useState(productSummary?.summary || '');
   const [productDescription, setProductDescription] = useState(productSummary?.description || '');
+  const [showcaseImagePreview, setShowcaseImagePreview] = useState<string | null>(productSummary?.imageUrl || null);
+
 
   const [isRimDialogOpen, setRimDialogOpen] = useState(false);
   const [isDegradeDialogOpen, setDegradeDialogOpen] = useState(false);
@@ -65,6 +68,27 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [seoTitle, setSeoTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   const [keywords, setKeywords] = useState('');
+
+  const handleShowcaseImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      // Clean up previous blob url to prevent memory leaks if it exists
+      if (showcaseImagePreview && showcaseImagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(showcaseImagePreview);
+      }
+      setShowcaseImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  useEffect(() => {
+    // This is a cleanup function that runs when the component unmounts.
+    // It's important for preventing memory leaks from blob URLs.
+    return () => {
+      if (showcaseImagePreview && showcaseImagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(showcaseImagePreview);
+      }
+    };
+  }, []); // The empty dependency array ensures this only runs on mount and unmount.
 
   // Now we can safely check and exit if the product is not found.
   if (!productSummary || !productDetails) {
@@ -381,14 +405,32 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                      <div className="relative aspect-[4/5] w-full rounded-md border overflow-hidden h-[450px]">
                         <CupPreview3D cupModel={previewModel} art={null} />
                     </div>
-                    <div className="flex items-center justify-center w-full">
-                        <label htmlFor="image-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste</p>
-                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (Imagem de vitrine)</p>
+                    <div className="space-y-2">
+                        <Label>Imagem de Vitrine</Label>
+                        {showcaseImagePreview && (
+                            <div className="relative aspect-video w-full rounded-md border overflow-hidden bg-muted/20">
+                                <Image
+                                    src={showcaseImagePreview}
+                                    alt="Pré-visualização da imagem de vitrine"
+                                    fill
+                                    className="object-contain"
+                                />
                             </div>
-                            <Input id="image-file" type="file" accept="image/*" className="hidden" />
+                        )}
+                        <label htmlFor="image-file" className="w-full">
+                            <Button asChild variant="outline" className="w-full cursor-pointer">
+                                <div>
+                                    <UploadCloud className="mr-2" />
+                                    {showcaseImagePreview ? 'Trocar Imagem' : 'Carregar Imagem'}
+                                </div>
+                            </Button>
+                            <Input 
+                                id="image-file" 
+                                type="file" 
+                                accept="image/*" 
+                                className="hidden"
+                                onChange={handleShowcaseImageChange}
+                            />
                         </label>
                     </div> 
                 </CardContent>
