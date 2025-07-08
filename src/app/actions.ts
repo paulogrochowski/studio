@@ -1,15 +1,20 @@
 
 'use server';
 
+import { cookies } from 'next/headers';
 import { generateCupArt } from '@/ai/flows/generate-cup-art';
 import { analyzeArtComplexity } from '@/ai/flows/analyze-art-complexity';
 import type { OrderDetails } from '@/lib/types';
 import { refineCupArt } from '@/ai/flows/refine-cup-art';
 import { validateImageBackground } from '@/ai/flows/validate-image-background';
-import { optimizeProductSeo, type OptimizeProductSeoInput } from '@/ai/flows/optimize-product-seo';
-import { generateAdCreative, type GenerateAdCreativeInput } from '@/ai/flows/generate-ad-creative';
-import { optimizeAdCopy, type OptimizeAdCopyInput } from '@/ai/flows/optimize-ad-copy';
-import { analyzeMarketingQuality, type AnalyzeMarketingQualityInput } from '@/ai/flows/analyze-marketing-quality';
+import { optimizeProductSeo } from '@/ai/flows/optimize-product-seo';
+import type { OptimizeProductSeoInput } from '@/ai/flows/optimize-product-seo';
+import { generateAdCreative } from '@/ai/flows/generate-ad-creative';
+import type { GenerateAdCreativeInput } from '@/ai/flows/generate-ad-creative';
+import { optimizeAdCopy } from '@/ai/flows/optimize-ad-copy';
+import type { OptimizeAdCopyInput } from '@/ai/flows/optimize-ad-copy';
+import { analyzeMarketingQuality } from '@/ai/flows/analyze-marketing-quality';
+import type { AnalyzeMarketingQualityInput } from '@/ai/flows/analyze-marketing-quality';
 
 
 export async function handleArtGeneration(prompt: string) {
@@ -37,7 +42,6 @@ export async function handleArtAnalysis(artDataUri: string, description: string)
 export async function handleFinalizeOrder(details: OrderDetails) {
     console.log("Order finalized:", details);
     // In a real app, this would save to a database, process payment, etc.
-    // await new Promise(resolve => setTimeout(resolve, 500));
     return { success: true };
 }
 
@@ -163,14 +167,20 @@ export async function handleAdminAddCustomer(formData: FormData) {
 }
 
 export async function handleAdminLogin(formData: FormData) {
-    'use server';
     const { redirect } = await import('next/navigation');
     
     const email = formData.get('email');
     const password = formData.get('password');
+    const remember = formData.get('remember');
 
     // This is a prototype-only login.
     if (email === 'admin@coposmania.com' && password === '12345') {
+      cookies().set('auth-token', 'admin-logged-in', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 1 week or session
+          path: '/',
+      });
       redirect('/admin');
     } else {
       redirect('/admin/login?error=true');
@@ -178,15 +188,21 @@ export async function handleAdminLogin(formData: FormData) {
 }
 
 export async function handleCustomerLogin(formData: FormData) {
-    'use server';
     const { redirect } = await import('next/navigation');
 
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const remember = formData.get('remember');
 
     // Admin user check
     if (email.toLowerCase() === 'admin@coposmania.com') {
       if (password === '12345') {
+        cookies().set('auth-token', 'admin-logged-in', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
+            path: '/',
+        });
         redirect('/admin');
       } else {
         // Admin with wrong password
@@ -196,14 +212,24 @@ export async function handleCustomerLogin(formData: FormData) {
     }
 
     // Customer Login Simulation for prototype
-    // In a real app, this would check against a database.
-    // For now, any other non-empty credentials are treated as a successful customer login.
     if (email && password) {
         console.log(`Customer login simulation for ${email}`);
+        cookies().set('auth-token', 'customer-logged-in', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
+            path: '/',
+        });
         redirect('/');
         return;
     }
 
     // Fallback for any other case (e.g., empty fields)
     redirect('/login?error=true');
+}
+
+export async function handleLogout() {
+  const { redirect } = await import('next/navigation');
+  cookies().delete('auth-token');
+  redirect('/login');
 }

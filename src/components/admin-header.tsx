@@ -1,3 +1,4 @@
+
 'use client';
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -5,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Button } from "./ui/button";
 import { User, LogOut } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { handleLogout } from "@/app/actions";
 
 export function AdminHeader() {
     return (
@@ -26,12 +28,14 @@ export function AdminHeader() {
                     <DropdownMenuItem>Configurações</DropdownMenuItem>
                     <DropdownMenuItem>Suporte</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                        <a href="/">
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Sair
-                        </a>
-                    </DropdownMenuItem>
+                    <form action={handleLogout} className="w-full">
+                        <DropdownMenuItem asChild>
+                            <button type="submit" className="w-full cursor-pointer flex justify-start items-center">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                Sair
+                            </button>
+                        </DropdownMenuItem>
+                    </form>
                 </DropdownMenuContent>
             </DropdownMenu>
         </header>

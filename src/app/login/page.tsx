@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { handleCustomerLogin } from '@/app/actions';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function LoginPage({
   searchParams,
@@ -54,6 +55,15 @@ export default function LoginPage({
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
                 <Input id="password" name="password" type="password" required disabled={isLoading} />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="remember-customer" name="remember" defaultChecked />
+                    <Label htmlFor="remember-customer">Lembrar-me</Label>
+                </div>
+                <Link href="#" className="text-sm text-primary hover:underline">
+                    Esqueceu a senha?
+                </Link>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

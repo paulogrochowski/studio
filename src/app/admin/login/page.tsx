@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { handleAdminLogin } from '@/app/actions';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 export default function AdminLoginPage({
@@ -25,9 +26,6 @@ export default function AdminLoginPage({
     const formData = new FormData(event.currentTarget);
     await handleAdminLogin(formData);
     // If the action redirects, this component will unmount, and the loading state will be reset.
-    // If login fails, the redirect includes an error, and the page reloads.
-    // In a failure case without redirect, we might want to set isLoading to false.
-    // But since handleAdminLogin always redirects, we don't need to.
   };
 
   return (
@@ -57,6 +55,15 @@ export default function AdminLoginPage({
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
                 <Input id="password" name="password" type="password" required disabled={isLoading} />
+              </div>
+               <div className="flex items-center space-x-2">
+                <Checkbox id="remember" name="remember" defaultChecked />
+                <Label
+                    htmlFor="remember"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                    Lembrar-me
+                </Label>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
