@@ -36,8 +36,8 @@ const generateCupArtFlow = ai.defineFlow(
   },
   async (input) => {
     const fullPrompt = `INSTRUÇÕES CRÍTICAS E OBRIGATÓRIAS:
-1.  **NÃO DESENHE O COPO:** A imagem final deve conter SOMENTE a arte solicitada (objetos, textos, etc.). É estritamente proibido desenhar o copo, a forma do copo, ou qualquer coisa que se pareça com um copo. A arte deve ser ISOLADA. O resultado final é apenas a arte que será estampada no copo.
-2.  **FUNDO 100% TRANSPARENTE:** A imagem DEVE ter um fundo completamente transparente (canal alfa). Nenhum fundo de cor sólida (branco, preto, etc.) ou gradiente é permitido. O fundo deve ser vazio.
+1.  **NÃO DESENHE O COPO:** A imagem final deve conter APENAS a arte para ser estampada. É estritamente proibido desenhar o copo, sua forma, ou qualquer coisa que se assemelhe a um copo. A arte deve ser totalmente ISOLADA.
+2.  **FUNDO 100% TRANSPARENTE:** Esta é a regra mais importante. A imagem gerada DEVE ter um fundo completamente transparente (canal alfa). NÃO inclua nenhum fundo branco, preto, colorido, com gradiente ou qualquer outro tipo. O fundo precisa ser VAZIO para que a arte possa ser aplicada corretamente sobre o copo.
 
 Agora, gere uma arte no estilo vetorial/clipart, limpa e de alta qualidade, com base na seguinte descrição: "${input.eventDescription}".`;
     

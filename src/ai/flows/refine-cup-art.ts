@@ -41,7 +41,7 @@ const refineCupArtFlow = ai.defineFlow(
     outputSchema: RefineCupArtOutputSchema,
   },
   async input => {
-    const fullInstructions = `${input.refinementInstructions}. The final image must have a transparent background.`;
+    const fullInstructions = `Refine a imagem com base nas seguintes instruções: "${input.refinementInstructions}". INSTRUÇÃO CRÍTICA E OBRIGATÓRIA: O resultado final DEVE ter um fundo 100% transparente para que possa ser aplicado em um copo. Não adicione nenhum fundo colorido ou branco.`;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
@@ -54,6 +54,10 @@ const refineCupArtFlow = ai.defineFlow(
       },
     });
 
-    return {refinedImageDataUri: media!.url!};
+    if (!media?.url) {
+      throw new Error('A IA falhou ao refinar a imagem.');
+    }
+
+    return {refinedImageDataUri: media.url};
   }
 );
