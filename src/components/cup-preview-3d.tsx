@@ -49,9 +49,11 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
   const gradient = context.createLinearGradient(0, 0, 0, 256);
 
   if (position === 'Cima') {
+    // Gradient color at the top of the cup
     gradient.addColorStop(0, color2);
     gradient.addColorStop(1, color1);
   } else {
+    // Gradient color at the bottom of the cup
     gradient.addColorStop(0, color1);
     gradient.addColorStop(1, color2);
   }
@@ -111,8 +113,6 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
     return newGeometry;
   }, [cupNode?.geometry]);
 
-  // FIX: Create a memoized, smoothed geometry for the rim as well.
-  // This ensures its normals are correct, allowing the metallic material to reflect light properly.
   const modifiedRimGeometry = useMemo(() => {
     if (!rimNode?.geometry) return null;
     const newGeometry = rimNode.geometry.clone();
@@ -154,17 +154,16 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
             </Suspense>
         )}
       </mesh>
-      {/* Use the new smoothed geometry for the rim */}
       {modifiedRimGeometry && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
         <mesh
           geometry={modifiedRimGeometry}
-          // Render order helps with transparency issues, ensuring rim is drawn on top.
-          renderOrder={1} 
         >
           <meshStandardMaterial
-            color={RIM_COLORS[cupModel.rimColor]}
-            metalness={0.9}
-            roughness={0.1}
+            color={'#ffffff'}
+            emissive={RIM_COLORS[cupModel.rimColor]}
+            emissiveIntensity={0.7}
+            metalness={0.8}
+            roughness={0.2}
             side={THREE.DoubleSide}
           />
         </mesh>
