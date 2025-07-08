@@ -8,13 +8,13 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const OptimizeAdCopyInputSchema = z.object({
+const OptimizeAdCopyInputSchema = z.object({
   productName: z.string().describe('The name of the product.'),
   productDescription: z.string().describe('The description of the product.'),
 });
 export type OptimizeAdCopyInput = z.infer<typeof OptimizeAdCopyInputSchema>;
 
-export const OptimizeAdCopyOutputSchema = z.object({
+const OptimizeAdCopyOutputSchema = z.object({
   headline: z.string().describe('A short, punchy headline (under 40 characters).'),
   body: z.string().describe('Persuasive body text (under 150 characters).'),
   cta: z.string().describe("A strong call-to-action (e.g., 'Compre Agora', 'Personalize o Seu')."),

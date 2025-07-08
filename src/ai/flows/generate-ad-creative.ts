@@ -8,12 +8,12 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GenerateAdCreativeInputSchema = z.object({
+const GenerateAdCreativeInputSchema = z.object({
   prompt: z.string().describe('A detailed description of the ad creative to generate.'),
 });
 export type GenerateAdCreativeInput = z.infer<typeof GenerateAdCreativeInputSchema>;
 
-export const GenerateAdCreativeOutputSchema = z.object({
+const GenerateAdCreativeOutputSchema = z.object({
   imageUrl: z
     .string()
     .describe('The generated ad image as a data URI.'),

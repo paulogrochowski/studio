@@ -11,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const OptimizeProductSeoInputSchema = z.object({
+const OptimizeProductSeoInputSchema = z.object({
   productName: z.string().describe('The name of the product.'),
   productSummary: z.string().describe('A short summary of the product.'),
   productDescription: z.string().describe('The full description of the product.'),
@@ -21,7 +21,7 @@ export type OptimizeProductSeoInput = z.infer<
   typeof OptimizeProductSeoInputSchema
 >;
 
-export const OptimizeProductSeoOutputSchema = z.object({
+const OptimizeProductSeoOutputSchema = z.object({
   seoTitle: z
     .string()
     .describe(

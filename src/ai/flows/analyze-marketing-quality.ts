@@ -9,13 +9,13 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const AnalyzeMarketingQualityInputSchema = z.object({
+const AnalyzeMarketingQualityInputSchema = z.object({
   productName: z.string().describe('The name of the product.'),
   productDescription: z.string().describe('The description of the product.'),
 });
 export type AnalyzeMarketingQualityInput = z.infer<typeof AnalyzeMarketingQualityInputSchema>;
 
-export const AnalyzeMarketingQualityOutputSchema = z.object({
+const AnalyzeMarketingQualityOutputSchema = z.object({
   seoScore: z.number().min(1).max(10).describe('A score from 1 to 10 for SEO quality.'),
   seoSuggestions: z.string().describe('Actionable suggestions for SEO improvement in Portuguese, formatted as a bulleted list.'),
   adScore: z.number().min(1).max(10).describe('A score from 1 to 10 for paid ad-friendliness.'),
