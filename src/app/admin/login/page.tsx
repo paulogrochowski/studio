@@ -2,7 +2,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,24 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Loader } from '@/components/loader';
-
-async function handleLoginAction(formData: FormData) {
-    'use server';
-    const { redirect } = await import('next/navigation');
-    
-    // NOTE: Delay removed to improve prototype performance.
-    // await new Promise(resolve => setTimeout(resolve, 1500));
-
-    const email = formData.get('email');
-    const password = formData.get('password');
-
-    // This is a prototype-only login.
-    if (email === 'admin@coposmania.com' && password === '12345') {
-      redirect('/admin');
-    } else {
-      redirect('/admin/login?error=true');
-    }
-}
+import { handleAdminLogin } from '@/app/actions';
 
 
 export default function AdminLoginPage({
@@ -42,7 +24,7 @@ export default function AdminLoginPage({
     event.preventDefault();
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
-    await handleLoginAction(formData);
+    await handleAdminLogin(formData);
     // If the action redirects, this component will unmount, and the loading state will be reset.
     // We don't need to manually set isLoading to false, as this could happen before the redirect is complete.
   };

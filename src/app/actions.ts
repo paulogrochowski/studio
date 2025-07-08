@@ -76,9 +76,6 @@ export async function handleShippingCalculation(cep: string) {
         return { success: false, error: 'CEP inválido. Por favor, digite um CEP com 8 dígitos.' };
     }
     
-    // NOTE: Delay removed to improve prototype performance.
-    // await new Promise(resolve => setTimeout(resolve, 1500));
-
     // Mocked response
     const randomCost = 15 + Math.random() * 30; // Random cost between 15 and 45
     const randomTime = 3 + Math.floor(Math.random() * 10); // Random time between 3 and 12 days
@@ -105,9 +102,6 @@ export async function handleAdminAddProduct(formData: FormData) {
       basePrice: parseFloat(basePrice),
       imageUrl,
     });
-    
-    // NOTE: Delay removed to improve prototype performance.
-    // await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Here you would revalidate the path to update the product list
     // revalidatePath('/admin/products');
@@ -166,4 +160,50 @@ export async function handleAdminAddCustomer(formData: FormData) {
     // revalidatePath('/admin/customers');
 
     return { success: true };
+}
+
+export async function handleAdminLogin(formData: FormData) {
+    'use server';
+    const { redirect } = await import('next/navigation');
+    
+    const email = formData.get('email');
+    const password = formData.get('password');
+
+    // This is a prototype-only login.
+    if (email === 'admin@coposmania.com' && password === '12345') {
+      redirect('/admin');
+    } else {
+      redirect('/admin/login?error=true');
+    }
+}
+
+export async function handleCustomerLogin(formData: FormData) {
+    'use server';
+    const { redirect } = await import('next/navigation');
+
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    // Admin user check
+    if (email.toLowerCase() === 'admin@coposmania.com') {
+      if (password === '12345') {
+        redirect('/admin');
+      } else {
+        // Admin with wrong password
+        redirect('/login?error=true');
+      }
+      return; // Important to prevent further execution
+    }
+
+    // Customer Login Simulation for prototype
+    // In a real app, this would check against a database.
+    // For now, any other non-empty credentials are treated as a successful customer login.
+    if (email && password) {
+        console.log(`Customer login simulation for ${email}`);
+        redirect('/');
+        return;
+    }
+
+    // Fallback for any other case (e.g., empty fields)
+    redirect('/login?error=true');
 }
