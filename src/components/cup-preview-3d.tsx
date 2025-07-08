@@ -155,14 +155,22 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
         )}
       </mesh>
       {rimNode && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
-        <mesh 
-            geometry={rimNode.geometry} 
-            position={[0, 0.001, 0]}
+        <mesh
+          geometry={rimNode.geometry}
+          // The renderOrder prop ensures this mesh is rendered on top of the cup mesh,
+          // which has a default renderOrder of 0. This is a robust way to prevent
+          // the rim from clipping through the cup (z-fighting).
+          renderOrder={1}
         >
-           {/* Switching to meshBasicMaterial to ensure visibility, ignoring lighting. This is a robust way to fix rendering issues. */}
-           <meshBasicMaterial
+          <meshStandardMaterial
             color={RIM_COLORS[cupModel.rimColor]}
+            // Using a standard material with high metalness and low roughness gives a shiny, metallic look.
+            metalness={0.9}
+            roughness={0.1}
             side={THREE.DoubleSide}
+            // Disabling the depth test is a final measure to guarantee the rim is
+            // always drawn over other objects, regardless of its actual position in 3D space.
+            depthTest={false}
           />
         </mesh>
       )}
