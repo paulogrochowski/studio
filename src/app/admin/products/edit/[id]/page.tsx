@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import dynamic from 'next/dynamic';
 import { Loader } from '@/components/loader';
 
-const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
+const CupPreview3D = dynamic(() => import('../../../../../components/cup-preview-3d'), {
     ssr: false,
     loading: () => (
         <div className="flex items-center justify-center w-full h-full">
