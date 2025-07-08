@@ -27,8 +27,8 @@ interface PreviewCardProps {
 }
 
 // Dynamically import the 3D preview component with SSR turned off.
-// Using a relative path to prevent chunk loading errors in nested routes.
-const CupPreview3D = dynamic(() => import('./cup-preview-3d'), {
+// Using an alias path for robust chunk loading.
+const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
     ssr: false,
     loading: () => (
         <div className="flex items-center justify-center w-full h-full">
@@ -104,3 +104,5 @@ export function PreviewCard({
         </div>
     );
 }
+
+    
