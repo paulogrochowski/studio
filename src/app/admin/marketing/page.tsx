@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -23,6 +24,7 @@ import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import type { AnalyzeMarketingQualityOutput } from '@/ai/flows/analyze-marketing-quality';
+import { AdminPlaceholder } from '@/components/admin-placeholder';
 
 
 export default function AdminMarketingPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
@@ -255,19 +257,4 @@ export default function AdminMarketingPage({ searchParams }: { searchParams?: { 
       </TabsContent>
     </Tabs>
   );
-}
-
-function AdminPlaceholder({ title }: { title: string }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center justify-center text-center py-16 text-muted-foreground">
-         <FilePlus2 className="w-16 h-16 mb-4" />
-        <h3 className="text-xl font-bold">Funcionalidade em Desenvolvimento</h3>
-        <p>Esta área está sendo construída e estará disponível em breve.</p>
-      </CardContent>
-    </Card>
-  )
 }
