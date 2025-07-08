@@ -104,6 +104,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     opacityType: 'Fosco',
     rimColor: 'Nenhuma',
     degradeColor: 'Nenhum',
+    degradePosition: 'Nenhum',
   };
 
 
@@ -169,7 +170,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 <span className="sr-only">Voltar</span>
             </Button>
         </Link>
-        <h1 className="flex-1 shrink-0 text-xl font-semibold tracking-tight sm:grow-0">
+        <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
           Editar: {productName}
         </h1>
         <div className="hidden items-center gap-2 md:ml-auto md:flex">

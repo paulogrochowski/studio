@@ -1,13 +1,13 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader } from '@/components/loader';
 import { handleShippingCalculation } from '@/app/actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Rocket } from 'lucide-react';
+import { Loader2, Rocket } from 'lucide-react';
 
 interface ShippingResult {
     cost: number;
@@ -53,7 +53,7 @@ export function ShippingCalculator() {
                             maxLength={9}
                         />
                         <Button type="submit" onClick={handleCalculate} disabled={isCalculating || cep.length < 8}>
-                            {isCalculating ? <Loader message="" /> : 'Calcular'}
+                            {isCalculating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Calcular'}
                         </Button>
                     </div>
                 </CardContent>
@@ -67,7 +67,7 @@ export function ShippingCalculator() {
                             Estimativa para o CEP: {cep}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    {isCalculating && <Loader message="Calculando..." />}
+                    {isCalculating && <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>}
                     {error && <p className="text-destructive">{error}</p>}
                     {result && (
                         <div className="space-y-2">
