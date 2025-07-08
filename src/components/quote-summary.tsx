@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -46,28 +46,32 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
     });
   }
   
-    const degradeColorHex = cup.degradeColor ? DEGRADE_HEX_COLORS[cup.degradeColor] : null;
     const rimColorHex = RIM_COLORS[cup.rimColor!] || 'transparent';
 
-    const overlayStyle: React.CSSProperties = {
-        WebkitMaskImage: `url(${cup.svgMaskUrl})`,
-        maskImage: `url(${cup.svgMaskUrl})`,
-        WebkitMaskSize: 'contain',
-        maskSize: 'contain',
-        WebkitMaskRepeat: 'no-repeat',
-        maskRepeat: 'no-repeat',
-        WebkitMaskPosition: 'center',
-        maskPosition: 'center',
-    };
+    const overlayStyle: React.CSSProperties = useMemo(() => {
+        const degradeColorHex = cup.degradeColor ? DEGRADE_HEX_COLORS[cup.degradeColor] : null;
+        
+        const style: React.CSSProperties = {
+            WebkitMaskImage: `url(${cup.svgMaskUrl})`,
+            maskImage: `url(${cup.svgMaskUrl})`,
+            WebkitMaskSize: 'contain',
+            maskSize: 'contain',
+            WebkitMaskRepeat: 'no-repeat',
+            maskRepeat: 'no-repeat',
+            WebkitMaskPosition: 'center',
+            maskPosition: 'center',
+        };
 
-    if (degradeColorHex && cup.degradePosition && cup.degradePosition !== 'Nenhum') {
-        const direction = cup.degradePosition === 'Cima' ? 'to bottom' : 'to top';
-        const baseColor = cup.opacityType === 'Transparente' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)';
-        overlayStyle.background = `linear-gradient(${direction}, ${degradeColorHex}, ${baseColor})`;
-    } else {
-        overlayStyle.backgroundColor = cup.colorHex;
-        overlayStyle.opacity = cup.opacityType === 'Transparente' ? 0.6 : 1.0;
-    }
+        if (degradeColorHex && cup.degradePosition && cup.degradePosition !== 'Nenhum') {
+            const direction = cup.degradePosition === 'Cima' ? 'to bottom' : 'to top';
+            const baseColor = cup.opacityType === 'Transparente' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)';
+            style.background = `linear-gradient(${direction}, ${degradeColorHex}, ${baseColor})`;
+        } else {
+            style.backgroundColor = cup.colorHex;
+            style.opacity = cup.opacityType === 'Transparente' ? 0.6 : 1.0;
+        }
+        return style;
+    }, [cup]);
 
 
   return (

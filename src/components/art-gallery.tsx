@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,17 +66,20 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
         finalActionsRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const baseCupModel = CUP_CATALOG.find(c =>
-        c.name === selectedCupName &&
-        c.opacityType === selectedOpacity &&
-        c.rimColor === selectedRim
-    ) || CUP_CATALOG.find(c => c.name === selectedCupName)!;
+    const activeCupModel: CupModel = useMemo(() => {
+        const base = CUP_CATALOG.find(c =>
+            c.name === selectedCupName &&
+            c.opacityType === selectedOpacity &&
+            c.rimColor === selectedRim
+        ) || CUP_CATALOG.find(c => c.name === selectedCupName)!;
 
-    const activeCupModel: CupModel = {
-        ...baseCupModel,
-        degradeColor: selectedDegradeColor,
-        degradePosition: selectedDegradePosition,
-    };
+        return {
+            ...base,
+            degradeColor: selectedDegradeColor,
+            degradePosition: selectedDegradePosition,
+        };
+    }, [selectedCupName, selectedOpacity, selectedRim, selectedDegradeColor, selectedDegradePosition]);
+
 
     const handleGenerateArt = () => {
         if (!artPrompt) {
