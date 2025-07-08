@@ -9,8 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import { Loader } from '@/components/loader';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { handleCustomerLogin } from '@/app/actions';
 
 export default function LoginPage({
@@ -27,14 +26,6 @@ export default function LoginPage({
     await handleCustomerLogin(formData);
     // This will likely not be reached due to redirect, which is fine.
   };
-
-  if (isLoading) {
-    return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/90 backdrop-blur-sm">
-            <Loader message="Carregando..." showText={true} />
-        </div>
-    );
-  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-body">
@@ -58,13 +49,16 @@ export default function LoginPage({
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="seu@email.com" required />
+                <Input id="email" name="email" type="email" placeholder="seu@email.com" required disabled={isLoading} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input id="password" name="password" type="password" required />
+                <Input id="password" name="password" type="password" required disabled={isLoading} />
               </div>
-              <Button type="submit" className="w-full">Entrar</Button>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Entrar
+              </Button>
             </form>
           </CardContent>
           <CardFooter className="text-center text-sm">
