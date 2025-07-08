@@ -48,12 +48,10 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
   const context = canvas.getContext('2d')!;
   const gradient = context.createLinearGradient(0, 0, 0, 256);
 
-  // Inverting the logic again based on user feedback. The V-coordinate mapping
-  // between canvas and model can be tricky. This should now align with the UI.
-  if (position === 'Cima') { // UI says "De Baixo para Cima"
+  if (position === 'Cima') {
     gradient.addColorStop(0, color2);
     gradient.addColorStop(1, color1);
-  } else { // UI says "De Cima para Baixo"
+  } else {
     gradient.addColorStop(0, color1);
     gradient.addColorStop(1, color2);
   }
@@ -63,10 +61,9 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
   return new THREE.CanvasTexture(canvas);
 }
 
-// ArtDecal sub-component to handle texture loading with Suspense and dynamic controls.
+// ArtDecal sub-component
 const ArtDecal = ({ art, scale, positionY }: { art: GeneratedArt, scale: number, positionY: number }) => {
     const artTexture = useTexture(art.imageUrl);
-    // Maintain a consistent aspect ratio for the decal based on original values
     const decalScale = [scale, scale * (5/6), scale];
     return (
         <Decal
@@ -91,26 +88,20 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
   const cupNode = nodes.Cup as THREE.Mesh;
   const rimNode = nodes.Rim as THREE.Mesh;
   
-  // This memoized block recalculates geometry to fix gradient and smoothing issues.
-  const modifiedGeometry = useMemo(() => {
+  const modifiedCupGeometry = useMemo(() => {
     if (!cupNode?.geometry) return null;
 
     const newGeometry = cupNode.geometry.clone();
-    
-    // KEY FIX: Smooths the model's surface to prevent the "face by face" gradient rendering.
     newGeometry.computeVertexNormals();
-    
     newGeometry.computeBoundingBox();
     const { min, max } = newGeometry.boundingBox!;
     const height = max.y - min.y;
 
-    // Ensure UV attribute exists for texture mapping.
     if (!newGeometry.attributes.uv) {
         newGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(newGeometry.attributes.position.count * 2), 2));
     }
     const uvAttribute = newGeometry.attributes.uv as THREE.BufferAttribute;
 
-    // Generate UVs for a uniform vertical gradient.
     for (let i = 0; i < uvAttribute.count; i++) {
         const y = newGeometry.attributes.position.getY(i);
         const v = (y - min.y) / height;
@@ -119,6 +110,15 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
     uvAttribute.needsUpdate = true;
     return newGeometry;
   }, [cupNode?.geometry]);
+
+  // FIX: Create a memoized, smoothed geometry for the rim as well.
+  // This ensures its normals are correct, allowing the metallic material to reflect light properly.
+  const modifiedRimGeometry = useMemo(() => {
+    if (!rimNode?.geometry) return null;
+    const newGeometry = rimNode.geometry.clone();
+    newGeometry.computeVertexNormals();
+    return newGeometry;
+  }, [rimNode?.geometry]);
 
 
   const isTransparent = cupModel.opacityType === 'Transparente';
@@ -131,14 +131,14 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
     return createGradientTexture(degradeColorHex, baseColor, cupModel.degradePosition!);
   }, [hasDegrade, cupModel.degradeColor, cupModel.degradePosition, isTransparent]);
 
-  if (!modifiedGeometry) {
+  if (!modifiedCupGeometry) {
     console.error("3D Model Error: The 'Cup' mesh or its geometry is missing in /models/cup.glb.");
     return null; 
   }
 
   return (
     <group dispose={null}>
-      <mesh geometry={modifiedGeometry} castShadow>
+      <mesh geometry={modifiedCupGeometry} castShadow>
         <meshStandardMaterial
           color={hasDegrade ? '#ffffff' : cupModel.colorHex}
           map={gradientTexture}
@@ -154,23 +154,18 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
             </Suspense>
         )}
       </mesh>
-      {rimNode && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
+      {/* Use the new smoothed geometry for the rim */}
+      {modifiedRimGeometry && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
         <mesh
-          geometry={rimNode.geometry}
-          // The renderOrder prop ensures this mesh is rendered on top of the cup mesh,
-          // which has a default renderOrder of 0. This is a robust way to prevent
-          // the rim from clipping through the cup (z-fighting).
-          renderOrder={1}
+          geometry={modifiedRimGeometry}
+          // Render order helps with transparency issues, ensuring rim is drawn on top.
+          renderOrder={1} 
         >
           <meshStandardMaterial
             color={RIM_COLORS[cupModel.rimColor]}
-            // Using a standard material with high metalness and low roughness gives a shiny, metallic look.
             metalness={0.9}
             roughness={0.1}
             side={THREE.DoubleSide}
-            // Disabling the depth test is a final measure to guarantee the rim is
-            // always drawn over other objects, regardless of its actual position in 3D space.
-            depthTest={false}
           />
         </mesh>
       )}
@@ -189,8 +184,6 @@ export default function CupPreview3D({ cupModel, art, artScale = 0.6, artPositio
   const [modelExists, setModelExists] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Check if the model file exists and is the correct file type.
-    // This prevents trying to load a 404 HTML page as a model.
     fetch('/models/cup.glb')
       .then(response => {
         const contentType = response.headers.get("content-type");
