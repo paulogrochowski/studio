@@ -88,7 +88,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         URL.revokeObjectURL(showcaseImagePreview);
       }
     };
-  }, []); // The empty dependency array ensures this only runs on mount and unmount.
+  }, [showcaseImagePreview]);
 
   // Now we can safely check and exit if the product is not found.
   if (!productSummary || !productDetails) {
@@ -161,7 +161,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   };
 
   return (
-    <div className="mx-auto grid max-w-7xl flex-1 auto-rows-max gap-4">
+    <div className="mx-auto grid w-full max-w-7xl flex-1 auto-rows-max gap-4">
       <div className="flex items-center gap-4">
          <Link href="/admin/products">
             <Button variant="outline" size="icon" className="h-7 w-7">
@@ -169,7 +169,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 <span className="sr-only">Voltar</span>
             </Button>
         </Link>
-        <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
+        <h1 className="flex-1 shrink-0 text-xl font-semibold tracking-tight sm:grow-0">
           Editar: {productName}
         </h1>
         <div className="hidden items-center gap-2 md:ml-auto md:flex">
@@ -181,8 +181,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             <Button size="sm">Salvar Produto</Button>
         </div>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[1fr_350px] lg:gap-8">
-        <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-8">
+        <div className="grid auto-rows-max items-start gap-4 lg:col-span-3 lg:gap-8">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">Detalhes do Produto</CardTitle>
@@ -219,24 +219,24 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                             <AccordionContent className="space-y-4 pt-4">
                                 <p className='text-sm text-muted-foreground'>Defina os custos adicionais para cada tipo de acabamento do copo.</p>
                                 <div className="space-y-3">
-                                    <div className="flex items-center justify-between gap-4 p-3 border rounded-md">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 border rounded-md">
                                         <div>
                                             <Label>Fosco</Label>
                                             <p className="text-xs text-muted-foreground">Acabamento padrão, sem brilho.</p>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Label htmlFor="price-fosco" className="text-sm">Custo (R$)</Label>
-                                            <Input id="price-fosco" type="number" step="0.01" defaultValue="0.00" className="w-24" />
+                                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                                            <Label htmlFor="price-fosco" className="text-sm whitespace-nowrap">Custo (R$)</Label>
+                                            <Input id="price-fosco" type="number" step="0.01" defaultValue="0.00" className="w-full sm:w-28" />
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between gap-4 p-3 border rounded-md">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 border rounded-md">
                                         <div>
                                             <Label>Transparente</Label>
                                             <p className="text-xs text-muted-foreground">Material translúcido, efeito de vidro.</p>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Label htmlFor="price-transparente" className="text-sm">Custo (R$)</Label>
-                                            <Input id="price-transparente" type="number" step="0.01" defaultValue="0.25" className="w-24" />
+                                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                                            <Label htmlFor="price-transparente" className="text-sm whitespace-nowrap">Custo (R$)</Label>
+                                            <Input id="price-transparente" type="number" step="0.01" defaultValue="0.25" className="w-full sm:w-28" />
                                         </div>
                                     </div>
                                 </div>
@@ -248,7 +248,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                 <p className='text-sm text-muted-foreground'>Gerencie as cores de borda disponíveis e seus custos.</p>
                                 <div className="space-y-2">
                                     {availableRims.filter(rim => rim !== 'Nenhuma').map(rim => (
-                                        <div key={rim} className="flex items-center justify-between gap-4 p-2 border rounded-md">
+                                        <div key={rim} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-2 border rounded-md">
                                             <div className="flex items-center gap-3">
                                                 <div
                                                     className="w-5 h-5 rounded-full border"
@@ -256,9 +256,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                                 />
                                                 <Label>{rim}</Label>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <Label htmlFor={`price-rim-${rim}`} className="text-sm">Custo (R$)</Label>
-                                                <Input id={`price-rim-${rim}`} type="number" step="0.01" defaultValue="0.75" className="w-24" />
+                                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                                <Label htmlFor={`price-rim-${rim}`} className="text-sm whitespace-nowrap">Custo (R$)</Label>
+                                                <Input id={`price-rim-${rim}`} type="number" step="0.01" defaultValue="0.75" className="w-full sm:w-28" />
                                             </div>
                                         </div>
                                     ))}
@@ -300,7 +300,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                <p className='text-sm text-muted-foreground'>Gerencie as cores de degradê disponíveis e seus custos.</p>
                                 <div className="space-y-2">
                                     {availableDegrades.filter(c => c !== 'Nenhum').map(color => (
-                                        <div key={color} className="flex items-center justify-between gap-4 p-2 border rounded-md">
+                                        <div key={color} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-2 border rounded-md">
                                             <div className="flex items-center gap-3">
                                                 <div
                                                     className="w-5 h-5 rounded-full border"
@@ -308,9 +308,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                                 />
                                                 <Label>{color}</Label>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <Label htmlFor={`price-degrade-${color}`} className="text-sm">Custo (R$)</Label>
-                                                <Input id={`price-degrade-${color}`} type="number" step="0.01" defaultValue="1.20" className="w-24" />
+                                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                                <Label htmlFor={`price-degrade-${color}`} className="text-sm whitespace-nowrap">Custo (R$)</Label>
+                                                <Input id={`price-degrade-${color}`} type="number" step="0.01" defaultValue="1.20" className="w-full sm:w-28" />
                                             </div>
                                         </div>
                                     ))}
@@ -393,44 +393,51 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 </CardContent>
             </Card>
         </div>
-        <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+        <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">Imagem de Vitrine e Preview</CardTitle>
+                    <CardTitle className="text-lg">Imagem de Vitrine</CardTitle>
                     <CardDescription>
-                        Carregue a imagem principal para a loja e visualize o modelo 3D.
+                        Carregue a imagem principal para a loja.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label>Imagem de Vitrine</Label>
-                        {showcaseImagePreview && (
-                            <div className="relative aspect-video w-full rounded-md border overflow-hidden bg-muted/20">
-                                <Image
-                                    src={showcaseImagePreview}
-                                    alt="Pré-visualização da imagem de vitrine"
-                                    fill
-                                    className="object-contain"
-                                />
-                            </div>
-                        )}
-                        <label htmlFor="image-file" className="w-full">
-                            <Button asChild variant="outline" className="w-full cursor-pointer">
-                                <div>
-                                    <UploadCloud className="mr-2" />
-                                    {showcaseImagePreview ? 'Trocar Imagem' : 'Carregar Imagem'}
-                                </div>
-                            </Button>
-                            <Input 
-                                id="image-file" 
-                                type="file" 
-                                accept="image/*" 
-                                className="hidden"
-                                onChange={handleShowcaseImageChange}
+                    {showcaseImagePreview && (
+                        <div className="relative aspect-video w-full rounded-md border overflow-hidden bg-muted/20">
+                            <Image
+                                src={showcaseImagePreview}
+                                alt="Pré-visualização da imagem de vitrine"
+                                fill
+                                className="object-contain"
                             />
-                        </label>
-                    </div> 
-                     <div className="relative aspect-[4/5] w-full rounded-md border overflow-hidden h-[450px]">
+                        </div>
+                    )}
+                    <label htmlFor="image-file" className="w-full">
+                        <Button asChild variant="outline" className="w-full cursor-pointer">
+                            <div>
+                                <UploadCloud className="mr-2" />
+                                {showcaseImagePreview ? 'Trocar Imagem' : 'Carregar Imagem'}
+                            </div>
+                        </Button>
+                        <Input 
+                            id="image-file" 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden"
+                            onChange={handleShowcaseImageChange}
+                        />
+                    </label>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg">Preview 3D</CardTitle>
+                    <CardDescription>
+                       Visualize o modelo 3D.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                     <div className="relative aspect-[4/5] w-full rounded-b-md border-t overflow-hidden h-[450px]">
                         <CupPreview3D cupModel={previewModel} art={null} />
                     </div>
                 </CardContent>
@@ -465,7 +472,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                         <Label htmlFor="weight">Peso (g)</Label>
                         <Input id="weight" type="number" defaultValue="110" />
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="height">Altura (cm)</Label>
                             <Input id="height" type="number" step="0.1" defaultValue="15.5" />
@@ -492,3 +499,5 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     </div>
   );
 }
+
+    
