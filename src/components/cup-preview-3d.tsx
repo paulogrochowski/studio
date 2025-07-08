@@ -66,14 +66,25 @@ function createGradientTexture(color1: string, color2: string, position: 'Cima' 
 // ArtDecal sub-component
 const ArtDecal = ({ art, scale, positionY }: { art: GeneratedArt, scale: number, positionY: number }) => {
     const artTexture = useTexture(art.imageUrl);
+    artTexture.anisotropy = 16;
     const decalScale = [scale, scale * (5/6), scale];
+
     return (
         <Decal
             position={[0, positionY, 0.4]}
             rotation={[0, 0, 0]}
             scale={decalScale}
-            map={artTexture}
-        />
+        >
+            <meshStandardMaterial
+                map={artTexture}
+                polygonOffset
+                polygonOffsetFactor={-10} // Prevent z-fighting
+                transparent={true}
+                side={THREE.DoubleSide} // Apply texture to both sides
+                roughness={0.2}
+                metalness={0.1}
+            />
+        </Decal>
     );
 };
 
@@ -159,11 +170,11 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
           geometry={modifiedRimGeometry}
         >
           <meshStandardMaterial
-            color={'#ffffff'}
+            color={RIM_COLORS[cupModel.rimColor]}
             emissive={RIM_COLORS[cupModel.rimColor]}
-            emissiveIntensity={0.7}
-            metalness={0.8}
-            roughness={0.2}
+            emissiveIntensity={1}
+            metalness={0.6}
+            roughness={0.1}
             side={THREE.DoubleSide}
           />
         </mesh>
