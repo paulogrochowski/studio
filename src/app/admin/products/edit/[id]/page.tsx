@@ -472,7 +472,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                         <Label htmlFor="weight">Peso (g)</Label>
                         <Input id="weight" type="number" defaultValue="110" />
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="height">Altura (cm)</Label>
                             <Input id="height" type="number" step="0.1" defaultValue="15.5" />
@@ -499,5 +499,3 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     </div>
   );
 }
-
-    

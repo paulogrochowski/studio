@@ -23,8 +23,8 @@ export default function AdminCustomersPage() {
             <TableRow>
               <TableHead>Cliente</TableHead>
               <TableHead className="hidden md:table-cell">Email</TableHead>
-              <TableHead className="text-center">Pedidos</TableHead>
-              <TableHead className="text-right">Total Gasto</TableHead>
+              <TableHead className="text-center hidden sm:table-cell">Pedidos</TableHead>
+              <TableHead className="text-right hidden sm:table-cell">Total Gasto</TableHead>
               <TableHead className="text-right hidden sm:table-cell">Cliente Desde</TableHead>
             </TableRow>
           </TableHeader>
@@ -41,8 +41,8 @@ export default function AdminCustomersPage() {
                   </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">{customer.email}</TableCell>
-                <TableCell className="text-center">{customer.orders}</TableCell>
-                <TableCell className="text-right">R$ {customer.totalSpent.toFixed(2).replace('.', ',')}</TableCell>
+                <TableCell className="text-center hidden sm:table-cell">{customer.orders}</TableCell>
+                <TableCell className="text-right hidden sm:table-cell">R$ {customer.totalSpent.toFixed(2).replace('.', ',')}</TableCell>
                 <TableCell className="text-right hidden sm:table-cell">{new Date(customer.joined).toLocaleDateString('pt-BR')}</TableCell>
               </TableRow>
             ))}

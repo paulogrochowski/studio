@@ -47,7 +47,7 @@ export default function AdminOrdersPage() {
               <TableHead>Cliente</TableHead>
               <TableHead className="hidden sm:table-cell">Data</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-right hidden sm:table-cell">Total</TableHead>
               <TableHead className="w-12"><span className="sr-only">Ações</span></TableHead>
             </TableRow>
           </TableHeader>
@@ -58,7 +58,7 @@ export default function AdminOrdersPage() {
                 <TableCell>{order.customer}</TableCell>
                 <TableCell className="hidden sm:table-cell">{new Date(order.date).toLocaleDateString('pt-BR')}</TableCell>
                 <TableCell><Badge variant={getStatusVariant(order.status as OrderStatus)}>{order.status}</Badge></TableCell>
-                <TableCell className="text-right">R$ {order.total.toFixed(2).replace('.', ',')}</TableCell>
+                <TableCell className="text-right hidden sm:table-cell">R$ {order.total.toFixed(2).replace('.', ',')}</TableCell>
                  <TableCell>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
