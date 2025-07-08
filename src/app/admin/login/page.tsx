@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,25 +37,14 @@ export default function AdminLoginPage({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
-    
-    // We get the redirection path from the server action
     await handleLoginAction(formData);
-    
-    // The browser will be redirected by Next.js, but in case of an error
-    // or other scenarios, we can stop the loading state.
-    // This part of the code might not be reached if redirect() works as expected.
-    const error = new URLSearchParams(window.location.search).get('error');
-    if (error) {
-        setIsLoading(false);
-        // We might need to manually refresh the page to show the error if Next.js doesn't
-        router.refresh();
-    }
+    // If the action redirects, this component will unmount, and the loading state will be reset.
+    // We don't need to manually set isLoading to false, as this could happen before the redirect is complete.
   };
   
   if (isLoading) {

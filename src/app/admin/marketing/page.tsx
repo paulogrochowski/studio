@@ -50,6 +50,7 @@ import {
   DialogTrigger,
   DialogClose
 } from "@/components/ui/dialog";
+import { AdminPlaceholder } from '@/components/admin-placeholder';
 
 const campaigns = [
   { id: '1', name: 'Lançamento Verão 2024', channel: 'Email', status: 'Ativa', period: '01/07/24 - 31/07/24' },
@@ -374,7 +375,9 @@ export default function AdminMarketingPage({ searchParams }: { searchParams?: { 
                                 <div className="text-2xl font-bold">{analysisResult.seoScore}/10</div>
                                 <Separator className="my-4" />
                                 <h4 className="font-semibold mb-2">Sugestões:</h4>
-                                <div className="text-sm text-muted-foreground space-y-1" dangerouslySetInnerHTML={{ __html: analysisResult.seoSuggestions.replace(/•/g, '<p>•') }}/>
+                                <div className="text-sm text-muted-foreground space-y-1">
+                                  {analysisResult.seoSuggestions.split('•').filter(s => s.trim()).map((s, i) => <p key={i}>• {s.trim()}</p>)}
+                                </div>
                             </CardContent>
                         </Card>
                          <Card>
@@ -386,7 +389,9 @@ export default function AdminMarketingPage({ searchParams }: { searchParams?: { 
                                 <div className="text-2xl font-bold">{analysisResult.adScore}/10</div>
                                 <Separator className="my-4" />
                                 <h4 className="font-semibold mb-2">Sugestões:</h4>
-                                <div className="text-sm text-muted-foreground space-y-1" dangerouslySetInnerHTML={{ __html: analysisResult.adSuggestions.replace(/•/g, '<p>•') }}/>
+                                <div className="text-sm text-muted-foreground space-y-1">
+                                    {analysisResult.adSuggestions.split('•').filter(s => s.trim()).map((s, i) => <p key={i}>• {s.trim()}</p>)}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>

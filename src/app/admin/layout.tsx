@@ -7,6 +7,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarInset,
 } from "@/components/ui/sidebar";
 import Link from 'next/link';
 import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Megaphone, Palette, Wrench, LifeBuoy } from 'lucide-react';
@@ -72,12 +73,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </SidebarFooter>
             </Sidebar>
 
-            <div className="flex flex-1 flex-col">
+            <SidebarInset>
                 <AdminHeader />
-                <main className="flex-1 overflow-auto p-6 md:gap-8">
+                <div className="flex-1 overflow-auto p-6 md:gap-8">
                     {children}
-                </main>
-            </div>
+                </div>
+            </SidebarInset>
         </div>
     </SidebarProvider>
   );
