@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { FilePlus2, Send, Ticket, Sparkles, Image as ImageIcon, Pilcrow, TestTube2, Loader2, Gauge, BarChart } from "lucide-react";
+import { FilePlus2, Send, Ticket, Sparkles, Image as ImageIcon, Pilcrow, TestTube2, Loader2, Gauge, BarChart, MoreHorizontal } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,7 +24,50 @@ import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import type { AnalyzeMarketingQualityOutput } from '@/ai/flows/analyze-marketing-quality';
-import { AdminPlaceholder } from '@/components/admin-placeholder';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from "@/components/ui/dialog";
+
+const campaigns = [
+  { id: '1', name: 'Lançamento Verão 2024', channel: 'Email', status: 'Ativa', period: '01/07/24 - 31/07/24' },
+  { id: '2', name: 'Desconto Dia dos Pais', channel: 'Banner no Site', status: 'Agendada', period: '01/08/24 - 11/08/24' },
+  { id: '3', name: 'Reativação de Clientes', channel: 'Email', status: 'Concluída', period: '15/06/24 - 30/06/24' },
+  { id: '4', name: 'Promoção Relâmpago', channel: 'Notificação Push', status: 'Ativa', period: '10/07/24 - 12/07/24' },
+];
+
+type CampaignStatus = 'Ativa' | 'Agendada' | 'Concluída' | 'Pausada';
+const getStatusVariant = (status: CampaignStatus): "default" | "secondary" | "outline" | "destructive" => {
+  switch (status) {
+    case 'Ativa': return 'default';
+    case 'Agendada': return 'secondary';
+    case 'Concluída': return 'outline';
+    case 'Pausada': return 'destructive';
+    default: return 'secondary';
+  }
+};
 
 
 export default function AdminMarketingPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
@@ -111,8 +154,104 @@ export default function AdminMarketingPage({ searchParams }: { searchParams?: { 
         <TabsTrigger value="analysis">Análise</TabsTrigger>
       </TabsList>
       
-      {/* Existing content for campaigns, coupons, email... */}
-      <TabsContent value="campaigns"><AdminPlaceholder title="Gerenciador de Campanhas" /></TabsContent>
+      <TabsContent value="campaigns">
+        <Card>
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <CardTitle>Campanhas de Marketing</CardTitle>
+                    <CardDescription>Crie e gerencie suas campanhas para engajar clientes.</CardDescription>
+                </div>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button size="sm" className="gap-2 w-full sm:w-auto"><FilePlus2 /> Criar Nova Campanha</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-xl">
+                        <DialogHeader>
+                            <DialogTitle>Criar Nova Campanha</DialogTitle>
+                            <DialogDescription>Preencha os detalhes para criar uma nova campanha de marketing.</DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                           <div className="space-y-2">
+                                <Label htmlFor="campaign-name">Nome da Campanha</Label>
+                                <Input id="campaign-name" placeholder="Ex: Queima de Estoque de Inverno" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="campaign-channel">Canal</Label>
+                                    <Select>
+                                        <SelectTrigger id="campaign-channel"><SelectValue placeholder="Selecione o canal" /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="email">Email Marketing</SelectItem>
+                                            <SelectItem value="banner">Banner no Site</SelectItem>
+                                            <SelectItem value="push">Notificação Push</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="campaign-audience">Público-alvo</Label>
+                                    <Select>
+                                        <SelectTrigger id="campaign-audience"><SelectValue placeholder="Selecione o público" /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todos os Clientes</SelectItem>
+                                            <SelectItem value="new">Novos Clientes (últimos 30 dias)</SelectItem>
+                                            <SelectItem value="inactive">Clientes Inativos (sem compra há 90 dias)</SelectItem>
+                                            <SelectItem value="top">Top Compradores</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="campaign-content">Conteúdo / Mensagem</Label>
+                                <Textarea id="campaign-content" placeholder="Descreva o objetivo da campanha ou a mensagem principal. A IA pode ajudar a refinar." rows={4}/>
+                            </div>
+                            <Button variant="outline" className="w-full gap-2">
+                                <Sparkles /> Gerar Conteúdo com IA
+                            </Button>
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                            <Button>Salvar Campanha</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Nome da Campanha</TableHead>
+                            <TableHead className="hidden sm:table-cell">Canal</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="hidden md:table-cell">Período</TableHead>
+                            <TableHead className="w-12"><span className="sr-only">Ações</span></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                       {campaigns.map((campaign) => (
+                           <TableRow key={campaign.id}>
+                               <TableCell className="font-medium">{campaign.name}</TableCell>
+                               <TableCell className="hidden sm:table-cell">{campaign.channel}</TableCell>
+                               <TableCell><Badge variant={getStatusVariant(campaign.status as CampaignStatus)}>{campaign.status}</Badge></TableCell>
+                               <TableCell className="hidden md:table-cell">{campaign.period}</TableCell>
+                               <TableCell>
+                                   <DropdownMenu>
+                                       <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                       <DropdownMenuContent align="end">
+                                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                           <DropdownMenuItem>Editar</DropdownMenuItem>
+                                           <DropdownMenuItem>Duplicar</DropdownMenuItem>
+                                           <DropdownMenuItem>Pausar</DropdownMenuItem>
+                                           <DropdownMenuItem className="text-destructive">Excluir</DropdownMenuItem>
+                                       </DropdownMenuContent>
+                                   </DropdownMenu>
+                               </TableCell>
+                           </TableRow>
+                       ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+      </TabsContent>
       <TabsContent value="coupons"><AdminPlaceholder title="Gerenciador de Cupons" /></TabsContent>
       <TabsContent value="email"><AdminPlaceholder title="Criador de Email Marketing" /></TabsContent>
 
