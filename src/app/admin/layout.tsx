@@ -19,8 +19,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex min-h-screen w-full bg-muted/40">
             <Sidebar>
                 <SidebarHeader>
-                    <Link href="/" className="flex items-center gap-2 font-semibold">
-                        <h1 className="font-headline text-lg font-bold text-primary uppercase">Copos Mania</h1>
+                    <Link href="/" className="flex items-center justify-center">
+                        <div className="flex flex-col leading-none text-center">
+                            <span className="font-headline text-xs font-semibold tracking-widest text-primary uppercase">COPOS</span>
+                            <span className="font-headline text-xl font-bold tracking-wider text-primary uppercase -mt-1">MANIA</span>
+                        </div>
                     </Link>
                 </SidebarHeader>
                 <SidebarContent>
