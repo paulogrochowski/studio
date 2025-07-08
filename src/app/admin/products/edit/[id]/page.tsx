@@ -396,15 +396,12 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">Preview e Imagem de Vitrine</CardTitle>
+                    <CardTitle className="text-lg">Imagem de Vitrine e Preview</CardTitle>
                     <CardDescription>
-                        Visualize o modelo 3D e carregue a imagem principal para a loja.
+                        Carregue a imagem principal para a loja e visualize o modelo 3D.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                     <div className="relative aspect-[4/5] w-full rounded-md border overflow-hidden h-[450px]">
-                        <CupPreview3D cupModel={previewModel} art={null} />
-                    </div>
                     <div className="space-y-2">
                         <Label>Imagem de Vitrine</Label>
                         {showcaseImagePreview && (
@@ -433,6 +430,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                             />
                         </label>
                     </div> 
+                     <div className="relative aspect-[4/5] w-full rounded-md border overflow-hidden h-[450px]">
+                        <CupPreview3D cupModel={previewModel} art={null} />
+                    </div>
                 </CardContent>
             </Card>
             <Card>
