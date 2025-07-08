@@ -137,7 +137,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   };
 
   return (
-    <div className="mx-auto grid max-w-4xl flex-1 auto-rows-max gap-4">
+    <div className="mx-auto grid max-w-6xl flex-1 auto-rows-max gap-4">
       <div className="flex items-center gap-4">
          <Link href="/admin/products">
             <Button variant="outline" size="icon" className="h-7 w-7">
@@ -145,7 +145,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 <span className="sr-only">Voltar</span>
             </Button>
         </Link>
-        <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
+        <h1 className="flex-1 shrink-0 whitespace-nowrap text-2xl font-semibold tracking-tight sm:grow-0">
           Editar: {productName}
         </h1>
         <div className="hidden items-center gap-2 md:ml-auto md:flex">
@@ -157,11 +157,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             <Button size="sm">Salvar Produto</Button>
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
-        <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
+      <div className="grid gap-4 md:grid-cols-[1fr_320px] lg:gap-8">
+        <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
             <Card>
                 <CardHeader>
-                    <CardTitle>Detalhes do Produto</CardTitle>
+                    <CardTitle className="text-xl">Detalhes do Produto</CardTitle>
                     <CardDescription>Informações básicas do modelo do copo.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -185,7 +185,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>Opções de Personalização</CardTitle>
+                    <CardTitle className="text-xl">Opções de Personalização</CardTitle>
                     <CardDescription>Configure as opções disponíveis para este modelo de copo e seus custos.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -327,7 +327,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             </Card>
              <Card>
                 <CardHeader>
-                    <CardTitle>SEO e Marketing</CardTitle>
+                    <CardTitle className="text-xl">SEO e Marketing</CardTitle>
                     <CardDescription>Otimize a visibilidade do seu produto e crie campanhas.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -372,7 +372,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
             <Card>
                 <CardHeader>
-                    <CardTitle>Preview e Imagem de Vitrine</CardTitle>
+                    <CardTitle className="text-xl">Preview e Imagem de Vitrine</CardTitle>
                     <CardDescription>
                         Visualize o modelo 3D e carregue a imagem principal para a loja.
                     </CardDescription>
@@ -395,7 +395,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>Modelo 3D</CardTitle>
+                    <CardTitle className="text-xl">Modelo 3D</CardTitle>
                     <CardDescription>
                         Arraste e solte ou clique para carregar o arquivo .glb.
                     </CardDescription>
@@ -415,7 +415,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             </Card>
              <Card>
                 <CardHeader>
-                    <CardTitle>Dimensões</CardTitle>
+                    <CardTitle className="text-xl">Dimensões</CardTitle>
                     <CardDescription>Para cálculo de frete.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
