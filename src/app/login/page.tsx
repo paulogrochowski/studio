@@ -1,22 +1,24 @@
 
+'use client';
+
+import { useState } from 'react';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { Loader } from '@/components/loader';
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-
-  async function handleLogin(formData: FormData) {
+async function handleLoginAction(formData: FormData) {
     'use server';
+    const { redirect } = await import('next/navigation');
+    
+    // Add a delay to make the loader visible for demonstration
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
@@ -42,6 +44,29 @@ export default function LoginPage({
 
     // Fallback for any other case (e.g., empty fields)
     redirect('/login?error=true');
+}
+
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoading(true);
+    const formData = new FormData(event.currentTarget);
+    await handleLoginAction(formData);
+    // This will likely not be reached due to redirect, which is fine.
+  };
+
+  if (isLoading) {
+    return (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/90 backdrop-blur-sm">
+            <Loader message="Carregando..." showText={true} />
+        </div>
+    );
   }
 
   return (
@@ -63,7 +88,7 @@ export default function LoginPage({
                 </AlertDescription>
               </Alert>
             )}
-            <form action={handleLogin} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" name="email" type="email" placeholder="seu@email.com" required />

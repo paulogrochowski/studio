@@ -82,11 +82,11 @@
 
   .glass-left {
     animation: clink-left 1.5s ease-in-out infinite;
-    transform-origin: 25px 95px;
+    transform-origin: 30px 95px;
   }
   .glass-right {
     animation: clink-right 1.5s ease-in-out infinite;
-    transform-origin: 75px 95px;
+    transform-origin: 70px 95px;
   }
   .spark {
     animation: spark-effect 1.5s ease-in-out infinite;

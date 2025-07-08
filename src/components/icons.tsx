@@ -45,20 +45,23 @@ export const Icons = {
       viewBox="0 0 100 100"
       {...props}
     >
+      {/* Champagne flute left */}
       <g className="glass-left">
-        <path d="M 25,95 L 25,50" stroke="currentColor" strokeWidth="2" />
-        <path d="M 15,95 L 35,95" stroke="currentColor" strokeWidth="2" />
-        <path d="M 10,50 C 10,30 40,30 40,50 Z" stroke="currentColor" strokeWidth="2" fill="none" />
+          <path d="M 30 95 L 30 65" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M 20 95 L 40 95" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M 30 65 C 10 55, 10 20, 30 10 L 30 65" stroke="currentColor" strokeWidth="1.5" fill="none" />
       </g>
+      {/* Champagne flute right */}
       <g className="glass-right">
-         <path d="M 75,95 L 75,50" stroke="currentColor" strokeWidth="2" />
-         <path d="M 65,95 L 85,95" stroke="currentColor" strokeWidth="2" />
-         <path d="M 60,50 C 60,30 90,30 90,50 Z" stroke="currentColor" strokeWidth="2" fill="none" />
+          <path d="M 70 95 L 70 65" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M 60 95 L 80 95" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M 70 65 C 90 55, 90 20, 70 10 L 70 65" stroke="currentColor" strokeWidth="1.5" fill="none" />
       </g>
+      {/* Spark */}
       <path
-        className="spark"
-        d="M50 35 L 52 30 L 54 35 L 60 37 L 54 39 L 52 44 L 50 39 L 44 37 Z"
-        fill="hsl(var(--primary))"
+          className="spark"
+          d="M50 20 L 52 15 L 54 20 L 60 22 L 54 24 L 52 29 L 50 24 L 44 22 Z"
+          fill="hsl(var(--primary))"
       />
     </svg>
   ),
