@@ -156,7 +156,7 @@ export default function AdminProductsPage() {
                             </TableHead>
                             <TableHead>Nome</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Preço Base</TableHead>
+                            <TableHead className="hidden sm:table-cell">Preço Base</TableHead>
                             <TableHead className="hidden md:table-cell">Estoque</TableHead>
                             <TableHead className="hidden md:table-cell">Criado em</TableHead>
                              <TableHead>
@@ -185,7 +185,7 @@ export default function AdminProductsPage() {
                                 <TableCell>
                                     <Badge variant="outline">Ativo</Badge>
                                 </TableCell>
-                                <TableCell>R$ {product.basePrice.toFixed(2)}</TableCell>
+                                <TableCell className="hidden sm:table-cell">R$ {product.basePrice.toFixed(2)}</TableCell>
                                 <TableCell className="hidden md:table-cell">250</TableCell>
                                 <TableCell className="hidden md:table-cell">2023-07-12 10:42</TableCell>
                                 <TableCell>
