@@ -5,11 +5,11 @@ import * as THREE from 'three';
 import React, { Suspense, Component, ReactNode, useState, useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Decal, useTexture, useGLTF, Environment } from '@react-three/drei';
-import type { CupModel, GeneratedArt } from '@/lib/types';
+import type { CupModel, GeneratedArt, ArtTransformations } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 import { Loader } from './loader';
 
-// Error Boundary Component remains the same
+// Error Boundary Component
 interface ErrorBoundaryProps {
     children: ReactNode;
     fallback: ReactNode;
@@ -40,68 +40,19 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
 }
 
-// This function creates a gradient texture. It's stable and can stay outside.
-function createGradientTexture(color1: string, color2: string, position: 'Cima' | 'Baixo') {
-  const canvas = document.createElement('canvas');
-  canvas.width = 2;
-  canvas.height = 256;
-  const context = canvas.getContext('2d')!;
-  const gradient = context.createLinearGradient(0, 0, 0, 256);
-
-  if (position === 'Cima') {
-    // Gradient color at the top of the cup
-    gradient.addColorStop(0, color2);
-    gradient.addColorStop(1, color1);
-  } else {
-    // Gradient color at the bottom of the cup
-    gradient.addColorStop(0, color1);
-    gradient.addColorStop(1, color2);
-  }
-
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, 2, 256);
-  return new THREE.CanvasTexture(canvas);
-}
-
-// ArtDecal sub-component
-const ArtDecal = ({ art, scale, positionY }: { art: GeneratedArt, scale: number, positionY: number }) => {
-    const artTexture = useTexture(art.imageUrl);
-    artTexture.anisotropy = 16;
-    const decalScale = [scale, scale * (5/6), scale];
-
-    return (
-        <Decal
-            position={[0, positionY, 0.4]}
-            rotation={[0, 0, 0]}
-            scale={decalScale}
-        >
-            <meshStandardMaterial
-                map={artTexture}
-                polygonOffset
-                polygonOffsetFactor={-10} // Prevent z-fighting
-                transparent={true}
-                side={THREE.DoubleSide} // Apply texture to both sides
-                roughness={0.2}
-                metalness={0.1}
-            />
-        </Decal>
-    );
-};
-
-
 interface CupMeshProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
-  artScale: number;
-  artPositionY: number;
+  artTransformations: ArtTransformations;
 }
 
-function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
+function CupMesh({ cupModel, art, artTransformations }: CupMeshProps) {
   const { nodes } = useGLTF('/models/cup.glb');
   const cupNode = nodes.Cup as THREE.Mesh;
   const rimNode = nodes.Rim as THREE.Mesh;
+  const artTexture = art ? useTexture(art.imageUrl) : null;
   
-  const modifiedCupGeometry = useMemo(() => {
+  const wrappedCupGeometry = useMemo(() => {
     if (!cupNode?.geometry) return null;
 
     const newGeometry = cupNode.geometry.clone();
@@ -114,15 +65,97 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
         newGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(newGeometry.attributes.position.count * 2), 2));
     }
     const uvAttribute = newGeometry.attributes.uv as THREE.BufferAttribute;
+    const positionAttribute = newGeometry.attributes.position;
 
     for (let i = 0; i < uvAttribute.count; i++) {
-        const y = newGeometry.attributes.position.getY(i);
+        const x = positionAttribute.getX(i);
+        const z = positionAttribute.getZ(i);
+        const y = positionAttribute.getY(i);
+        
+        // Calculate U coordinate based on angle for wrapping
+        const u = 1 - ((Math.atan2(z, x) / (Math.PI * 2)) + 0.5);
+        // Calculate V coordinate based on height
         const v = (y - min.y) / height;
-        uvAttribute.setXY(i, 0.5, v);
+        
+        uvAttribute.setXY(i, u, v);
     }
     uvAttribute.needsUpdate = true;
     return newGeometry;
   }, [cupNode?.geometry]);
+
+
+  const composedMaterial = useMemo(() => {
+    const isTransparent = cupModel.opacityType === 'Transparente';
+    const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return new THREE.MeshStandardMaterial();
+
+    // 1. Draw Base Layer (Color or Gradient)
+    if (hasDegrade) {
+        const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
+        const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
+        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+
+        if (cupModel.degradePosition === 'Cima') {
+             gradient.addColorStop(0, baseColor); // Bottom
+             gradient.addColorStop(1, degradeColorHex); // Top
+        } else {
+             gradient.addColorStop(0, degradeColorHex); // Bottom
+             gradient.addColorStop(1, baseColor); // Top
+        }
+        ctx.fillStyle = gradient;
+    } else {
+        ctx.fillStyle = cupModel.colorHex || '#FFFFFF';
+    }
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Draw Art on top
+    if (artTexture?.image) {
+        const { scale, position, rotation } = artTransformations;
+        const image = artTexture.image;
+
+        const canvasCenterX = canvas.width / 2;
+        const canvasCenterY = canvas.height / 2;
+
+        const drawWidth = image.width * scale[0];
+        const drawHeight = image.height * scale[1];
+
+        // Position is an offset from the center in percentage of canvas size
+        const drawX = canvasCenterX + (position[0] * canvas.width) - (drawWidth / 2);
+        const drawY = canvasCenterY - (position[1] * canvas.height) - (drawHeight / 2);
+
+        ctx.save();
+        ctx.translate(drawX + drawWidth / 2, drawY + drawHeight / 2);
+        ctx.rotate(rotation * Math.PI / 180);
+        ctx.drawImage(image, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+        ctx.restore();
+    }
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    
+    return new THREE.MeshStandardMaterial({
+        map: texture,
+        roughness: 0.2,
+        metalness: 0.1,
+        transparent: true,
+        opacity: isTransparent ? 0.6 : 1.0,
+        side: THREE.DoubleSide,
+    });
+  }, [cupModel, artTexture, artTransformations]);
+  
+  // Dispose material when it changes
+  useEffect(() => {
+    return () => {
+      composedMaterial.map?.dispose();
+      composedMaterial.dispose();
+    };
+  }, [composedMaterial]);
+
 
   const modifiedRimGeometry = useMemo(() => {
     if (!rimNode?.geometry) return null;
@@ -132,39 +165,18 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
   }, [rimNode?.geometry]);
 
 
-  const isTransparent = cupModel.opacityType === 'Transparente';
-  const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
-
-  const gradientTexture = useMemo(() => {
-    if (!hasDegrade) return null;
-    const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
-    const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
-    return createGradientTexture(degradeColorHex, baseColor, cupModel.degradePosition!);
-  }, [hasDegrade, cupModel.degradeColor, cupModel.degradePosition, isTransparent]);
-
-  if (!modifiedCupGeometry) {
+  if (!wrappedCupGeometry) {
     console.error("3D Model Error: The 'Cup' mesh or its geometry is missing in /models/cup.glb.");
     return null; 
   }
 
   return (
     <group dispose={null}>
-      <mesh geometry={modifiedCupGeometry} castShadow>
-        <meshStandardMaterial
-          color={hasDegrade ? '#ffffff' : cupModel.colorHex}
-          map={gradientTexture}
-          roughness={0.2}
-          metalness={0.1}
-          transparent={true}
-          opacity={isTransparent ? 0.6 : 1.0}
-          side={THREE.DoubleSide}
-        />
-        {art && art.id !== 'no-art' && (
-            <Suspense fallback={null}>
-              <ArtDecal art={art} scale={artScale} positionY={artPositionY} />
-            </Suspense>
-        )}
-      </mesh>
+      <mesh 
+        geometry={wrappedCupGeometry} 
+        castShadow 
+        material={composedMaterial}
+      />
       {modifiedRimGeometry && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
         <mesh
           geometry={modifiedRimGeometry}
@@ -172,9 +184,9 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
           <meshStandardMaterial
             color={RIM_COLORS[cupModel.rimColor]}
             emissive={RIM_COLORS[cupModel.rimColor]}
-            emissiveIntensity={1}
-            metalness={0.6}
-            roughness={0.1}
+            emissiveIntensity={0.4}
+            metalness={0.8}
+            roughness={0.2}
             side={THREE.DoubleSide}
           />
         </mesh>
@@ -186,11 +198,10 @@ function CupMesh({ cupModel, art, artScale, artPositionY }: CupMeshProps) {
 interface CupPreview3DProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
-  artScale?: number;
-  artPositionY?: number;
+  artTransformations: ArtTransformations;
 }
 
-export default function CupPreview3D({ cupModel, art, artScale = 0.6, artPositionY = 0.1 }: CupPreview3DProps) {
+export default function CupPreview3D({ cupModel, art, artTransformations }: CupPreview3DProps) {
   const [modelExists, setModelExists] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -231,7 +242,11 @@ export default function CupPreview3D({ cupModel, art, artScale = 0.6, artPositio
         <Suspense fallback={null}>
             <ambientLight intensity={0.7} />
             <directionalLight intensity={1.5} position={[5, 5, 5]} castShadow />
-            <CupMesh cupModel={cupModel} art={art} artScale={artScale} artPositionY={artPositionY}/>
+            <CupMesh 
+              cupModel={cupModel} 
+              art={art} 
+              artTransformations={artTransformations}
+            />
             <Environment preset="city" />
         </Suspense>
         <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} minPolarAngle={Math.PI / 4} maxPolarAngle={Math.PI / 1.8} />

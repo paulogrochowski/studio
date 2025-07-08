@@ -2,7 +2,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { CupModel, GeneratedArt } from '@/lib/types';
+import type { CupModel, GeneratedArt, ArtTransformations } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader } from './loader';
 import { Button } from './ui/button';
@@ -14,10 +14,8 @@ import { Slider } from './ui/slider';
 interface PreviewCardProps {
     cupModel: CupModel;
     art: GeneratedArt | null;
-    artScale: number;
-    setArtScale: (value: number) => void;
-    artPositionY: number;
-    setArtPositionY: (value: number) => void;
+    artTransformations: ArtTransformations;
+    setArtTransformations: (transformations: ArtTransformations) => void;
     onScrollDown?: () => void;
     showScrollDownButton?: boolean;
     handleSaveArt: () => void;
@@ -38,15 +36,30 @@ const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
 export function PreviewCard({ 
     cupModel, 
     art, 
-    artScale, 
-    setArtScale, 
-    artPositionY, 
-    setArtPositionY, 
+    artTransformations,
+    setArtTransformations,
     onScrollDown, 
     showScrollDownButton = true,
     handleSaveArt,
     isGenerating
 }: PreviewCardProps) {
+    
+    const handleTransformChange = (key: keyof ArtTransformations, value: any) => {
+        setArtTransformations({ ...artTransformations, [key]: value });
+    };
+
+    const handleScaleChange = (dim: 'x' | 'y', value: number) => {
+        const newScale = [...artTransformations.scale];
+        newScale[dim === 'x' ? 0 : 1] = value;
+        handleTransformChange('scale', newScale);
+    }
+
+    const handlePositionChange = (dim: 'x' | 'y', value: number) => {
+        const newPosition = [...artTransformations.position];
+        newPosition[dim === 'x' ? 0 : 1] = value;
+        handleTransformChange('position', newPosition);
+    }
+    
     return (
         <div className="relative">
             <Card className="overflow-hidden">
@@ -54,24 +67,38 @@ export function PreviewCard({
                     <CardTitle>Pré-visualização do Copo</CardTitle>
                     <CardDescription>Interaja com o modelo 3D para ver todos os ângulos.</CardDescription>
                 </CardHeader>
-                <CardContent className="p-0 h-[400px] md:h-[500px]">
-                    <CupPreview3D cupModel={cupModel} art={art} artScale={artScale} artPositionY={artPositionY} />
+                <CardContent className="p-0 h-[400px] md:h-[500px] checkerboard">
+                    <CupPreview3D 
+                        cupModel={cupModel} 
+                        art={art} 
+                        artTransformations={artTransformations} 
+                    />
                 </CardContent>
                  {art && (
                     <CardFooter className="flex-col items-start gap-4 p-4 pt-4 border-t">
-                        <div className="w-full space-y-2">
-                            <div className="flex justify-between items-center">
-                                <Label htmlFor="art-size">Tamanho da Arte</Label>
-                                <span className="text-sm font-medium text-muted-foreground">{(artScale / 0.6 * 100).toFixed(0)}%</span>
+                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="art-width">Largura da Arte</Label>
+                                <Slider id="art-width" value={[artTransformations.scale[0]]} onValueChange={(v) => handleScaleChange('x', v[0])} min={0.1} max={2} step={0.05} />
                             </div>
-                            <Slider id="art-size" value={[artScale]} onValueChange={(v) => setArtScale(v[0])} min={0.2} max={1.2} step={0.02} />
+                             <div className="space-y-2">
+                                <Label htmlFor="art-height">Altura da Arte</Label>
+                                <Slider id="art-height" value={[artTransformations.scale[1]]} onValueChange={(v) => handleScaleChange('y', v[0])} min={0.1} max={2} step={0.05} />
+                            </div>
+                        </div>
+                         <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="w-full space-y-2">
+                                <Label htmlFor="art-pos-x">Posição Horizontal</Label>
+                                <Slider id="art-pos-x" value={[artTransformations.position[0]]} onValueChange={(v) => handlePositionChange('x', v[0])} min={-0.5} max={0.5} step={0.01} />
+                            </div>
+                            <div className="w-full space-y-2">
+                                 <Label htmlFor="art-pos-y">Posição Vertical</Label>
+                                <Slider id="art-pos-y" value={[artTransformations.position[1]]} onValueChange={(v) => handlePositionChange('y', v[0])} min={-0.5} max={0.5} step={0.01} />
+                            </div>
                         </div>
                         <div className="w-full space-y-2">
-                             <div className="flex justify-between items-center">
-                                <Label htmlFor="art-position">Posição Vertical</Label>
-                                <span className="text-sm font-medium text-muted-foreground">{(artPositionY * 100).toFixed(0)}</span>
-                            </div>
-                            <Slider id="art-position" value={[artPositionY]} onValueChange={(v) => setArtPositionY(v[0])} min={-0.3} max={0.5} step={0.01} />
+                            <Label htmlFor="art-rotation">Rotação</Label>
+                            <Slider id="art-rotation" value={[artTransformations.rotation]} onValueChange={(v) => handleTransformChange('rotation', v[0])} min={-180} max={180} step={1} />
                         </div>
                         <div className="w-full pt-2">
                             <Button variant="outline" className="w-full" onClick={handleSaveArt} disabled={isGenerating || !art?.imageUrl || art.imageUrl.startsWith('data:image/gif')}>
@@ -96,5 +123,3 @@ export function PreviewCard({
         </div>
     );
 }
-
-    

@@ -14,7 +14,7 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { handleArtAnalysis, handleFinalizeOrder, handleArtGeneration } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import type { CupModel, GeneratedArt, OrderDetails } from '@/lib/types';
+import type { CupModel, GeneratedArt, OrderDetails, ArtTransformations } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CUP_CATALOG, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS } from '@/lib/cup-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
@@ -31,6 +31,12 @@ const getAvailableCupOptions = (cupName: string) => {
     const opacities = [...new Set(allOptions.map(c => c.opacityType!))];
     const rims = [...new Set(allOptions.map(c => c.rimColor!))];
     return { opacities, rims };
+};
+
+const initialArtTransformations: ArtTransformations = {
+    scale: [1, 0.5], // Width, Height
+    position: [0, 0.1], // X, Y
+    rotation: 0,
 };
 
 export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
@@ -51,8 +57,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     const [art, setArt] = useState<GeneratedArt | null>(null);
     const [artPrompt, setArtPrompt] = useState('');
     const [analysis, setAnalysis] = useState<{ score: number; reasoning: string } | null>(null);
-    const [artScale, setArtScale] = useState(0.6);
-    const [artPositionY, setArtPositionY] = useState(0.1);
+    const [artTransformations, setArtTransformations] = useState<ArtTransformations>(initialArtTransformations);
 
     
     // Final Order State
@@ -92,8 +97,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                     prompt: artPrompt,
                 };
                 setArt(artData);
-                setArtScale(0.6);
-                setArtPositionY(0.1);
+                setArtTransformations(initialArtTransformations);
                 const analysisResult = await handleArtAnalysis(result.imageUrl, artPrompt);
                 if (analysisResult.success && analysisResult.analysis) {
                     setAnalysis(analysisResult.analysis);
@@ -157,14 +161,12 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
     if (view === 'quote') {
         const finalArt: GeneratedArt = art ? {
             ...art,
-            scale: artScale,
-            positionY: artPositionY
+            transformations: artTransformations,
         } : {
             id: 'no-art',
             imageUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', // transparent pixel
             prompt: 'Sem arte',
-            scale: 0,
-            positionY: 0,
+            transformations: initialArtTransformations,
         };
 
         const finalAnalysis = analysis ? { score: analysis.score, reasoning: analysis.reasoning } : { score: 0, reasoning: 'Nenhuma arte para analisar.' };
@@ -334,11 +336,9 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                     <div className="sticky top-24">
                         <PreviewCard 
                             cupModel={activeCupModel} 
-                            art={art} 
-                            artScale={artScale} 
-                            setArtScale={setArtScale}
-                            artPositionY={artPositionY} 
-                            setArtPositionY={setArtPositionY}
+                            art={art}
+                            artTransformations={artTransformations}
+                            setArtTransformations={setArtTransformations}
                             onScrollDown={handleScrollToActions} 
                             handleSaveArt={handleSaveArt}
                             isGenerating={isGenerating}

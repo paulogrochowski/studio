@@ -1,4 +1,10 @@
 
+export interface ArtTransformations {
+  scale: [number, number]; // [width, height]
+  position: [number, number]; // [x, y]
+  rotation: number; // degrees
+}
+
 export interface CupModel {
   id: string;
   name: string;
@@ -24,8 +30,7 @@ export interface GeneratedArt {
   id: string;
   imageUrl: string;
   prompt: string;
-  scale?: number;
-  positionY?: number;
+  transformations?: ArtTransformations;
 }
 
 export interface OrderDetails {
