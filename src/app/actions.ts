@@ -6,6 +6,9 @@ import type { OrderDetails } from '@/lib/types';
 import { refineCupArt } from '@/ai/flows/refine-cup-art';
 import { validateImageBackground } from '@/ai/flows/validate-image-background';
 import { optimizeProductSeo, type OptimizeProductSeoInput } from '@/ai/flows/optimize-product-seo';
+import { generateAdCreative, type GenerateAdCreativeInput } from '@/ai/flows/generate-ad-creative';
+import { optimizeAdCopy, type OptimizeAdCopyInput } from '@/ai/flows/optimize-ad-copy';
+import { analyzeMarketingQuality, type AnalyzeMarketingQualityInput } from '@/ai/flows/analyze-marketing-quality';
 
 
 export async function handleArtGeneration(prompt: string) {
@@ -109,4 +112,34 @@ export async function handleAdminAddProduct(formData: FormData) {
     // revalidatePath('/admin/products');
 
     return { success: true };
+}
+
+export async function handleGenerateAdCreative(input: GenerateAdCreativeInput) {
+    try {
+        const result = await generateAdCreative(input);
+        return { success: true, imageUrl: result.imageUrl };
+    } catch (error) {
+        console.error('Error generating ad creative:', error);
+        return { success: false, error: 'Falha ao gerar o criativo do anúncio.' };
+    }
+}
+
+export async function handleOptimizeAdCopy(input: OptimizeAdCopyInput) {
+    try {
+        const result = await optimizeAdCopy(input);
+        return { success: true, adCopy: result };
+    } catch (error) {
+        console.error('Error optimizing ad copy:', error);
+        return { success: false, error: 'Falha ao otimizar o texto do anúncio.' };
+    }
+}
+
+export async function handleAnalyzeMarketingQuality(input: AnalyzeMarketingQualityInput) {
+    try {
+        const result = await analyzeMarketingQuality(input);
+        return { success: true, analysis: result };
+    } catch (error) {
+        console.error('Error analyzing marketing quality:', error);
+        return { success: false, error: 'Falha ao analisar a qualidade do marketing.' };
+    }
 }

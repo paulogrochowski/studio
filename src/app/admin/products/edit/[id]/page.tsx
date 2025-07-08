@@ -3,7 +3,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useSearchParams } from 'next/navigation';
 import { CUP_TYPES_SUMMARY, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS, CUP_CATALOG } from '@/lib/cup-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -357,7 +357,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                             <AccordionContent className="space-y-4 pt-4">
                                 <p className="text-sm text-muted-foreground">Promova este produto criando um anúncio ou campanha de email marketing.</p>
                                 <Button asChild className="w-full">
-                                    <Link href={`/admin/marketing?product_id=${id}&product_name=${encodeURIComponent(productSummary.name)}`}>
+                                    <Link href={`/admin/marketing?tab=creative&product_id=${id}`}>
                                         <Rocket className="mr-2 h-4 w-4" />
                                         Criar Anúncio / Campanha
                                     </Link>
@@ -449,5 +449,3 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     </div>
   );
 }
-
-    
