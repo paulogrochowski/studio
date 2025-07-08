@@ -37,7 +37,7 @@ export async function handleArtAnalysis(artDataUri: string, description: string)
 export async function handleFinalizeOrder(details: OrderDetails) {
     console.log("Order finalized:", details);
     // In a real app, this would save to a database, process payment, etc.
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // await new Promise(resolve => setTimeout(resolve, 500));
     return { success: true };
 }
 
@@ -143,4 +143,27 @@ export async function handleAnalyzeMarketingQuality(input: AnalyzeMarketingQuali
         console.error('Error analyzing marketing quality:', error);
         return { success: false, error: 'Falha ao analisar a qualidade do marketing.' };
     }
+}
+
+export async function handleAdminAddCustomer(formData: FormData) {
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+
+    if (!name || !email) {
+        return { success: false, error: "Nome e Email são obrigatórios." };
+    }
+
+    // In a real app, this would save the new customer to a database.
+    console.log('New Customer to be added:', {
+      name,
+      email,
+      phone: formData.get('phone'),
+      cpf: formData.get('cpf'),
+      address: formData.get('address'),
+    });
+    
+    // Here you would revalidate the path to update the customer list
+    // revalidatePath('/admin/customers');
+
+    return { success: true };
 }
