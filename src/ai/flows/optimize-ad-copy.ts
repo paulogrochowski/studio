@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Optimizes ad copy for a given product.

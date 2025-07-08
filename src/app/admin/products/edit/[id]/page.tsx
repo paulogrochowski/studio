@@ -162,7 +162,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   };
 
   return (
-    <div className="mx-auto grid w-full max-w-7xl flex-1 auto-rows-max gap-4">
+    <div className="mx-auto grid w-full flex-1 auto-rows-max gap-4">
       <div className="flex items-center gap-4">
          <Link href="/admin/products">
             <Button variant="outline" size="icon" className="h-7 w-7">
@@ -214,7 +214,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                     <CardDescription>Configure as opções disponíveis para este modelo de copo e seus custos.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Accordion type="multiple" className="w-full" defaultValue={['item-1', 'item-3', 'item-4']}>
+                    <Accordion type="multiple" className="w-full" defaultValue={['item-1']}>
                         <AccordionItem value="item-1">
                             <AccordionTrigger>Acabamentos</AccordionTrigger>
                             <AccordionContent className="space-y-4 pt-4">

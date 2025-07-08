@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ export default function LandingPage() {
             <div className="container mx-auto px-4">
                 <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-wider uppercase drop-shadow-lg">Sua Ideia, Nosso Copo</h1>
                 <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl drop-shadow-md">
-                    Crie copos personalizados para qualquer ocasião com designs únicos gerados por Inteligência Artificial.
+                    Crie copos personalizados para qualquer ocasião com designs únicos gerados por Inteligência Artificial. Ideal para festas, casamentos e eventos corporativos.
                 </p>
                 <Button asChild size="lg" className="mt-8">
                     <Link href="#produtos">Ver Produtos <ArrowRight className="ml-2" /></Link>
@@ -76,7 +77,7 @@ export default function LandingPage() {
                 <div className="relative w-full aspect-square max-w-md mx-auto">
                      <Image
                         src="https://placehold.co/600x600.png"
-                        alt="Promoção de copos"
+                        alt="Promoção de copos personalizados"
                         layout="fill"
                         objectFit="cover"
                         className="rounded-lg shadow-lg"

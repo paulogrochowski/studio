@@ -375,9 +375,7 @@ export default function AdminMarketingPage({ searchParams }: { searchParams?: { 
                                 <div className="text-2xl font-bold">{analysisResult.seoScore}/10</div>
                                 <Separator className="my-4" />
                                 <h4 className="font-semibold mb-2">Sugestões:</h4>
-                                <div className="text-sm text-muted-foreground space-y-1">
-                                  {analysisResult.seoSuggestions.split('•').filter(s => s.trim()).map((s, i) => <p key={i}>• {s.trim()}</p>)}
-                                </div>
+                                <div className="text-sm text-muted-foreground space-y-1" dangerouslySetInnerHTML={{ __html: analysisResult.seoSuggestions.replace(/•/g, '<p>• ').replace(/\n/g, '</p>') }} />
                             </CardContent>
                         </Card>
                          <Card>
@@ -389,9 +387,7 @@ export default function AdminMarketingPage({ searchParams }: { searchParams?: { 
                                 <div className="text-2xl font-bold">{analysisResult.adScore}/10</div>
                                 <Separator className="my-4" />
                                 <h4 className="font-semibold mb-2">Sugestões:</h4>
-                                <div className="text-sm text-muted-foreground space-y-1">
-                                    {analysisResult.adSuggestions.split('•').filter(s => s.trim()).map((s, i) => <p key={i}>• {s.trim()}</p>)}
-                                </div>
+                                <div className="text-sm text-muted-foreground space-y-1" dangerouslySetInnerHTML={{ __html: analysisResult.adSuggestions.replace(/•/g, '<p>• ').replace(/\n/g, '</p>') }} />
                             </CardContent>
                         </Card>
                     </div>

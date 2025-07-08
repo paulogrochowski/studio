@@ -1,3 +1,4 @@
+
 import {
   SidebarProvider,
   Sidebar,
@@ -78,9 +79,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             <SidebarInset>
                 <AdminHeader />
-                <div className="flex-1 overflow-auto p-6 md:gap-8">
+                <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
                     {children}
-                </div>
+                </main>
             </SidebarInset>
         </div>
     </SidebarProvider>
