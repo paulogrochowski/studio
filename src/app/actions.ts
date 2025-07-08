@@ -76,8 +76,8 @@ export async function handleShippingCalculation(cep: string) {
         return { success: false, error: 'CEP inválido. Por favor, digite um CEP com 8 dígitos.' };
     }
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // NOTE: Delay removed to improve prototype performance.
+    // await new Promise(resolve => setTimeout(resolve, 1500));
 
     // Mocked response
     const randomCost = 15 + Math.random() * 30; // Random cost between 15 and 45
@@ -106,8 +106,8 @@ export async function handleAdminAddProduct(formData: FormData) {
       imageUrl,
     });
     
-    // Simulate database delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // NOTE: Delay removed to improve prototype performance.
+    // await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Here you would revalidate the path to update the product list
     // revalidatePath('/admin/products');

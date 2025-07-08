@@ -65,12 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <SidebarMenu>
                          <SidebarMenuItem>
                             <SidebarMenuButton asChild>
-                                <Link href="#"><Wrench />Configurações</Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild>
-                                <Link href="#"><LifeBuoy />Ajuda</Link>
+                                <Link href="/admin/settings"><Wrench />Configurações</Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
