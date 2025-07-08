@@ -7,6 +7,7 @@ import { analyzeArtComplexity } from '@/ai/flows/analyze-art-complexity';
 import type { OrderDetails } from '@/lib/types';
 import { refineCupArt } from '@/ai/flows/refine-cup-art';
 import { validateImageBackground } from '@/ai/flows/validate-image-background';
+import { vectorizeImage } from '@/ai/flows/vectorize-image';
 import { optimizeProductSeo } from '@/ai/flows/optimize-product-seo';
 import type { OptimizeProductSeoInput } from '@/ai/flows/optimize-product-seo';
 import { generateAdCreative } from '@/ai/flows/generate-ad-creative';
@@ -19,12 +20,22 @@ import type { AnalyzeMarketingQualityInput } from '@/ai/flows/analyze-marketing-
 
 export async function handleArtGeneration(prompt: string) {
   try {
-    const result = await generateCupArt({ eventDescription: prompt });
-    // This is now simplified, as 3D controls handle placement.
-    return { success: true, imageUrl: result.imageUrl, prompt: prompt };
+    // Step 1: Generate the initial art
+    const generationResult = await generateCupArt({ eventDescription: prompt });
+    
+    if (!generationResult.imageUrl) {
+        throw new Error('A IA não conseguiu gerar a imagem inicial.');
+    }
+    
+    // Step 2: Vectorize the generated art to ensure it has clean lines and a transparent background.
+    const vectorizationResult = await vectorizeImage({ imageDataUri: generationResult.imageUrl });
+
+    // Return the vectorized image URL
+    return { success: true, imageUrl: vectorizationResult.vectorizedImageDataUri, prompt: prompt };
   } catch (error) {
-    console.error(error);
-    return { success: false, error: 'Falha ao gerar a arte. Tente novamente.' };
+    console.error('Art generation/vectorization error:', error);
+    // Provide a more generic error to the user
+    return { success: false, error: 'Falha ao processar a arte. Tente novamente ou com uma descrição diferente.' };
   }
 }
 

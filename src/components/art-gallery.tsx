@@ -212,8 +212,7 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
                 
                 <div className="order-2 lg:order-1 lg:col-span-2">
-                    <ScrollArea className="h-[calc(100vh-160px)] pr-4">
-                      <div className="space-y-6">
+                    <div className="space-y-6">
                         {/* Cup Customization */}
                         <Card>
                             <CardHeader><CardTitle>Personalize o Copo</CardTitle></CardHeader>
@@ -349,7 +348,6 @@ export function ArtGallery({ selectedCupName }: ArtGalleryProps) {
                         </Card>
 
                       </div>
-                    </ScrollArea>
                 </div>
 
                  <div className="order-1 lg:order-2 lg:col-span-3">
