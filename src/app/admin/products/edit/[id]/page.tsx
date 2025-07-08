@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CUP_TYPES_SUMMARY, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS, CUP_CATALOG } from '@/lib/cup-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,15 +31,10 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
   const [isRimDialogOpen, setRimDialogOpen] = useState(false);
   const [isDegradeDialogOpen, setDegradeDialogOpen] = useState(false);
-  const [isBaseColorDialogOpen, setBaseColorDialogOpen] = useState(false);
   
   // State for dynamic options
   const [availableRims, setAvailableRims] = useState<string[]>([...ALL_RIMS]);
   const [availableDegrades, setAvailableDegrades] = useState<string[]>([...DEGRADE_COLORS]);
-   const [availableBaseColors, setAvailableBaseColors] = useState([
-    { name: 'Branco', hex: '#FFFFFF', price: 0.00 },
-    { name: 'Preto', hex: '#000000', price: 0.50 }
-  ]);
   
   const [dynamicRimColors, setDynamicRimColors] = useState<Record<string, string>>({});
   const [dynamicDegradeColors, setDynamicDegradeColors] = useState<Record<string, string>>({});
@@ -48,9 +44,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
   const [newDegradeName, setNewDegradeName] = useState('');
   const [newDegradeHex, setNewDegradeHex] = useState('');
-
-  const [newBaseColorName, setNewBaseColorName] = useState('');
-  const [newBaseColorHex, setNewBaseColorHex] = useState('');
 
 
   if (!productSummary || !productDetails) {
@@ -73,7 +66,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const combinedDegradeColors: Record<string, string> = { ...DEGRADE_HEX_COLORS, ...dynamicDegradeColors };
 
 
-  const handleAddNewOption = (type: 'rim' | 'degrade' | 'baseColor') => {
+  const handleAddNewOption = (type: 'rim' | 'degrade') => {
     if (type === 'rim') {
         if (!newRimName || !newRimHex) return; 
         if (!availableRims.includes(newRimName)) {
@@ -93,15 +86,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         setNewDegradeName('');
         setNewDegradeHex('');
         setDegradeDialogOpen(false);
-    }
-    if (type === 'baseColor') {
-        if (!newBaseColorName || !newBaseColorHex) return;
-        // Don't add if name already exists
-        if (availableBaseColors.some(c => c.name.toLowerCase() === newBaseColorName.toLowerCase())) return;
-        setAvailableBaseColors(prev => [...prev, { name: newBaseColorName, hex: newBaseColorHex, price: 0.00 }]);
-        setNewBaseColorName('');
-        setNewBaseColorHex('');
-        setBaseColorDialogOpen(false);
     }
   }
 
@@ -158,7 +142,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                     <CardDescription>Configure as opções disponíveis para este modelo de copo e seus custos.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Accordion type="multiple" className="w-full" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']}>
+                    <Accordion type="multiple" className="w-full" defaultValue={['item-1', 'item-3', 'item-4']}>
                         <AccordionItem value="item-1">
                             <AccordionTrigger>Acabamentos</AccordionTrigger>
                             <AccordionContent className="space-y-4 pt-4">
@@ -184,55 +168,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                             <Input id="price-transparente" type="number" step="0.01" defaultValue="0.25" className="w-24" />
                                         </div>
                                     </div>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-2">
-                            <AccordionTrigger>Cores de Base</AccordionTrigger>
-                            <AccordionContent className="space-y-4 pt-4">
-                                <p className='text-sm text-muted-foreground'>Gerencie as cores de base disponíveis para este produto e seus custos.</p>
-                                <div className="space-y-2">
-                                    {availableBaseColors.map((color) => (
-                                        <div key={color.name} className="flex items-center justify-between gap-4 p-2 border rounded-md">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-5 h-5 rounded-full border" style={{ backgroundColor: color.hex }}/>
-                                                <Label>{color.name}</Label>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Label htmlFor={`price-base-${color.name}`} className="text-sm">Custo (R$)</Label>
-                                                <Input id={`price-base-${color.name}`} type="number" step="0.01" defaultValue={color.price.toFixed(2)} className="w-24" />
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <Dialog open={isBaseColorDialogOpen} onOpenChange={setBaseColorDialogOpen}>
-                                        <DialogTrigger asChild>
-                                            <Button variant="outline" size="sm" className='gap-2 w-full mt-2'>
-                                                <PlusCircle className="h-4 w-4" /> Adicionar Cor de Base
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>Adicionar Nova Cor de Base</DialogTitle>
-                                                <DialogDescription>
-                                                    Esta nova cor ficará disponível para seleção nos produtos.
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <div className="space-y-4 py-2">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="base-color-name">Nome da Cor</Label>
-                                                    <Input id="base-color-name" placeholder="Ex: Azul Royal" value={newBaseColorName} onChange={(e) => setNewBaseColorName(e.target.value)} />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="base-color-hex">Cor (Hex)</Label>
-                                                    <Input id="base-color-hex" placeholder="#4169E1" value={newBaseColorHex} onChange={(e) => setNewBaseColorHex(e.target.value)} />
-                                                </div>
-                                            </div>
-                                            <DialogFooter>
-                                                <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-                                                <Button onClick={() => handleAddNewOption('baseColor')}>Salvar Cor</Button>
-                                            </DialogFooter>
-                                        </DialogContent>
-                                    </Dialog>
                                 </div>
                             </AccordionContent>
                         </AccordionItem>
@@ -345,11 +280,34 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             </Card>
         </div>
         <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-            <PreviewCard 
-                cupModel={previewModel} 
-                art={null} 
-                showScrollDownButton={false}
-            />
+            <Card>
+                <CardHeader>
+                    <CardTitle>Imagem Principal</CardTitle>
+                    <CardDescription>
+                        Esta é a imagem que aparece na listagem de produtos.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <div className="relative aspect-[4/5] w-full rounded-md border overflow-hidden">
+                        <Image
+                            src={productSummary.imageUrl}
+                            alt={productSummary.name}
+                            fill
+                            className="object-cover"
+                        />
+                    </div>
+                    <div className="flex items-center justify-center w-full">
+                        <label htmlFor="image-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
+                                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste</p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP</p>
+                            </div>
+                            <Input id="image-file" type="file" accept="image/*" className="hidden" />
+                        </label>
+                    </div> 
+                </CardContent>
+            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle>Modelo 3D</CardTitle>
