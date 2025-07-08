@@ -27,13 +27,28 @@ export async function handleArtGeneration(prompt: string) {
         throw new Error('A IA não conseguiu gerar a imagem inicial.');
     }
     
-    // Step 2: Vectorize the generated art to ensure it has clean lines and a transparent background.
+    // Step 2: Vectorize the art for a cleaner look.
     const vectorizationResult = await vectorizeImage({ imageDataUri: generationResult.imageUrl });
+    let finalImageUrl = vectorizationResult.vectorizedImageDataUri;
 
-    // Return the vectorized image URL
-    return { success: true, imageUrl: vectorizationResult.vectorizedImageDataUri, prompt: prompt };
+    // Step 3: Force a final refinement pass to *ensure* the background is transparent.
+    // This is a robust way to handle cases where the model might ignore the initial transparency instruction.
+    const refinementResult = await refineCupArt({
+        baseImageDataUri: finalImageUrl,
+        refinementInstructions: "A tarefa mais importante é remover 100% do fundo, deixando-o totalmente transparente. Mantenha apenas o objeto principal da arte, sem sombras ou bordas extras."
+    });
+
+    if (refinementResult.refinedImageDataUri) {
+        finalImageUrl = refinementResult.refinedImageDataUri;
+    } else {
+        console.error("Background removal step failed. The image might have a background.");
+        // Fallback to the vectorized image, but the user may still see a background.
+    }
+
+    // Return the final, transparent image URL
+    return { success: true, imageUrl: finalImageUrl, prompt: prompt };
   } catch (error) {
-    console.error('Art generation/vectorization error:', error);
+    console.error('Art generation/processing error:', error);
     // Provide a more generic error to the user
     return { success: false, error: 'Falha ao processar a arte. Tente novamente ou com uma descrição diferente.' };
   }
