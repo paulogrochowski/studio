@@ -3,7 +3,6 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CUP_TYPES_SUMMARY, ALL_RIMS, DEGRADE_COLORS, RIM_COLORS, DEGRADE_HEX_COLORS, CUP_CATALOG } from '@/lib/cup-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +16,17 @@ import type { CupModel } from '@/lib/types';
 import { Textarea } from '@/components/ui/textarea';
 import { handleSeoOptimization } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import dynamic from 'next/dynamic';
+import { Loader } from '@/components/loader';
+
+const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
+    ssr: false,
+    loading: () => (
+        <div className="flex items-center justify-center w-full h-full">
+            <Loader message="Carregando Preview 3D..." />
+        </div>
+    )
+});
 
 
 interface EditProductPageProps {
@@ -361,26 +371,21 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
             <Card>
                 <CardHeader>
-                    <CardTitle>Imagem Principal</CardTitle>
+                    <CardTitle>Preview e Imagem de Vitrine</CardTitle>
                     <CardDescription>
-                        Esta é a imagem que aparece na listagem de produtos.
+                        Visualize o modelo 3D e carregue a imagem principal para a loja.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                     <div className="relative aspect-[4/5] w-full rounded-md border overflow-hidden">
-                        <Image
-                            src={productSummary.imageUrl}
-                            alt={productSummary.name}
-                            fill
-                            className="object-cover"
-                        />
+                     <div className="relative aspect-[4/5] w-full rounded-md border overflow-hidden h-[450px]">
+                        <CupPreview3D cupModel={previewModel} art={null} />
                     </div>
                     <div className="flex items-center justify-center w-full">
                         <label htmlFor="image-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
                                 <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste</p>
-                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP</p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (Imagem de vitrine)</p>
                             </div>
                             <Input id="image-file" type="file" accept="image/*" className="hidden" />
                         </label>
@@ -444,3 +449,5 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     </div>
   );
 }
+
+    
