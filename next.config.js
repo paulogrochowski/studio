@@ -18,7 +18,7 @@ const nextConfig = {
     ],
   },
   serverActions: {
-    bodySizeLimit: 5242880,
+    bodySizeLimit: '8mb',
   },
   allowedDevOrigins: ["https://*.cloudworkstations.dev"],
 };
