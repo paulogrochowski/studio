@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
@@ -17,17 +16,7 @@ import type { CupModel, ArtTransformations } from '@/lib/types';
 import { Textarea } from '@/components/ui/textarea';
 import { handleSeoOptimization, handleAdminUpdateProduct } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import dynamic from 'next/dynamic';
-import { Loader } from '@/components/loader';
-
-const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
-    ssr: false,
-    loading: () => (
-        <div className="flex items-center justify-center w-full h-full">
-            <Loader message="Carregando Preview 3D..." />
-        </div>
-    )
-});
+import CupPreview3D from '@/components/cup-preview-3d';
 
 
 interface EditProductPageProps {
