@@ -31,6 +31,13 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         console.error("Uncaught error in 3D preview:", error, errorInfo);
     }
+    
+    // Reset error state when props change, allowing a new model to be tried
+    componentDidUpdate(prevProps: ErrorBoundaryProps) {
+        if (prevProps.children !== this.props.children) {
+            this.setState({ hasError: false });
+        }
+    }
 
     render() {
         if (this.state.hasError) {
@@ -44,12 +51,13 @@ interface CupMeshProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
   artTransformations: ArtTransformations;
+  modelUrl: string | null;
 }
 
-function CupMesh({ cupModel, art, artTransformations }: CupMeshProps) {
-  const { nodes } = useGLTF('/models/cup.glb');
-  const cupNode = nodes.Cup as THREE.Mesh;
-  const rimNode = nodes.Rim as THREE.Mesh;
+function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) {
+  const { nodes } = useGLTF(modelUrl || '/models/cup.glb');
+  const cupNode = (nodes.Cup || nodes.cup || Object.values(nodes).find(n => n instanceof THREE.Mesh)) as THREE.Mesh;
+  const rimNode = (nodes.Rim || nodes.rim) as THREE.Mesh;
   // Always call useTexture, providing a placeholder transparent pixel if no art is available.
   // This respects the rules of React Hooks.
   const artTexture = useTexture(art?.imageUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
@@ -168,7 +176,6 @@ function CupMesh({ cupModel, art, artTransformations }: CupMeshProps) {
 
 
   if (!wrappedCupGeometry) {
-    console.error("3D Model Error: The 'Cup' mesh or its geometry is missing in /models/cup.glb.");
     return null; 
   }
 
@@ -201,26 +208,45 @@ interface CupPreview3DProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
   artTransformations: ArtTransformations;
+  modelUrl: string | null;
 }
 
-export default function CupPreview3D({ cupModel, art, artTransformations }: CupPreview3DProps) {
+export default function CupPreview3D({ cupModel, art, artTransformations, modelUrl }: CupPreview3DProps) {
   const [modelExists, setModelExists] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // If a custom model is uploaded via a blob URL, we assume it "exists" for rendering purposes.
+    if (modelUrl) {
+      setModelExists(true);
+      return;
+    }
+
+    // Only check for the default static model if no custom one is provided.
     fetch('/models/cup.glb')
       .then(response => {
         const contentType = response.headers.get("content-type");
         setModelExists(response.ok && !contentType?.includes('text/html'));
       })
       .catch(() => setModelExists(false));
-  }, []);
+  }, [modelUrl]);
 
   const ErrorFallback = (
     <div className="flex items-center justify-center h-full text-center p-4 bg-card">
         <div className="bg-destructive text-destructive-foreground p-4 rounded-md shadow-lg">
             <h3 className="font-bold">Modelo 3D Não Encontrado</h3>
             <p className="text-sm mt-2">
-                Para ativar o preview 3D, crie a pasta <code className="bg-destructive-foreground/20 p-1 rounded">public/models</code> e adicione seu arquivo <code className="bg-destructive-foreground/20 p-1 rounded">cup.glb</code> nela.
+                Para ativar o preview 3D, crie a pasta <code className="bg-destructive-foreground/20 p-1 rounded">public/models</code> e adicione seu arquivo <code className="bg-destructive-foreground/20 p-1 rounded">cup.glb</code> nela, ou carregue um modelo na seção correspondente.
+            </p>
+        </div>
+    </div>
+  );
+  
+  const GenericErrorFallback = (
+    <div className="flex items-center justify-center h-full text-center p-4 bg-card">
+        <div className="bg-destructive text-destructive-foreground p-4 rounded-md shadow-lg">
+            <h3 className="font-bold">Erro ao Carregar Modelo</h3>
+            <p className="text-sm mt-2">
+                Não foi possível carregar o modelo 3D. Verifique se o arquivo <code className="bg-destructive-foreground/20 p-1 rounded">.glb</code> ou <code className="bg-destructive-foreground/20 p-1 rounded">.gltf</code> é válido.
             </p>
         </div>
     </div>
@@ -234,20 +260,25 @@ export default function CupPreview3D({ cupModel, art, artTransformations }: CupP
     );
   }
 
-  if (!modelExists) {
+  if (!modelExists && !modelUrl) {
     return ErrorFallback;
   }
   
   return (
-    <ErrorBoundary fallback={ErrorFallback}>
-      <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }}>
-        <Suspense fallback={null}>
+    <ErrorBoundary fallback={GenericErrorFallback}>
+      <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }} key={modelUrl}>
+        <Suspense fallback={
+             <div className="flex items-center justify-center h-full">
+                <Loader showText={false} />
+            </div>
+        }>
             <ambientLight intensity={0.7} />
             <directionalLight intensity={1.5} position={[5, 5, 5]} castShadow />
             <CupMesh 
               cupModel={cupModel} 
               art={art} 
               artTransformations={artTransformations}
+              modelUrl={modelUrl}
             />
             <Environment preset="city" />
         </Suspense>

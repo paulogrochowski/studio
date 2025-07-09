@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
@@ -40,6 +41,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [productDescription, setProductDescription] = useState(productSummary?.description || '');
   const [showcaseImagePreview, setShowcaseImagePreview] = useState<string | null>(productSummary?.imageUrl || null);
   const [modelFile, setModelFile] = useState<File | null>(null);
+  const [modelPreviewUrl, setModelPreviewUrl] = useState<string | null>(null);
 
 
   const [isRimDialogOpen, setRimDialogOpen] = useState(false);
@@ -79,9 +81,13 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       const fileName = file.name.toLowerCase();
       if (fileName.endsWith('.glb') || fileName.endsWith('.gltf')) {
         setModelFile(file);
+        if (modelPreviewUrl) {
+            URL.revokeObjectURL(modelPreviewUrl);
+        }
+        setModelPreviewUrl(URL.createObjectURL(file));
         toast({
             title: "Arquivo Carregado",
-            description: `O arquivo ${file.name} está pronto para ser salvo.`
+            description: `O arquivo ${file.name} está pronto para ser salvo e visualizado.`
         })
       } else {
         toast({
@@ -100,8 +106,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       if (showcaseImagePreview && showcaseImagePreview.startsWith('blob:')) {
         URL.revokeObjectURL(showcaseImagePreview);
       }
+      if (modelPreviewUrl) {
+        URL.revokeObjectURL(modelPreviewUrl);
+      }
     };
-  }, [showcaseImagePreview]);
+  }, [showcaseImagePreview, modelPreviewUrl]);
 
   // Now we can safely check and exit if the product is not found.
   if (!productSummary || !productDetails) {
@@ -472,7 +481,12 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="relative aspect-[4/5] w-full rounded-b-md border-t overflow-hidden h-[450px]">
-                            <CupPreview3D cupModel={previewModel} art={null} artTransformations={initialArtTransformations} />
+                            <CupPreview3D 
+                                cupModel={previewModel} 
+                                art={null} 
+                                artTransformations={initialArtTransformations}
+                                modelUrl={modelPreviewUrl}
+                            />
                         </div>
                     </CardContent>
                 </Card>
