@@ -235,16 +235,8 @@ export default function CupPreview3D({ cupModel, art, artTransformations, modelU
       .catch(() => setModelExists(false));
   }, [modelUrl, cupModel.modelUrl]);
 
-  const GenericErrorFallback = (
-    <div className="flex items-center justify-center h-full text-center p-4 bg-card">
-        <div className="bg-destructive text-destructive-foreground p-4 rounded-md shadow-lg">
-            <h3 className="font-bold">Erro ao Carregar Modelo</h3>
-            <p className="text-sm mt-2">
-                Não foi possível carregar o modelo 3D. Verifique se o arquivo <code className="bg-destructive-foreground/20 p-1 rounded">.glb</code> ou <code className="bg-destructive-foreground/20 p-1 rounded">.gltf</code> é válido.
-            </p>
-        </div>
-    </div>
-  );
+  // Hide errors by providing a null fallback
+  const GenericErrorFallback = null;
 
   if (modelExists === null) {
     return (

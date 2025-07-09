@@ -90,7 +90,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         setModelPreviewUrl(URL.createObjectURL(file));
         toast({
             title: "Arquivo Carregado",
-            description: `O arquivo ${file.name} está pronto para ser salvo e visualizado.`
+            description: `O arquivo ${file.name} está pronto para ser visualizado.`
         })
       } else {
         toast({
@@ -496,24 +496,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                     <>
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg">Preview 3D</CardTitle>
-                                <CardDescription>
-                                Visualize o modelo 3D.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <div className="relative aspect-[4/5] w-full rounded-b-md border-t overflow-hidden h-[450px]">
-                                    <CupPreview3D 
-                                        cupModel={previewModel} 
-                                        art={null} 
-                                        artTransformations={initialArtTransformations}
-                                        modelUrl={modelPreviewUrl}
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
                                 <CardTitle className="text-lg">Modelo 3D</CardTitle>
                                 <CardDescription>
                                     Arraste e solte ou clique para carregar o arquivo .glb ou .gltf.
@@ -549,6 +531,26 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                 </div> 
                             </CardContent>
                         </Card>
+                        {modelPreviewUrl && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Preview 3D</CardTitle>
+                                    <CardDescription>
+                                    Visualize o modelo 3D carregado.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="relative aspect-[4/5] w-full rounded-b-md border-t overflow-hidden h-[450px]">
+                                        <CupPreview3D 
+                                            cupModel={previewModel} 
+                                            art={null} 
+                                            artTransformations={initialArtTransformations}
+                                            modelUrl={modelPreviewUrl}
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
                     </>
                 )}
                 <Card>
@@ -579,7 +581,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 </Card>
             </div>
         </div>
-        <div className="flex items-center justify-end gap-2 md:hidden mt-4">
+        <div className="flex items-center justify-end gap-2 mt-4">
             <Button variant="outline" size="sm" type="button" onClick={() => router.push('/admin/products')}>
                 Descartar
             </Button>
