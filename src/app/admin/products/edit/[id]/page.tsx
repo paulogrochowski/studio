@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, PlusCircle, UploadCloud, Sparkles, Rocket, Loader2, FileText, Save } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import type { CupModel } from '@/lib/types';
+import type { CupModel, ArtTransformations } from '@/lib/types';
 import { Textarea } from '@/components/ui/textarea';
 import { handleSeoOptimization, handleAdminUpdateProduct } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -131,6 +131,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     degradePosition: 'Nenhum',
   };
 
+  const initialArtTransformations: ArtTransformations = {
+      scale: [1, 0.5],
+      position: [0, 0.1],
+      rotation: 0,
+  };
 
   const combinedRimColors: Record<string, string> = { ...RIM_COLORS, ...dynamicRimColors };
   const combinedDegradeColors: Record<string, string> = { ...DEGRADE_HEX_COLORS, ...dynamicDegradeColors };
@@ -478,7 +483,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="relative aspect-[4/5] w-full rounded-b-md border-t overflow-hidden h-[450px]">
-                            <CupPreview3D cupModel={previewModel} art={null} />
+                            <CupPreview3D cupModel={previewModel} art={null} artTransformations={initialArtTransformations} />
                         </div>
                     </CardContent>
                 </Card>
