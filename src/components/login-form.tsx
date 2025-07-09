@@ -31,7 +31,7 @@ export function LoginForm({
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="font-headline text-2xl">Login</CardTitle>
-        <CardDescription>Acesse sua conta ou o painel administrativo.</CardDescription>
+        <CardDescription>Acesse sua conta de cliente para ver seus pedidos.</CardDescription>
       </CardHeader>
       <CardContent>
         {searchParams.error && (
@@ -68,8 +68,9 @@ export function LoginForm({
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="text-center text-sm">
+      <CardFooter className="flex flex-col items-center justify-center text-center text-sm gap-2">
         <p>Não tem uma conta? <Link href="/register" className="text-primary hover:underline">Cadastre-se</Link></p>
+        <p><Link href="/admin/login" className="text-xs text-muted-foreground hover:underline">Acessar painel de administrador</Link></p>
       </CardFooter>
     </Card>
   );

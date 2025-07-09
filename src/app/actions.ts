@@ -178,33 +178,33 @@ export async function handleCustomerLogin(formData: FormData) {
                 maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
                 path: '/',
             });
-            return redirect('/admin');
+            redirect('/admin');
         } else {
-            return redirect('/admin/login?error=true');
+            redirect('/admin/login?error=true');
         }
-    }
-
-    if (formType === 'customer') {
+    } else if (formType === 'customer') {
         // Handle Customer Login Simulation
+        // If admin email is used on customer form, redirect to the correct login page
+        if (email.toLowerCase() === 'admin@coposmania.com') {
+            redirect('/admin/login');
+            return;
+        }
+
         if (email && password) {
-            // Prevent admin login via customer form as a basic security measure
-            if (email.toLowerCase() === 'admin@coposmania.com') {
-                 return redirect('/login?error=true');
-            }
             cookies().set('auth-token', 'customer-logged-in', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
                 path: '/',
             });
-            return redirect('/');
+            redirect('/');
         } else {
-            return redirect('/login?error=true');
+            redirect('/login?error=true');
         }
+    } else {
+        // Fallback for safety, should not be reached.
+        redirect('/login?error=true');
     }
-
-    // Fallback for safety, should not be reached.
-    return redirect('/login?error=true');
 }
 
 export async function handleLogout() {

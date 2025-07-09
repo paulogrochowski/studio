@@ -3,13 +3,14 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { handleCustomerLogin } from '@/app/actions';
 import { Checkbox } from '@/components/ui/checkbox';
+import Link from 'next/link';
 
 
 export function AdminLoginForm({
@@ -31,7 +32,7 @@ export function AdminLoginForm({
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="font-headline text-2xl">Acesso Restrito</CardTitle>
-        <CardDescription>Faça login para gerenciar a loja.</CardDescription>
+        <CardDescription>Use suas credenciais de administrador para acessar o painel.</CardDescription>
       </CardHeader>
       <CardContent>
         {searchParams.error && (
@@ -68,6 +69,9 @@ export function AdminLoginForm({
           </Button>
         </form>
       </CardContent>
+      <CardFooter className="text-center text-sm justify-center">
+        <p>É um cliente? <Link href="/login" className="text-primary hover:underline">Faça login aqui</Link></p>
+      </CardFooter>
     </Card>
   );
 }
