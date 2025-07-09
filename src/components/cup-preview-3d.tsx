@@ -91,8 +91,8 @@ function CupMesh({ cupModel, art, artTransformations }: CupMeshProps) {
     const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
 
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 1024;
+    canvas.width = 1024;
+    canvas.height = 2048;
     const ctx = canvas.getContext('2d');
     if (!ctx) return new THREE.MeshStandardMaterial();
 
@@ -182,7 +182,6 @@ function CupMesh({ cupModel, art, artTransformations }: CupMeshProps) {
       {modifiedRimGeometry && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
         <mesh
           geometry={modifiedRimGeometry}
-          scale={[1.05, 10, 1.05]}
         >
           <meshStandardMaterial
             color={RIM_COLORS[cupModel.rimColor]}
