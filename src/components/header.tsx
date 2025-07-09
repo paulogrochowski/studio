@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
-import { User, ShoppingCart } from "lucide-react";
+import { User, ShoppingCart, LogOut, LayoutDashboard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { PromotionalBanner } from "./promotional-banner";
+import { cookies } from 'next/headers';
+import { handleLogout } from "@/app/actions";
 
 export function Header() {
+  const authToken = cookies().get('auth-token')?.value;
+  const isAdmin = authToken === 'admin-logged-in';
+  const isLoggedIn = isAdmin || authToken === 'customer-logged-in';
+
   return (
     <>
       <PromotionalBanner />
@@ -49,14 +55,43 @@ export function Header() {
                   </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                      <Link href="/login">Fazer Login</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                      <Link href="/register">Cadastrar</Link>
-                  </DropdownMenuItem>
+                {isLoggedIn ? (
+                  <>
+                    <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {isAdmin ? (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="flex items-center">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Painel Admin
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem>Meus Pedidos</DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem>Meu Perfil</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <form action={handleLogout} className="w-full">
+                        <DropdownMenuItem asChild>
+                            <button type="submit" className="w-full cursor-pointer flex items-center text-destructive focus:text-destructive">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                Sair
+                            </button>
+                        </DropdownMenuItem>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                        <Link href="/login">Fazer Login</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/register">Cadastrar</Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
 
