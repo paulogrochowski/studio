@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
@@ -82,7 +83,7 @@ export function Header() {
                   </>
                 ) : (
                   <>
-                    <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                    <DropdownMenuLabel>Acesse sua conta ou cadastre-se</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                         <Link href="/login">Fazer Login</Link>
