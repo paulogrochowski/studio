@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, PlusCircle, UploadCloud, Sparkles, Rocket, Loader2 } from 'lucide-react';
+import { ArrowLeft, PlusCircle, UploadCloud, Sparkles, Rocket, Loader2, FileText } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import type { CupModel } from '@/lib/types';
@@ -47,6 +47,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [productSummaryText, setProductSummaryText] = useState(productSummary?.summary || '');
   const [productDescription, setProductDescription] = useState(productSummary?.description || '');
   const [showcaseImagePreview, setShowcaseImagePreview] = useState<string | null>(productSummary?.imageUrl || null);
+  const [modelFile, setModelFile] = useState<File | null>(null);
 
 
   const [isRimDialogOpen, setRimDialogOpen] = useState(false);
@@ -77,6 +78,26 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         URL.revokeObjectURL(showcaseImagePreview);
       }
       setShowcaseImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleModelFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const fileName = file.name.toLowerCase();
+      if (fileName.endsWith('.glb') || fileName.endsWith('.gltf')) {
+        setModelFile(file);
+        toast({
+            title: "Arquivo Carregado",
+            description: `O arquivo ${file.name} está pronto para ser salvo.`
+        })
+      } else {
+        toast({
+          title: 'Arquivo Inválido',
+          description: 'Por favor, selecione um arquivo .glb ou .gltf.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
@@ -447,18 +468,34 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 <CardHeader>
                     <CardTitle className="text-lg">Modelo 3D</CardTitle>
                     <CardDescription>
-                        Arraste e solte ou clique para carregar o arquivo .glb.
+                        Arraste e solte ou clique para carregar o arquivo .glb ou .gltf.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center justify-center w-full">
                         <label htmlFor="model-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste e solte</p>
-                                <p className="text-xs text-muted-foreground">Arquivo .GLB</p>
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center">
+                                {modelFile ? (
+                                    <>
+                                        <FileText className="w-8 h-8 mb-4 text-primary" />
+                                        <p className="font-semibold text-primary">{modelFile.name}</p>
+                                        <p className="text-xs text-muted-foreground">Clique para trocar o arquivo</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
+                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste e solte</p>
+                                        <p className="text-xs text-muted-foreground">Arquivo .GLB ou .GLTF</p>
+                                    </>
+                                )}
                             </div>
-                            <Input id="model-file" type="file" accept=".glb" className="hidden" />
+                            <Input 
+                                id="model-file" 
+                                type="file" 
+                                accept=".glb,.gltf" 
+                                className="hidden"
+                                onChange={handleModelFileChange}
+                            />
                         </label>
                     </div> 
                 </CardContent>
@@ -500,5 +537,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     </div>
   );
 }
+
+    
 
     
