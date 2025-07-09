@@ -95,7 +95,7 @@ export function QuoteSummary({ initialDetails, onFinalize, onBack }: QuoteSummar
                     className="absolute w-full h-full"
                     style={{
                         borderColor: rimColorHex,
-                        borderTopWidth: '5px',
+                        borderTopWidth: '15px',
                         WebkitMaskImage: `url(${cup.svgMaskUrl})`,
                         maskImage: `url(${cup.svgMaskUrl})`,
                     }}

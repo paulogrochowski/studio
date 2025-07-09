@@ -80,7 +80,7 @@ export function CheckoutView({ orderDetails, onStartNewOrder }: CheckoutViewProp
                         className="absolute inset-0"
                         style={{
                             borderColor: rimColorHex,
-                            borderTopWidth: '5px',
+                            borderTopWidth: '15px',
                             WebkitMaskImage: `url(${cup.svgMaskUrl})`,
                             maskImage: `url(${cup.svgMaskUrl})`,
                             WebkitMaskSize: 'contain',

@@ -182,6 +182,7 @@ function CupMesh({ cupModel, art, artTransformations }: CupMeshProps) {
       {modifiedRimGeometry && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
         <mesh
           geometry={modifiedRimGeometry}
+          scale={[1.05, 10, 1.05]}
         >
           <meshStandardMaterial
             color={RIM_COLORS[cupModel.rimColor]}
