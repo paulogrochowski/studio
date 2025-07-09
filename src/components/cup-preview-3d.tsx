@@ -100,8 +100,8 @@ function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) 
     const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
 
     const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 2048;
+    canvas.width = 512;
+    canvas.height = 1024;
     const ctx = canvas.getContext('2d');
     if (!ctx) return new THREE.MeshStandardMaterial();
 
