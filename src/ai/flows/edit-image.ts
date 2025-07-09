@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Edits an image based on a text instruction.
@@ -40,8 +41,7 @@ const editImageFlow = ai.defineFlow(
     outputSchema: EditImageOutputSchema,
   },
   async input => {
-    // Add a reminder for transparent backgrounds to the instruction for better results
-    const instruction = `${input.instruction}. If removing the background, the output must have a transparent background.`;
+    const instruction = input.instruction;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',

@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file defines a Genkit flow for vectorizing an image.
@@ -39,7 +40,7 @@ const vectorizeImageFlow = ai.defineFlow(
     outputSchema: VectorizeImageOutputSchema,
   },
   async input => {
-    const instruction = 'Converta esta imagem em uma arte vetorial com cores limpas e um fundo transparente. A imagem deve parecer um ícone ou clipart, simplificando os detalhes, mas mantendo a essência do original.';
+    const instruction = 'Converta esta imagem em uma arte vetorial com cores limpas. A imagem deve parecer um ícone ou clipart, simplificando os detalhes, mas mantendo a essência do original.';
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',

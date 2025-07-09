@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file defines a Genkit flow for generating cup art based on a description.
@@ -35,11 +36,7 @@ const generateCupArtFlow = ai.defineFlow(
     outputSchema: GenerateCupArtOutputSchema,
   },
   async (input) => {
-    const fullPrompt = `INSTRUÇÃO CRÍTICA: Você é uma IA de design gráfico criando uma arte para um produto físico. A regra mais importante de todas é que a imagem de saída DEVE ter um fundo 100% transparente. NÃO use branco ou qualquer outra cor no fundo. A arte deve estar completamente isolada. Falhar em fornecer um fundo transparente torna a imagem inútil.
-
-Com essa regra crítica em mente, gere uma arte limpa, de altíssima resolução, extremamente detalhada e no estilo vetorial/clipart para um copo, com base na seguinte descrição: "${input.eventDescription}". A qualidade deve ser profissional e pronta para impressão.
-
-NÃO desenhe o copo. Gere apenas a arte isolada com um fundo transparente.`;
+    const fullPrompt = `Gere uma arte com base na seguinte descrição para ser aplicada em um copo: "${input.eventDescription}". O design deve ser limpo, de alta resolução e com qualidade profissional, pronto para impressão. Não inclua o copo na imagem, apenas a arte.`;
     
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',

@@ -210,3 +210,20 @@ export async function handleAdminUpdateLayout(formData: FormData) {
     });
     return { success: true, message: 'Tema salvo com sucesso (simulação)!' };
 }
+
+export async function handleAdminLogin(formData: FormData) {
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const remember = formData.get('remember');
+
+  if (email === 'admin@coposmania.com' && password === '12345') {
+      cookies().set('admin-session', 'admin-logged-in', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 days
+          path: '/',
+      });
+      redirect('/admin');
+  }
+  redirect('/admin/login?error=true');
+}
