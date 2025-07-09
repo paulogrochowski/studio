@@ -15,20 +15,22 @@ export default function RegisterPage() {
             <CardTitle className="font-headline text-2xl">Crie sua Conta</CardTitle>
             <CardDescription>Cadastre-se para agilizar suas compras futuras.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
+            <form className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome Completo</Label>
-                <Input id="name" required />
+                <Input id="name" name="name" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="seu@email.com" required />
+                <Input id="email" name="email" type="email" placeholder="seu@email.com" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input id="password" type="password" required />
+                <Input id="password" name="password" type="password" required />
               </div>
               <Button type="submit" className="w-full">Criar Conta</Button>
+            </form>
           </CardContent>
            <CardFooter className="text-center text-sm">
             <p>Já tem uma conta? <Link href="/login" className="text-primary hover:underline">Faça Login</Link></p>
