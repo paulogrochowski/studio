@@ -167,44 +167,44 @@ export async function handleCustomerLogin(formData: FormData) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const remember = formData.get('remember');
-    const formType = formData.get('formType') as string; // 'admin' or 'customer'
+    const formType = formData.get('formType') as string;
 
-    // Admin user check
-    if (email.toLowerCase() === 'admin@coposmania.com') {
-      if (password === '12345') {
-        cookies().set('auth-token', 'admin-logged-in', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 1 week or session
-            path: '/',
-        });
-        redirect('/admin');
-      } else {
-        // Admin with wrong password
-        redirect('/admin/login?error=true');
-      }
-      return; // Important to prevent further execution
-    }
-
-    // Customer Login Simulation for prototype
-    if (email && password) {
-        console.log(`Customer login simulation for ${email}`);
-        cookies().set('auth-token', 'customer-logged-in', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
-            path: '/',
-        });
-        redirect('/');
-        return;
-    }
-
-    // Fallback for any other case (e.g., empty fields from the wrong form)
     if (formType === 'admin') {
-      redirect('/admin/login?error=true');
-    } else {
-      redirect('/login?error=true');
+        // Handle Admin Login
+        if (email.toLowerCase() === 'admin@coposmania.com' && password === '12345') {
+            cookies().set('auth-token', 'admin-logged-in', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
+                path: '/',
+            });
+            return redirect('/admin');
+        } else {
+            return redirect('/admin/login?error=true');
+        }
     }
+
+    if (formType === 'customer') {
+        // Handle Customer Login Simulation
+        if (email && password) {
+            // Prevent admin login via customer form as a basic security measure
+            if (email.toLowerCase() === 'admin@coposmania.com') {
+                 return redirect('/login?error=true');
+            }
+            cookies().set('auth-token', 'customer-logged-in', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
+                path: '/',
+            });
+            return redirect('/');
+        } else {
+            return redirect('/login?error=true');
+        }
+    }
+
+    // Fallback for safety, should not be reached.
+    return redirect('/login?error=true');
 }
 
 export async function handleLogout() {
