@@ -67,7 +67,7 @@ export function LoginForm({
       </CardContent>
       <CardFooter className="flex flex-col items-center justify-center text-center text-sm gap-2">
         <p>Não tem uma conta? <Link href="/register" className="text-primary hover:underline">Cadastre-se</Link></p>
-        <p><Link href="/admin/login" className="text-xs text-muted-foreground hover:underline">Acessar painel de administrador</Link></p>
+        <p><Link href="/admin" className="text-xs text-muted-foreground hover:underline">Acessar painel de administrador</Link></p>
       </CardFooter>
     </Card>
   );

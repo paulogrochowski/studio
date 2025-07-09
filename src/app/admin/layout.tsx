@@ -1,5 +1,4 @@
 
-import { headers } from 'next/headers';
 import {
   SidebarProvider,
   Sidebar,
@@ -16,19 +15,7 @@ import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Megaphone, Pa
 import { AdminHeader } from "@/components/admin-header";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const headersList = headers();
-    const pathname = headersList.get('x-pathname') || '';
-
-    // If we are on the login page, return a minimal layout to avoid showing the admin panel
-    if (pathname === '/admin/login') {
-        return (
-            <div className="flex flex-col min-h-screen items-center justify-center bg-muted/40 p-4">
-                {children}
-            </div>
-        );
-    }
-
-  // Otherwise, return the full admin layout with sidebar
+  // Always return the full admin layout with sidebar
   return (
     <SidebarProvider>
         <div className="flex min-h-screen w-full bg-muted/40">

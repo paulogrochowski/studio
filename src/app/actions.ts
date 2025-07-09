@@ -168,24 +168,6 @@ export async function handleCustomerLogin(formData: FormData) {
   }
 }
 
-export async function handleAdminLogin(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const remember = formData.get('remember');
-
-  if (email.toLowerCase() === 'admin@coposmania.com' && password === '12345') {
-    cookies().set('auth-token', 'admin-logged-in', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 days
-      path: '/',
-    });
-    redirect('/admin');
-  } else {
-    redirect('/admin/login?error=true');
-  }
-}
-
 export async function handleLogout() {
   cookies().delete('auth-token');
   redirect('/login');

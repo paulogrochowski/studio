@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
-import { User, ShoppingCart, LogOut, LayoutDashboard, Heart, Settings } from "lucide-react";
+import { User, ShoppingCart, LogOut, Heart, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,8 +17,7 @@ import { handleLogout } from "@/app/actions";
 
 export function Header() {
   const authToken = cookies().get('auth-token')?.value;
-  const isAdmin = authToken === 'admin-logged-in';
-  const isLoggedIn = isAdmin || authToken === 'customer-logged-in';
+  const isLoggedIn = !!authToken;
 
   return (
     <>
@@ -60,24 +59,13 @@ export function Header() {
                   <>
                     <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {isAdmin ? (
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin" className="flex items-center">
-                          <LayoutDashboard className="mr-2 h-4 w-4" />
-                          Painel Admin
+                    <DropdownMenuItem>Meus Pedidos</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/favorites" className="flex items-center">
+                            <Heart className="mr-2 h-4 w-4" />
+                            Meus Favoritos
                         </Link>
-                      </DropdownMenuItem>
-                    ) : (
-                      <>
-                        <DropdownMenuItem>Meus Pedidos</DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link href="/favorites" className="flex items-center">
-                                <Heart className="mr-2 h-4 w-4" />
-                                Meus Favoritos
-                            </Link>
-                        </DropdownMenuItem>
-                      </>
-                    )}
+                    </DropdownMenuItem>
                     <DropdownMenuItem>
                         <Settings className="mr-2 h-4 w-4" />
                         Meu Perfil

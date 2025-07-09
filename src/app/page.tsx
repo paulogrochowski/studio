@@ -94,7 +94,7 @@ export default function LandingPage() {
                     <Link href="#" target="_blank"><Youtube className="h-5 w-5" /></Link>
                 </Button>
                 <span className="text-muted-foreground mx-2">|</span>
-                 <Link href="/admin/login" className="text-xs text-muted-foreground hover:underline">Acesso Admin</Link>
+                 <Link href="/admin" className="text-xs text-muted-foreground hover:underline">Acesso Admin</Link>
             </div>
         </div>
       </footer>
