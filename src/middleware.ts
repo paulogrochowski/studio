@@ -23,8 +23,16 @@ export function middleware(request: NextRequest) {
   if (authToken === 'customer-logged-in' && pathname === '/login') {
     return NextResponse.redirect(new URL('/', request.url));
   }
+  
+  // Add the pathname to the request headers to be used in server components
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', pathname);
 
-  return NextResponse.next();
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
