@@ -167,6 +167,7 @@ export async function handleCustomerLogin(formData: FormData) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const remember = formData.get('remember');
+    const formType = formData.get('formType') as string; // 'admin' or 'customer'
 
     // Admin user check
     if (email.toLowerCase() === 'admin@coposmania.com') {
@@ -198,8 +199,12 @@ export async function handleCustomerLogin(formData: FormData) {
         return;
     }
 
-    // Fallback for any other case (e.g., empty fields)
-    redirect('/login?error=true');
+    // Fallback for any other case (e.g., empty fields from the wrong form)
+    if (formType === 'admin') {
+      redirect('/admin/login?error=true');
+    } else {
+      redirect('/login?error=true');
+    }
 }
 
 export async function handleLogout() {

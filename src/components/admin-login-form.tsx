@@ -44,6 +44,7 @@ export function AdminLoginForm({
           </Alert>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
+          <input type="hidden" name="formType" value="admin" />
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" placeholder="admin@coposmania.com" required disabled={isLoading} />
