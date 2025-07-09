@@ -18,6 +18,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { handleSeoOptimization, handleAdminUpdateProduct } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import CupPreview3D from '@/components/cup-preview-3d';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 
 
 interface EditProductPageProps {
@@ -42,6 +44,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [showcaseImagePreview, setShowcaseImagePreview] = useState<string | null>(productSummary?.imageUrl || null);
   const [modelFile, setModelFile] = useState<File | null>(null);
   const [modelPreviewUrl, setModelPreviewUrl] = useState<string | null>(null);
+  const [isCustomizable, setIsCustomizable] = useState(true);
 
 
   const [isRimDialogOpen, setRimDialogOpen] = useState(false);
@@ -247,8 +250,24 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                             <Label htmlFor="basePrice">Preço Base (R$)</Label>
                             <Input id="basePrice" name="basePrice" type="number" step="0.01" defaultValue={productSummary.basePrice} />
                         </div>
+                         <Separator />
+                        <div className="flex items-center justify-between rounded-lg border p-3">
+                            <div>
+                                <Label htmlFor="is-customizable" className="text-base">Produto Personalizável</Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Ativa o preview 3D e as opções de personalização para o cliente.
+                                </p>
+                            </div>
+                            <Switch
+                                id="is-customizable"
+                                checked={isCustomizable}
+                                onCheckedChange={setIsCustomizable}
+                                name="isCustomizable"
+                            />
+                        </div>
                     </CardContent>
                 </Card>
+                {isCustomizable && (
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-lg">Opções de Personalização</CardTitle>
@@ -391,6 +410,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                         </Accordion>
                     </CardContent>
                 </Card>
+                )}
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-lg">SEO e Marketing</CardTitle>
@@ -472,61 +492,65 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                         </label>
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Preview 3D</CardTitle>
-                        <CardDescription>
-                        Visualize o modelo 3D.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="relative aspect-[4/5] w-full rounded-b-md border-t overflow-hidden h-[450px]">
-                            <CupPreview3D 
-                                cupModel={previewModel} 
-                                art={null} 
-                                artTransformations={initialArtTransformations}
-                                modelUrl={modelPreviewUrl}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Modelo 3D</CardTitle>
-                        <CardDescription>
-                            Arraste e solte ou clique para carregar o arquivo .glb ou .gltf.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex items-center justify-center w-full">
-                            <label htmlFor="model-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center">
-                                    {modelFile ? (
-                                        <>
-                                            <FileText className="w-8 h-8 mb-4 text-primary" />
-                                            <p className="font-semibold text-primary">{modelFile.name}</p>
-                                            <p className="text-xs text-muted-foreground">Clique para trocar o arquivo</p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste e solte</p>
-                                            <p className="text-xs text-muted-foreground">Arquivo .GLB ou .GLTF</p>
-                                        </>
-                                    )}
+                {isCustomizable && (
+                    <>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg">Preview 3D</CardTitle>
+                                <CardDescription>
+                                Visualize o modelo 3D.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="relative aspect-[4/5] w-full rounded-b-md border-t overflow-hidden h-[450px]">
+                                    <CupPreview3D 
+                                        cupModel={previewModel} 
+                                        art={null} 
+                                        artTransformations={initialArtTransformations}
+                                        modelUrl={modelPreviewUrl}
+                                    />
                                 </div>
-                                <Input 
-                                    id="model-file"
-                                    name="modelFile" 
-                                    type="file" 
-                                    accept=".glb,.gltf" 
-                                    className="hidden"
-                                    onChange={handleModelFileChange}
-                                />
-                            </label>
-                        </div> 
-                    </CardContent>
-                </Card>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg">Modelo 3D</CardTitle>
+                                <CardDescription>
+                                    Arraste e solte ou clique para carregar o arquivo .glb ou .gltf.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex items-center justify-center w-full">
+                                    <label htmlFor="model-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center">
+                                            {modelFile ? (
+                                                <>
+                                                    <FileText className="w-8 h-8 mb-4 text-primary" />
+                                                    <p className="font-semibold text-primary">{modelFile.name}</p>
+                                                    <p className="text-xs text-muted-foreground">Clique para trocar o arquivo</p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
+                                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste e solte</p>
+                                                    <p className="text-xs text-muted-foreground">Arquivo .GLB ou .GLTF</p>
+                                                </>
+                                            )}
+                                        </div>
+                                        <Input 
+                                            id="model-file"
+                                            name="modelFile" 
+                                            type="file" 
+                                            accept=".glb,.gltf" 
+                                            className="hidden"
+                                            onChange={handleModelFileChange}
+                                        />
+                                    </label>
+                                </div> 
+                            </CardContent>
+                        </Card>
+                    </>
+                )}
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-lg">Dimensões</CardTitle>

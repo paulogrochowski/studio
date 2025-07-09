@@ -8,6 +8,7 @@ import { OrbitControls, Decal, useTexture, useGLTF, Environment } from '@react-t
 import type { CupModel, GeneratedArt, ArtTransformations } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 import { Loader } from './loader';
+import { PackageX } from 'lucide-react';
 
 // Error Boundary Component
 interface ErrorBoundaryProps {
@@ -55,7 +56,7 @@ interface CupMeshProps {
 }
 
 function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) {
-  const { nodes } = useGLTF(modelUrl || '/models/cup.glb');
+  const { nodes } = useGLTF(modelUrl || cupModel.modelUrl || '/models/cup.glb');
   const cupNode = (nodes.Cup || nodes.cup || Object.values(nodes).find(n => n instanceof THREE.Mesh)) as THREE.Mesh;
   const rimNode = (nodes.Rim || nodes.rim) as THREE.Mesh;
   // Always call useTexture, providing a placeholder transparent pixel if no art is available.
@@ -215,32 +216,25 @@ export default function CupPreview3D({ cupModel, art, artTransformations, modelU
   const [modelExists, setModelExists] = useState<boolean | null>(null);
 
   useEffect(() => {
+    const finalModelUrl = modelUrl || cupModel.modelUrl || '/models/cup.glb';
+    
     // If a custom model is uploaded via a blob URL, we assume it "exists" for rendering purposes.
-    if (modelUrl) {
+    if (finalModelUrl.startsWith('blob:')) {
       setModelExists(true);
       return;
     }
 
-    // Only check for the default static model if no custom one is provided.
-    fetch('/models/cup.glb')
+    // Check for the static model.
+    fetch(finalModelUrl)
       .then(response => {
         const contentType = response.headers.get("content-type");
-        setModelExists(response.ok && !contentType?.includes('text/html'));
+        // A valid model should not return a text/html (which usually indicates a 404 page in SPAs)
+        const isValid = response.ok && !contentType?.includes('text/html');
+        setModelExists(isValid);
       })
       .catch(() => setModelExists(false));
-  }, [modelUrl]);
+  }, [modelUrl, cupModel.modelUrl]);
 
-  const ErrorFallback = (
-    <div className="flex items-center justify-center h-full text-center p-4 bg-card">
-        <div className="bg-destructive text-destructive-foreground p-4 rounded-md shadow-lg">
-            <h3 className="font-bold">Modelo 3D Não Encontrado</h3>
-            <p className="text-sm mt-2">
-                Para ativar o preview 3D, crie a pasta <code className="bg-destructive-foreground/20 p-1 rounded">public/models</code> e adicione seu arquivo <code className="bg-destructive-foreground/20 p-1 rounded">cup.glb</code> nela, ou carregue um modelo na seção correspondente.
-            </p>
-        </div>
-    </div>
-  );
-  
   const GenericErrorFallback = (
     <div className="flex items-center justify-center h-full text-center p-4 bg-card">
         <div className="bg-destructive text-destructive-foreground p-4 rounded-md shadow-lg">
@@ -260,13 +254,19 @@ export default function CupPreview3D({ cupModel, art, artTransformations, modelU
     );
   }
 
-  if (!modelExists && !modelUrl) {
-    return ErrorFallback;
+  if (!modelExists) {
+     return (
+        <div className="flex flex-col items-center justify-center h-full text-center p-4 bg-muted/50 text-muted-foreground">
+            <PackageX className="w-16 h-16 mb-4" />
+            <h3 className="font-bold text-card-foreground">Sem Preview 3D</h3>
+            <p className="text-sm mt-1">Nenhum modelo 3D foi carregado para este produto.</p>
+        </div>
+    );
   }
   
   return (
     <ErrorBoundary fallback={GenericErrorFallback}>
-      <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }} key={modelUrl}>
+      <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }} key={modelUrl || cupModel.modelUrl}>
         <Suspense fallback={
              <div className="flex items-center justify-center h-full">
                 <Loader showText={false} />
