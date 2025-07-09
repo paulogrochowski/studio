@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { handleCustomerLogin } from '@/app/actions';
+import { handleAdminLogin } from '@/app/actions';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 
@@ -24,8 +24,7 @@ export function AdminLoginForm({
     event.preventDefault();
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
-    await handleCustomerLogin(formData);
-    // If the action redirects, this component will unmount, and the loading state will be reset.
+    await handleAdminLogin(formData);
   };
 
   return (
@@ -45,7 +44,6 @@ export function AdminLoginForm({
           </Alert>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="hidden" name="formType" value="admin" />
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" placeholder="admin@coposmania.com" required disabled={isLoading} />

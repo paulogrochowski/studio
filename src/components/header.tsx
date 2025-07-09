@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
-import { User, ShoppingCart, LogOut, LayoutDashboard } from "lucide-react";
+import { User, ShoppingCart, LogOut, LayoutDashboard, Heart, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,9 +68,20 @@ export function Header() {
                         </Link>
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem>Meus Pedidos</DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem>Meus Pedidos</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/favorites" className="flex items-center">
+                                <Heart className="mr-2 h-4 w-4" />
+                                Meus Favoritos
+                            </Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
-                    <DropdownMenuItem>Meu Perfil</DropdownMenuItem>
+                    <DropdownMenuItem>
+                        <Settings className="mr-2 h-4 w-4" />
+                        Meu Perfil
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <form action={handleLogout} className="w-full">
                         <DropdownMenuItem asChild>

@@ -18,8 +18,6 @@ import type { AnalyzeMarketingQualityInput } from '@/ai/flows/analyze-marketing-
 
 export async function handleArtGeneration(prompt: string) {
   try {
-    // "Reset" the AI by simplifying the flow to a single, direct generation call.
-    // The prompt in generateCupArt is heavily optimized for transparency.
     const result = await generateCupArt({ eventDescription: prompt });
     
     if (!result.imageUrl) {
@@ -43,10 +41,8 @@ export async function handleArtAnalysis(artDataUri: string, description: string)
     }
 }
 
-// A fake action to simulate finalizing an order
 export async function handleFinalizeOrder(details: OrderDetails) {
     console.log("Order finalized:", details);
-    // In a real app, this would save to a database, process payment, etc.
     return { success: true };
 }
 
@@ -75,9 +71,8 @@ export async function handleShippingCalculation(cep: string) {
         return { success: false, error: 'CEP inválido. Por favor, digite um CEP com 8 dígitos.' };
     }
     
-    // Mocked response
-    const randomCost = 15 + Math.random() * 30; // Random cost between 15 and 45
-    const randomTime = 3 + Math.floor(Math.random() * 10); // Random time between 3 and 12 days
+    const randomCost = 15 + Math.random() * 30;
+    const randomTime = 3 + Math.floor(Math.random() * 10);
 
     return { 
         success: true, 
@@ -95,16 +90,12 @@ export async function handleAdminAddProduct(formData: FormData) {
         return { success: false, error: "Todos os campos são obrigatórios." };
     }
     
-    // In a real app, this would save the new product to a database.
     console.log('New Product to be added:', {
       name,
       basePrice: parseFloat(basePrice),
       imageUrl,
     });
     
-    // Here you would revalidate the path to update the product list
-    // revalidatePath('/admin/products');
-
     return { success: true };
 }
 
@@ -146,7 +137,6 @@ export async function handleAdminAddCustomer(formData: FormData) {
         return { success: false, error: "Nome e Email são obrigatórios." };
     }
 
-    // In a real app, this would save the new customer to a database.
     console.log('New Customer to be added:', {
       name,
       email,
@@ -155,9 +145,6 @@ export async function handleAdminAddCustomer(formData: FormData) {
       address: formData.get('address'),
     });
     
-    // Here you would revalidate the path to update the customer list
-    // revalidatePath('/admin/customers');
-
     return { success: true };
 }
 
@@ -167,43 +154,42 @@ export async function handleCustomerLogin(formData: FormData) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const remember = formData.get('remember');
-    const formType = formData.get('formType') as string;
+    
+    if (email.toLowerCase() === 'admin@coposmania.com') {
+        redirect('/admin/login');
+        return;
+    }
 
-    if (formType === 'admin') {
-        // Handle Admin Login
-        if (email.toLowerCase() === 'admin@coposmania.com' && password === '12345') {
-            cookies().set('auth-token', 'admin-logged-in', {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
-                path: '/',
-            });
-            redirect('/admin');
-        } else {
-            redirect('/admin/login?error=true');
-        }
-    } else if (formType === 'customer') {
-        // Handle Customer Login Simulation
-        // If admin email is used on customer form, redirect to the correct login page
-        if (email.toLowerCase() === 'admin@coposmania.com') {
-            redirect('/admin/login');
-            return;
-        }
-
-        if (email && password) {
-            cookies().set('auth-token', 'customer-logged-in', {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
-                path: '/',
-            });
-            redirect('/');
-        } else {
-            redirect('/login?error=true');
-        }
+    if (email && password) {
+        cookies().set('auth-token', 'customer-logged-in', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
+            path: '/',
+        });
+        redirect('/');
     } else {
-        // Fallback for safety, should not be reached.
         redirect('/login?error=true');
+    }
+}
+
+export async function handleAdminLogin(formData: FormData) {
+    const { redirect } = await import('next/navigation');
+
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const remember = formData.get('remember');
+
+    if (email.toLowerCase() === 'admin@coposmania.com' && password === '12345') {
+        cookies().set('auth-token', 'admin-logged-in', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
+            path: '/',
+        });
+        redirect('/admin');
+    } else {
+        redirect('/admin/login?error=true');
     }
 }
 
@@ -213,7 +199,6 @@ export async function handleLogout() {
   redirect('/login');
 }
 
-// Action to update an existing customer
 export async function handleAdminUpdateCustomer(customerId: string, formData: FormData) {
     console.log('Updating customer with ID:', customerId);
     console.log('Form data received:', {
@@ -223,12 +208,9 @@ export async function handleAdminUpdateCustomer(customerId: string, formData: Fo
         cpf: formData.get('cpf'),
         address: formData.get('address'),
     });
-    // In a real app, save this to a database and revalidate paths.
-    // revalidatePath('/admin/customers');
     return { success: true, message: 'Cliente salvo com sucesso (simulação)!' };
 }
 
-// Action to update an existing product
 export async function handleAdminUpdateProduct(productId: string, formData: FormData) {
     console.log('Updating product with ID:', productId);
     console.log('Form data received:', {
@@ -236,14 +218,10 @@ export async function handleAdminUpdateProduct(productId: string, formData: Form
         summary: formData.get('summary'),
         description: formData.get('description'),
         basePrice: formData.get('basePrice'),
-        // In a real app, you would handle file uploads for image and model
     });
-    // In a real app, save this to a database and revalidate paths.
-    // revalidatePath('/admin/products');
     return { success: true, message: 'Produto salvo com sucesso (simulação)!' };
 }
 
-// Action to update layout settings
 export async function handleAdminUpdateLayout(formData: FormData) {
     console.log('Updating layout settings:');
     console.log('Form data received:', {
@@ -252,8 +230,9 @@ export async function handleAdminUpdateLayout(formData: FormData) {
         accentColor: formData.get('accentColor'),
         headlineFont: formData.get('headlineFont'),
         bodyFont: formData.get('bodyFont'),
+        socialInstagram: formData.get('socialInstagram'),
+        socialFacebook: formData.get('socialFacebook'),
+        socialYoutube: formData.get('socialYoutube'),
     });
-    // In a real app, these values would be saved to a database and applied dynamically.
-    // For this prototype, we just log and return success.
     return { success: true, message: 'Tema salvo com sucesso (simulação)!' };
 }

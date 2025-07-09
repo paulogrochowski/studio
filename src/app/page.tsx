@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/header';
 import { CUP_TYPES_SUMMARY } from '@/lib/cup-data';
 import { ShippingCalculator } from '@/components/shipping-calculator';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Facebook, Instagram, Youtube } from 'lucide-react';
+import { ProductCard } from '@/components/product-card';
 
 export default function LandingPage() {
   return (
@@ -22,6 +23,7 @@ export default function LandingPage() {
                 objectFit="cover"
                 className="absolute z-[-1] opacity-50"
                 data-ai-hint="party background"
+                priority
             />
             <div className="container mx-auto px-4">
                 <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-wider uppercase drop-shadow-lg">Sua Ideia, Nosso Copo</h1>
@@ -42,31 +44,7 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                 {CUP_TYPES_SUMMARY.map((type, index) => (
-                    <Card key={type.name} className="flex flex-col text-center transition-all duration-300 bg-card hover:shadow-xl hover:-translate-y-1">
-                        <CardHeader>
-                            <CardTitle className="font-sans text-xl h-12 flex items-center justify-center">{type.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex-1 flex flex-col items-center justify-between gap-4">
-                            <div className="relative w-full h-56">
-                                <Image
-                                    src={type.imageUrl}
-                                    alt={type.name}
-                                    fill
-                                    className="object-contain"
-                                    data-ai-hint={type['data-ai-hint']}
-                                    priority={index < 4}
-                                />
-                            </div>
-                            <div className='w-full'>
-                                <p className="text-muted-foreground mb-4">
-                                    A partir de <span className="font-bold text-foreground">R$ {type.basePrice.toFixed(2).replace('.', ',')}</span>
-                                </p>
-                                <Button asChild size="lg" className="w-full">
-                                    <Link href={`/create?cup=${encodeURIComponent(type.name)}`}>Personalizar</Link>
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <ProductCard key={type.id} product={type} priority={index < 4} />
                 ))}
             </div>
         </section>
@@ -103,8 +81,21 @@ export default function LandingPage() {
 
       </main>
       <footer className="border-t bg-card">
-        <div className="container mx-auto py-6 text-center text-muted-foreground text-sm">
-            <p>&copy; {new Date().getFullYear()} Copos Mania. Todos os direitos reservados.</p>
+        <div className="container mx-auto py-6 flex flex-col sm:flex-row justify-between items-center text-center text-sm">
+            <p className="text-muted-foreground">&copy; {new Date().getFullYear()} Copos Mania. Todos os direitos reservados.</p>
+            <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                <Button variant="ghost" size="icon" asChild>
+                    <Link href="#" target="_blank"><Instagram className="h-5 w-5" /></Link>
+                </Button>
+                <Button variant="ghost" size="icon" asChild>
+                    <Link href="#" target="_blank"><Facebook className="h-5 w-5" /></Link>
+                </Button>
+                <Button variant="ghost" size="icon" asChild>
+                    <Link href="#" target="_blank"><Youtube className="h-5 w-5" /></Link>
+                </Button>
+                <span className="text-muted-foreground mx-2">|</span>
+                 <Link href="/admin/login" className="text-xs text-muted-foreground hover:underline">Acesso Admin</Link>
+            </div>
         </div>
       </footer>
     </div>

@@ -24,14 +24,13 @@ export function LoginForm({
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
     await handleCustomerLogin(formData);
-    // This will likely not be reached due to redirect, which is fine.
   };
 
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Login</CardTitle>
-        <CardDescription>Acesse sua conta de cliente para ver seus pedidos.</CardDescription>
+        <CardTitle className="font-headline text-2xl">Login de Cliente</CardTitle>
+        <CardDescription>Acesse sua conta para ver seus pedidos e favoritos.</CardDescription>
       </CardHeader>
       <CardContent>
         {searchParams.error && (
@@ -44,7 +43,6 @@ export function LoginForm({
           </Alert>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="hidden" name="formType" value="customer" />
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" placeholder="seu@email.com" required disabled={isLoading} />
