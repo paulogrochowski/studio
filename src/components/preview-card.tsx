@@ -1,10 +1,9 @@
 
 'use client';
 
-import dynamic from 'next/dynamic';
+import CupPreview3D from '@/components/cup-preview-3d';
 import type { CupModel, GeneratedArt, ArtTransformations } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader } from './loader';
 import { Button } from './ui/button';
 import { ChevronDown, Download } from 'lucide-react';
 import { Label } from './ui/label';
@@ -21,17 +20,6 @@ interface PreviewCardProps {
     handleSaveArt: () => void;
     isGenerating: boolean;
 }
-
-// Dynamically import the 3D preview component with SSR turned off.
-// Using an alias path for robust chunk loading.
-const CupPreview3D = dynamic(() => import('@/components/cup-preview-3d'), {
-    ssr: false,
-    loading: () => (
-        <div className="flex items-center justify-center w-full h-full">
-            <Loader message="Carregando Preview 3D..." />
-        </div>
-    )
-});
 
 export function PreviewCard({ 
     cupModel, 
