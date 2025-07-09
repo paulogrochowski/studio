@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { handleAdminLogin } from '@/app/actions';
+import { handleCustomerLogin } from '@/app/actions';
 import { Checkbox } from '@/components/ui/checkbox';
 
 
@@ -24,7 +24,7 @@ export default function AdminLoginPage({
     event.preventDefault();
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
-    await handleAdminLogin(formData);
+    await handleCustomerLogin(formData);
     // If the action redirects, this component will unmount, and the loading state will be reset.
   };
 

@@ -6,42 +6,40 @@ export function middleware(request: NextRequest) {
   const authToken = request.cookies.get('auth-token')?.value;
   const { pathname } = request.nextUrl;
 
-  const isAdminRoute = pathname.startsWith('/admin');
-  const isLoginPage = pathname === '/login';
-  const isAdminLoginPage = pathname === '/admin/login';
-  
-  // Protect admin routes
-  if (isAdminRoute && !isAdminLoginPage) {
-    if (!authToken || authToken !== 'admin-logged-in') {
-      const loginUrl = new URL('/admin/login', request.url);
-      return NextResponse.redirect(loginUrl);
+  // If trying to access any admin page...
+  if (pathname.startsWith('/admin')) {
+    // ...except for the admin login page itself...
+    if (pathname !== '/admin/login') {
+      // ...and the user is not logged in as admin, redirect them to the admin login page.
+      if (authToken !== 'admin-logged-in') {
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+      }
+    } else {
+      // If the user is already logged in as admin and tries to access the admin login page...
+      if (authToken === 'admin-logged-in') {
+        // ...redirect them to the admin dashboard.
+        return NextResponse.redirect(new URL('/admin', request.url));
+      }
     }
   }
 
-  // Redirect authenticated users away from login pages
-  if (authToken) {
-    if (isAdminLoginPage && authToken === 'admin-logged-in') {
-      return NextResponse.redirect(new URL('/admin', request.url));
-    }
-    if (isLoginPage && authToken === 'customer-logged-in') {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
+  // If the user is logged in as a customer and tries to access the general login page...
+  if (pathname === '/login' && authToken === 'customer-logged-in') {
+    // ...redirect them to the homepage.
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - models (3D model files in public)
-     * - assets in public folder
-     */
-    '/((?!api|_next/static|_next/image|models|.*\\..*).*)',
-  ],
+  /*
+   * Match all request paths except for the ones starting with:
+   * - api (API routes)
+   * - _next/static (static files)
+   * - _next/image (image optimization files)
+   * - models (3D model files in public)
+   * - any other files with an extension (e.g., favicon.ico)
+   */
+  matcher: '/((?!api|_next/static|_next/image|models|.*\\..*).*)',
 }

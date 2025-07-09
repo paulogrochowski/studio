@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { notFound, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -11,9 +11,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { handleAdminUpdateCustomer } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data - In a real app, this would be fetched from a database
 const customers = [
@@ -41,149 +43,158 @@ const getStatusVariant = (status: OrderStatus): "default" | "secondary" | "outli
   }
 };
 
-
 interface EditCustomerPageProps {
   params: { id: string };
 }
 
 export default function EditCustomerPage({ params }: EditCustomerPageProps) {
     const router = useRouter();
+    const { toast } = useToast();
     const customer = customers.find(c => c.id === params.id);
+    const [isSaving, startTransition] = useTransition();
 
     if (!customer) {
         notFound();
     }
-
-    const [name, setName] = useState(customer.name);
-    const [email, setEmail] = useState(customer.email);
-    const [phone, setPhone] = useState(customer.phone);
-    const [cpf, setCpf] = useState(customer.cpf);
-    const [address, setAddress] = useState(customer.address);
     
-    const handleSaveChanges = () => {
-        // Here you would call a server action to update the customer
-        console.log("Saving changes for customer:", { id: customer.id, name, email, phone, cpf, address });
-        router.push('/admin/customers'); // Redirect back after saving
-    }
+    const clientAction = async (formData: FormData) => {
+        startTransition(async () => {
+            const result = await handleAdminUpdateCustomer(customer.id, formData);
+            if (result.success) {
+                toast({ title: 'Sucesso!', description: result.message });
+                router.push('/admin/customers');
+            } else {
+                toast({ title: 'Erro', description: result.error, variant: 'destructive' });
+            }
+        });
+    };
 
     return (
-        <div className="mx-auto grid w-full max-w-7xl flex-1 auto-rows-max gap-4">
-            <div className="flex items-center gap-4">
-                <Link href="/admin/customers">
-                    <Button variant="outline" size="icon" className="h-7 w-7">
-                        <ArrowLeft className="h-4 w-4" />
-                        <span className="sr-only">Voltar</span>
-                    </Button>
-                </Link>
+        <form action={clientAction}>
+            <div className="mx-auto grid w-full max-w-7xl flex-1 auto-rows-max gap-4">
                 <div className="flex items-center gap-4">
-                    <Avatar className="h-10 w-10 border">
-                      <AvatarImage src={`https://avatar.vercel.sh/${customer.email}.png`} alt={customer.name} />
-                      <AvatarFallback>{customer.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                    </Avatar>
-                    <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-                        {customer.name}
-                    </h1>
+                    <Link href="/admin/customers">
+                        <Button variant="outline" size="icon" className="h-7 w-7" type="button">
+                            <ArrowLeft className="h-4 w-4" />
+                            <span className="sr-only">Voltar</span>
+                        </Button>
+                    </Link>
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-10 w-10 border">
+                        <AvatarImage src={`https://avatar.vercel.sh/${customer.email}.png`} alt={customer.name} />
+                        <AvatarFallback>{customer.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
+                            {customer.name}
+                        </h1>
+                    </div>
+                    <div className="hidden items-center gap-2 md:ml-auto md:flex">
+                        <Button variant="outline" size="sm" type="button" onClick={() => router.push('/admin/customers')}>
+                            Descartar
+                        </Button>
+                        <Button size="sm" type="submit" disabled={isSaving}>
+                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                            Salvar Alterações
+                        </Button>
+                    </div>
                 </div>
-                 <div className="hidden items-center gap-2 md:ml-auto md:flex">
-                    <Button variant="outline" size="sm" onClick={() => router.push('/admin/customers')}>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid auto-rows-max items-start gap-4 lg:col-span-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Detalhes do Cliente</CardTitle>
+                                <CardDescription>Informações de contato e dados pessoais do cliente.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Nome Completo</Label>
+                                        <Input id="name" name="name" defaultValue={customer.name} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Email</Label>
+                                        <Input id="email" name="email" type="email" defaultValue={customer.email} />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="phone">Telefone</Label>
+                                        <Input id="phone" name="phone" defaultValue={customer.phone} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="cpf">CPF</Label>
+                                        <Input id="cpf" name="cpf" defaultValue={customer.cpf} />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="address">Endereço Completo</Label>
+                                    <Textarea id="address" name="address" defaultValue={customer.address} rows={3} />
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Histórico de Compras</CardTitle>
+                                <CardDescription>Pedidos realizados pelo cliente na loja.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Pedido</TableHead>
+                                            <TableHead>Data</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="text-right">Total</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {mockOrders.map(order => (
+                                            <TableRow key={order.id}>
+                                                <TableCell className="font-medium">{order.id}</TableCell>
+                                                <TableCell>{new Date(order.date).toLocaleDateString('pt-BR')}</TableCell>
+                                                <TableCell><Badge variant={getStatusVariant(order.status as OrderStatus)}>{order.status}</Badge></TableCell>
+                                                <TableCell className="text-right">R$ {order.total.toFixed(2).replace('.', ',')}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    </div>
+                    <div className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Resumo do Cliente</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Total Gasto</span>
+                                    <span className="font-semibold">R$ {customer.totalSpent.toFixed(2).replace('.', ',')}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Total de Pedidos</span>
+                                    <span className="font-semibold">{customer.orders}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Cliente Desde</span>
+                                    <span className="font-semibold">{new Date(customer.joined).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                                <Separator />
+                                <Button variant="outline" className="w-full" type="button">Ver todos os pedidos</Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+                <div className="flex items-center justify-end gap-2 md:hidden mt-4">
+                    <Button variant="outline" size="sm" type="button" onClick={() => router.push('/admin/customers')}>
                         Descartar
                     </Button>
-                    <Button size="sm" onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4" /> Salvar Alterações</Button>
+                    <Button size="sm" type="submit" disabled={isSaving}>
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        Salvar
+                    </Button>
                 </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <div className="grid auto-rows-max items-start gap-4 lg:col-span-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Detalhes do Cliente</CardTitle>
-                            <CardDescription>Informações de contato e dados pessoais do cliente.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Nome Completo</Label>
-                                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                                </div>
-                            </div>
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone">Telefone</Label>
-                                    <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="cpf">CPF</Label>
-                                    <Input id="cpf" value={cpf} onChange={(e) => setCpf(e.target.value)} />
-                                </div>
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="address">Endereço Completo</Label>
-                                <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} rows={3} />
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Histórico de Compras</CardTitle>
-                            <CardDescription>Pedidos realizados pelo cliente na loja.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Pedido</TableHead>
-                                        <TableHead>Data</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Total</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {mockOrders.map(order => (
-                                        <TableRow key={order.id}>
-                                            <TableCell className="font-medium">{order.id}</TableCell>
-                                            <TableCell>{new Date(order.date).toLocaleDateString('pt-BR')}</TableCell>
-                                            <TableCell><Badge variant={getStatusVariant(order.status as OrderStatus)}>{order.status}</Badge></TableCell>
-                                            <TableCell className="text-right">R$ {order.total.toFixed(2).replace('.', ',')}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Resumo do Cliente</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Total Gasto</span>
-                                <span className="font-semibold">R$ {customer.totalSpent.toFixed(2).replace('.', ',')}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Total de Pedidos</span>
-                                <span className="font-semibold">{customer.orders}</span>
-                            </div>
-                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Cliente Desde</span>
-                                <span className="font-semibold">{new Date(customer.joined).toLocaleDateString('pt-BR')}</span>
-                            </div>
-                             <Separator />
-                             <Button variant="outline" className="w-full">Ver todos os pedidos</Button>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-             <div className="flex items-center justify-end gap-2 md:hidden mt-4">
-                 <Button variant="outline" size="sm">
-                    Descartar
-                </Button>
-                <Button size="sm" onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4" /> Salvar</Button>
-            </div>
-        </div>
+        </form>
     );
 }
