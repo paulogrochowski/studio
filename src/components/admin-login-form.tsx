@@ -12,7 +12,6 @@ import { handleAdminLogin } from '@/app/actions';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 
-
 export function AdminLoginForm({
   searchParams,
 }: {
@@ -46,13 +45,13 @@ export function AdminLoginForm({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="admin@coposmania.com" required disabled={isLoading} />
+            <Input id="email" name="email" type="email" placeholder="admin@coposmania.com" required disabled={isLoading} defaultValue="admin@coposmania.com" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Senha</Label>
-            <Input id="password" name="password" type="password" required disabled={isLoading} />
+            <Input id="password" name="password" type="password" required disabled={isLoading} defaultValue="12345" />
           </div>
-            <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
             <Checkbox id="remember" name="remember" defaultChecked />
             <Label
                 htmlFor="remember"
@@ -60,7 +59,7 @@ export function AdminLoginForm({
             >
                 Lembrar-me
             </Label>
-            </div>
+          </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Entrar

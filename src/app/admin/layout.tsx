@@ -11,25 +11,10 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import Link from 'next/link';
-import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Megaphone, Palette, Wrench } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Megaphone, Palette, Wrench, Heart } from 'lucide-react';
 import { AdminHeader } from "@/components/admin-header";
-import { headers } from 'next/headers';
-import { Header } from "@/components/header";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = headers().get('x-pathname');
-
-  if (pathname === '/admin/login') {
-    return (
-        <div className="flex flex-col min-h-screen bg-background text-foreground font-body">
-            <Header />
-            <main className="flex-1 flex items-center justify-center container mx-auto p-4 md:p-8">
-                {children}
-            </main>
-        </div>
-    )
-  }
-  
   return (
     <SidebarProvider>
         <div className="flex min-h-screen w-full bg-muted/40">

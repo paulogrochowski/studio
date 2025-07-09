@@ -24,12 +24,14 @@ export function LoginForm({
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
     await handleCustomerLogin(formData);
+    // Note: The page will redirect on success via the server action, so a `finally` block
+    // to set isLoading(false) might not be necessary unless there are non-redirect error paths.
   };
 
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Login de Cliente</CardTitle>
+        <CardTitle className="font-headline text-2xl">Login</CardTitle>
         <CardDescription>Acesse sua conta para ver seus pedidos e favoritos.</CardDescription>
       </CardHeader>
       <CardContent>

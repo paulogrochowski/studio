@@ -2,6 +2,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { generateCupArt } from '@/ai/flows/generate-cup-art';
 import { analyzeArtComplexity } from '@/ai/flows/analyze-art-complexity';
 import type { OrderDetails } from '@/lib/types';
@@ -149,52 +150,48 @@ export async function handleAdminAddCustomer(formData: FormData) {
 }
 
 export async function handleCustomerLogin(formData: FormData) {
-    const { redirect } = await import('next/navigation');
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const remember = formData.get('remember');
 
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const remember = formData.get('remember');
-    
-    if (email.toLowerCase() === 'admin@coposmania.com') {
-        redirect('/admin/login');
-        return;
-    }
+  if (email.toLowerCase() === 'admin@coposmania.com') {
+    redirect('/admin/login');
+    return;
+  }
 
-    if (email && password) {
-        cookies().set('auth-token', 'customer-logged-in', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
-            path: '/',
-        });
-        redirect('/');
-    } else {
-        redirect('/login?error=true');
-    }
+  // Basic validation, in a real app you'd check a database
+  if (email && password) {
+    cookies().set('auth-token', 'customer-logged-in', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 days
+      path: '/',
+    });
+    redirect('/');
+  } else {
+    redirect('/login?error=true');
+  }
 }
 
 export async function handleAdminLogin(formData: FormData) {
-    const { redirect } = await import('next/navigation');
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const remember = formData.get('remember');
 
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const remember = formData.get('remember');
-
-    if (email.toLowerCase() === 'admin@coposmania.com' && password === '12345') {
-        cookies().set('auth-token', 'admin-logged-in', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: remember ? 60 * 60 * 24 * 7 : undefined,
-            path: '/',
-        });
-        redirect('/admin');
-    } else {
-        redirect('/admin/login?error=true');
-    }
+  if (email.toLowerCase() === 'admin@coposmania.com' && password === '12345') {
+    cookies().set('auth-token', 'admin-logged-in', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 days
+      path: '/',
+    });
+    redirect('/admin');
+  } else {
+    redirect('/admin/login?error=true');
+  }
 }
 
 export async function handleLogout() {
-  const { redirect } = await import('next/navigation');
   cookies().delete('auth-token');
   redirect('/login');
 }
