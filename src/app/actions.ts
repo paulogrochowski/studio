@@ -180,7 +180,7 @@ export async function handleCustomerLogin(formData: FormData) {
         redirect('/admin');
       } else {
         // Admin with wrong password
-        redirect('/login?error=true');
+        redirect('/admin/login?error=true');
       }
       return; // Important to prevent further execution
     }
