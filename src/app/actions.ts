@@ -154,11 +154,6 @@ export async function handleCustomerLogin(formData: FormData) {
   const password = formData.get('password') as string;
   const remember = formData.get('remember');
 
-  if (email.toLowerCase() === 'admin@coposmania.com') {
-    redirect('/admin/login');
-    return;
-  }
-
   // Basic validation, in a real app you'd check a database
   if (email && password) {
     cookies().set('auth-token', 'customer-logged-in', {
