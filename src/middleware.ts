@@ -6,6 +6,10 @@ export function middleware(request: NextRequest) {
   const authToken = request.cookies.get('auth-token')?.value;
   const { pathname } = request.nextUrl;
 
+  // Add the pathname to the request headers for the layout to read
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', pathname);
+
   const isAdminRoute = pathname.startsWith('/admin');
   const isAdminLoginPage = pathname === '/admin/login';
 
@@ -21,7 +25,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin', request.url));
   }
 
-  return NextResponse.next();
+  // Must return a response, and we need to pass the modified headers
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
