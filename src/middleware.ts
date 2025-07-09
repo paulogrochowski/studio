@@ -3,29 +3,40 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const authToken = request.cookies.get('auth-token')?.value;
   const { pathname } = request.nextUrl;
+  const authToken = request.cookies.get('auth-token')?.value;
 
-  // Add the pathname to the request headers for the layout to read
+  // Pass pathname to client components for layout decisions
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
-
+  
+  // Check if the current route is an admin route
   const isAdminRoute = pathname.startsWith('/admin');
-  const isAdminLoginPage = pathname === '/admin/login';
-
-  // If trying to access an admin route (not the login page) without being logged in as admin,
-  // redirect to the admin login page.
-  if (isAdminRoute && !isAdminLoginPage && authToken !== 'admin-logged-in') {
-    return NextResponse.redirect(new URL('/admin/login', request.url));
+  
+  // If it's not an admin route, just continue with the correct headers
+  if (!isAdminRoute) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
-  // If already logged in as admin and trying to access the admin login page,
-  // redirect to the admin dashboard.
-  if (isAdminLoginPage && authToken === 'admin-logged-in') {
+  // --- From here on, we are handling admin routes ---
+
+  const isLoggedInAsAdmin = authToken === 'admin-logged-in';
+  const isLoginPage = pathname === '/admin/login';
+
+  // Case 1: A logged-in admin tries to access the login page.
+  // -> Redirect them to the main admin dashboard.
+  if (isLoggedInAsAdmin && isLoginPage) {
     return NextResponse.redirect(new URL('/admin', request.url));
   }
 
-  // Must return a response, and we need to pass the modified headers
+  // Case 2: A user who is NOT logged in as admin tries to access a protected admin page.
+  // -> Redirect them to the admin login page.
+  if (!isLoggedInAsAdmin && !isLoginPage) {
+    return NextResponse.redirect(new URL('/admin/login', request.url));
+  }
+  
+  // Case 3: All other valid scenarios are allowed to proceed.
+  // (e.g., logged-in admin on a protected page, or a non-logged-in user on the login page)
   return NextResponse.next({
     request: {
       headers: requestHeaders,
