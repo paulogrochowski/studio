@@ -6,26 +6,21 @@ export function middleware(request: NextRequest) {
   const authToken = request.cookies.get('auth-token')?.value;
   const { pathname } = request.nextUrl;
 
-  // If trying to access any admin page...
-  if (pathname.startsWith('/admin')) {
-    // ...except for the admin login page itself...
-    if (pathname !== '/admin/login') {
-      // ...and the user is not logged in as admin, redirect them to the admin login page.
-      if (authToken !== 'admin-logged-in') {
-        return NextResponse.redirect(new URL('/admin/login', request.url));
-      }
-    } else {
-      // If the user is already logged in as admin and tries to access the admin login page...
-      if (authToken === 'admin-logged-in') {
-        // ...redirect them to the admin dashboard.
-        return NextResponse.redirect(new URL('/admin', request.url));
-      }
-    }
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isAdminLoginPage = pathname === '/admin/login';
+
+  // Redirect to dashboard if a logged-in admin tries to access the admin login page
+  if (authToken === 'admin-logged-in' && isAdminLoginPage) {
+    return NextResponse.redirect(new URL('/admin', request.url));
   }
 
-  // If the user is logged in as a customer and tries to access the general login page...
-  if (pathname === '/login' && authToken === 'customer-logged-in') {
-    // ...redirect them to the homepage.
+  // Redirect to admin login if an unauthenticated user tries to access a protected admin route
+  if (authToken !== 'admin-logged-in' && isAdminRoute && !isAdminLoginPage) {
+    return NextResponse.redirect(new URL('/admin/login', request.url));
+  }
+  
+  // Redirect to home if a logged-in customer tries to access the customer login page
+  if (authToken === 'customer-logged-in' && pathname === '/login') {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
