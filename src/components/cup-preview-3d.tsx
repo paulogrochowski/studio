@@ -50,7 +50,9 @@ function CupMesh({ cupModel, art, artTransformations }: CupMeshProps) {
   const { nodes } = useGLTF('/models/cup.glb');
   const cupNode = nodes.Cup as THREE.Mesh;
   const rimNode = nodes.Rim as THREE.Mesh;
-  const artTexture = art ? useTexture(art.imageUrl) : null;
+  // Always call useTexture, providing a placeholder transparent pixel if no art is available.
+  // This respects the rules of React Hooks.
+  const artTexture = useTexture(art?.imageUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
   
   const wrappedCupGeometry = useMemo(() => {
     if (!cupNode?.geometry) return null;
@@ -113,8 +115,8 @@ function CupMesh({ cupModel, art, artTransformations }: CupMeshProps) {
     }
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2. Draw Art on top
-    if (artTexture?.image) {
+    // 2. Draw Art on top only if art is available
+    if (art && artTexture?.image) {
         const { scale, position, rotation } = artTransformations;
         const image = artTexture.image;
 
@@ -146,7 +148,7 @@ function CupMesh({ cupModel, art, artTransformations }: CupMeshProps) {
         opacity: isTransparent ? 0.6 : 1.0,
         side: THREE.DoubleSide,
     });
-  }, [cupModel, artTexture, artTransformations]);
+  }, [cupModel, art, artTexture, artTransformations]);
   
   // Dispose material when it changes
   useEffect(() => {
