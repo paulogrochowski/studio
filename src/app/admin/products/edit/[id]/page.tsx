@@ -13,16 +13,13 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, PlusCircle, UploadCloud, Sparkles, Rocket, Loader2, FileText, Save } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import type { CupModel, ArtTransformations } from '@/lib/types';
+import type { CupModel } from '@/lib/types';
 import { Textarea } from '@/components/ui/textarea';
 import { handleSeoOptimization, handleAdminUpdateProduct } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import CupPreview3D from '@/components/cup-preview-3d';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { AdminPlaceholder } from '@/components/admin-placeholder';
-import { PackageX } from 'lucide-react';
-
 
 interface EditProductPageProps {
   params: {
@@ -83,8 +80,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const handleModelFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const fileName = file.name.toLowerCase();
-      if (fileName.endsWith('.glb') || fileName.endsWith('.gltf') || fileName.endsWith('.skp') || fileName.endsWith('.dae')) {
+      const normalizedFileName = file.name.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      
+      if (normalizedFileName.endsWith('.glb') || normalizedFileName.endsWith('.gltf') || normalizedFileName.endsWith('.skp') || normalizedFileName.endsWith('.dae')) {
         setModelFile(file);
         if (modelPreviewUrl) {
             URL.revokeObjectURL(modelPreviewUrl);
@@ -133,12 +131,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     rimColor: 'Nenhuma',
     degradeColor: 'Nenhum',
     degradePosition: 'Nenhum',
-  };
-
-  const initialArtTransformations: ArtTransformations = {
-      scale: [1, 0.5],
-      position: [0, 0.1],
-      rotation: 0,
   };
 
   const combinedRimColors: Record<string, string> = { ...RIM_COLORS, ...dynamicRimColors };
@@ -547,7 +539,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                         <CupPreview3D 
                                             cupModel={previewModel} 
                                             art={null} 
-                                            artTransformations={initialArtTransformations}
                                             modelUrl={modelPreviewUrl}
                                         />
                                     </div>
@@ -584,11 +575,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 </Card>
             </div>
         </div>
-        <div className="flex items-center justify-end gap-2 mt-4">
-            <Button variant="outline" size="sm" type="button" onClick={() => router.push('/admin/products')}>
+        <div className="flex items-center justify-center gap-2 mt-8">
+            <Button variant="outline" size="lg" type="button" onClick={() => router.push('/admin/products')}>
                 Descartar
             </Button>
-            <Button size="sm" type="submit" disabled={isSaving}>
+            <Button size="lg" type="submit" disabled={isSaving}>
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 Salvar Produto
             </Button>
@@ -597,5 +588,3 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     </form>
   );
 }
-
-    

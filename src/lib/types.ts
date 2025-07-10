@@ -9,6 +9,7 @@ export interface CupModel {
   id: string;
   name: string;
   imageUrl: string;
+  modelUrl?: string; // Tornando opcional, pois nem todo produto terá
   svgMaskUrl: string;
   basePrice: number;
   'data-ai-hint'?: string;

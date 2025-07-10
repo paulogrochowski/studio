@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import React, { Suspense, Component, ReactNode, useState, useEffect, useMemo } from 'react';
 import { Canvas, useLoader } from '@react-three/fiber';
 import { OrbitControls, Decal, useTexture, Environment, useGLTF } from '@react-three/drei';
-import type { CupModel, GeneratedArt, ArtTransformations } from '@/lib/types';
+import type { CupModel, GeneratedArt } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 import { Loader } from './loader';
 import { PackageX } from 'lucide-react';
@@ -76,17 +76,15 @@ const ModelLoader = ({ url }: { url: string }) => {
 interface CupMeshProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
-  artTransformations: ArtTransformations;
   modelUrl: string;
 }
 
-function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) {
+function CupMesh({ cupModel, art, modelUrl }: CupMeshProps) {
   const { nodes } = useGLTF(modelUrl);
   const cupNode = (nodes.Cup || nodes.cup || Object.values(nodes).find(n => n instanceof THREE.Mesh)) as THREE.Mesh;
   const rimNode = (nodes.Rim || nodes.rim) as THREE.Mesh;
-  const artTexture = useTexture(art?.imageUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
   
-  const wrappedCupGeometry = useMemo(() => {
+  const modifiedGeometry = useMemo(() => {
     if (!cupNode?.geometry) return null;
 
     const newGeometry = cupNode.geometry.clone();
@@ -99,114 +97,75 @@ function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) 
         newGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(newGeometry.attributes.position.count * 2), 2));
     }
     const uvAttribute = newGeometry.attributes.uv as THREE.BufferAttribute;
-    const positionAttribute = newGeometry.attributes.position;
 
     for (let i = 0; i < uvAttribute.count; i++) {
-        const x = positionAttribute.getX(i);
-        const z = positionAttribute.getZ(i);
-        const y = positionAttribute.getY(i);
-        
-        const u = 1 - ((Math.atan2(z, x) / (Math.PI * 2)) + 0.5);
+        const y = newGeometry.attributes.position.getY(i);
         const v = (y - min.y) / height;
-        
-        uvAttribute.setXY(i, u, v);
+        uvAttribute.setXY(i, 0.5, v);
     }
     uvAttribute.needsUpdate = true;
     return newGeometry;
   }, [cupNode?.geometry]);
 
+  const isTransparent = cupModel.opacityType === 'Transparente';
+  const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
 
-  const composedMaterial = useMemo(() => {
-    const isTransparent = cupModel.opacityType === 'Transparente';
-    const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
-
+  const gradientTexture = useMemo(() => {
+    if (!hasDegrade) return null;
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return new THREE.MeshStandardMaterial();
-
-    if (hasDegrade) {
-        const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
-        const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
-        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-
-        if (cupModel.degradePosition === 'Cima') {
-             gradient.addColorStop(0, baseColor); 
-             gradient.addColorStop(1, degradeColorHex); 
-        } else {
-             gradient.addColorStop(0, degradeColorHex);
-             gradient.addColorStop(1, baseColor);
-        }
-        ctx.fillStyle = gradient;
+    canvas.width = 2;
+    canvas.height = 128; // Reduced resolution
+    const context = canvas.getContext('2d');
+    if (!context) return null;
+    
+    const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
+    const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
+    
+    const gradient = context.createLinearGradient(0, 0, 0, 128);
+    if (cupModel.degradePosition === 'Cima') {
+      gradient.addColorStop(0, degradeColorHex);
+      gradient.addColorStop(1, baseColor);
     } else {
-        ctx.fillStyle = cupModel.colorHex || '#FFFFFF';
+      gradient.addColorStop(0, baseColor);
+      gradient.addColorStop(1, degradeColorHex);
     }
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 2, 128);
+    return new THREE.CanvasTexture(canvas);
+  }, [hasDegrade, cupModel.degradeColor, cupModel.degradePosition, isTransparent]);
 
-    if (art && artTexture?.image) {
-        const { scale, position, rotation } = artTransformations;
-        const image = artTexture.image;
-
-        const canvasCenterX = canvas.width / 2;
-        const canvasCenterY = canvas.height / 2;
-
-        const drawWidth = image.width * scale[0];
-        const drawHeight = image.height * scale[1];
-
-        const drawX = canvasCenterX + (position[0] * canvas.width) - (drawWidth / 2);
-        const drawY = canvasCenterY - (position[1] * canvas.height) - (drawHeight / 2);
-
-        ctx.save();
-        ctx.translate(drawX + drawWidth / 2, drawY + drawHeight / 2);
-        ctx.rotate(rotation * Math.PI / 180);
-        ctx.drawImage(image, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-        ctx.restore();
-    }
-    
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    
-    return new THREE.MeshStandardMaterial({
-        map: texture,
-        roughness: 0.2,
-        metalness: 0.1,
-        transparent: true,
-        opacity: isTransparent ? 0.6 : 1.0,
-        side: THREE.DoubleSide,
-    });
-  }, [cupModel, art, artTexture, artTransformations]);
+  const artTexture = useTexture(art?.imageUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
   
-  useEffect(() => {
-    return () => {
-      composedMaterial.map?.dispose();
-      composedMaterial.dispose();
-    };
-  }, [composedMaterial]);
-
-
-  const modifiedRimGeometry = useMemo(() => {
-    if (!rimNode?.geometry) return null;
-    const newGeometry = rimNode.geometry.clone();
-    newGeometry.computeVertexNormals();
-    return newGeometry;
-  }, [rimNode?.geometry]);
-
-
-  if (!wrappedCupGeometry) {
+  if (!modifiedGeometry) {
     return null; 
   }
 
   return (
     <group dispose={null}>
-      <mesh 
-        geometry={wrappedCupGeometry} 
-        castShadow 
-        material={composedMaterial}
-      />
-      {modifiedRimGeometry && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
+      <mesh geometry={modifiedGeometry} castShadow>
+        <meshStandardMaterial
+          color={hasDegrade ? '#ffffff' : cupModel.colorHex}
+          map={gradientTexture}
+          roughness={0.2}
+          metalness={0.1}
+          transparent={true}
+          opacity={isTransparent ? 0.6 : 1.0}
+          side={THREE.DoubleSide}
+        />
+        {art && (
+            <Suspense fallback={null}>
+              <Decal
+                  position={[0, 0.1, 0.4]}
+                  rotation={[0, 0, 0]}
+                  scale={[0.6, 0.5, 0.6]}
+                  map={artTexture}
+              />
+            </Suspense>
+        )}
+      </mesh>
+      {rimNode && cupModel.rimColor && cupModel.rimColor !== 'Nenhuma' && (
         <mesh
-          geometry={modifiedRimGeometry}
+          geometry={rimNode.geometry}
         >
           <meshStandardMaterial
             color={RIM_COLORS[cupModel.rimColor]}
@@ -225,16 +184,19 @@ function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) 
 interface CupPreview3DProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
-  artTransformations: ArtTransformations;
   modelUrl: string | null;
 }
 
-export default function CupPreview3D({ cupModel, art, artTransformations, modelUrl }: CupPreview3DProps) {
+export default function CupPreview3D({ cupModel, art, modelUrl }: CupPreview3DProps) {
   const [modelExists, setModelExists] = useState<boolean | null>(null);
 
   const finalModelUrl = modelUrl || cupModel.modelUrl || '/models/cup.glb';
 
   useEffect(() => {
+    if (!finalModelUrl) {
+      setModelExists(false);
+      return;
+    }
     if (finalModelUrl.startsWith('blob:')) {
       setModelExists(true);
       return;
@@ -249,7 +211,13 @@ export default function CupPreview3D({ cupModel, art, artTransformations, modelU
       .catch(() => setModelExists(false));
   }, [finalModelUrl]);
 
-  const GenericErrorFallback = null;
+  const GenericErrorFallback = (
+    <div className="flex flex-col items-center justify-center h-full text-center p-4 bg-destructive/20 text-destructive-foreground">
+        <PackageX className="w-16 h-16 mb-4" />
+        <h3 className="font-bold">Erro ao Carregar Modelo</h3>
+        <p className="text-sm mt-1">Não foi possível carregar o modelo 3D. Verifique se o arquivo é válido.</p>
+    </div>
+  );
 
   if (modelExists === null) {
     return (
@@ -279,11 +247,10 @@ export default function CupPreview3D({ cupModel, art, artTransformations, modelU
         }>
             <ambientLight intensity={0.7} />
             <directionalLight intensity={1.5} position={[5, 5, 5]} castShadow />
-            {finalModelUrl.toLowerCase().endsWith('.glb') || finalModelUrl.toLowerCase().endsWith('.gltf') ? (
+            {finalModelUrl.toLowerCase().endsWith('.glb') || finalModelUrl.toLowerCase().endsWith('.gltf') || finalModelUrl.toLowerCase().endsWith('.dae') ? (
               <CupMesh 
                 cupModel={cupModel} 
                 art={art} 
-                artTransformations={artTransformations}
                 modelUrl={finalModelUrl}
               />
             ) : (
