@@ -20,6 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import CupPreview3D from '@/components/cup-preview-3d';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { AdminPlaceholder } from '@/components/admin-placeholder';
+import { PackageX } from 'lucide-react';
 
 
 interface EditProductPageProps {
@@ -82,7 +84,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const fileName = file.name.toLowerCase();
-      if (fileName.endsWith('.glb') || fileName.endsWith('.gltf')) {
+      if (fileName.endsWith('.glb') || fileName.endsWith('.gltf') || fileName.endsWith('.skp') || fileName.endsWith('.dae')) {
         setModelFile(file);
         if (modelPreviewUrl) {
             URL.revokeObjectURL(modelPreviewUrl);
@@ -95,7 +97,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       } else {
         toast({
           title: 'Arquivo Inválido',
-          description: 'Por favor, selecione um arquivo .glb ou .gltf.',
+          description: 'Por favor, selecione um arquivo .glb, .gltf, .skp ou .dae.',
           variant: 'destructive',
         });
       }
@@ -125,6 +127,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     name: productSummary.name,
     basePrice: productSummary.basePrice,
     imageUrl: productSummary.imageUrl,
+    modelUrl: productSummary.modelUrl,
     colorHex: '#FFFFFF',
     opacityType: 'Fosco',
     rimColor: 'Nenhuma',
@@ -498,7 +501,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                             <CardHeader>
                                 <CardTitle className="text-lg">Modelo 3D</CardTitle>
                                 <CardDescription>
-                                    Arraste e solte ou clique para carregar o arquivo .glb ou .gltf.
+                                    Arraste e solte ou clique para carregar o arquivo.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -515,7 +518,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                                 <>
                                                     <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
                                                     <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste e solte</p>
-                                                    <p className="text-xs text-muted-foreground">Arquivo .GLB ou .GLTF</p>
+                                                    <p className="text-xs text-muted-foreground">.GLB, .GLTF, .SKP ou .DAE</p>
                                                 </>
                                             )}
                                         </div>
@@ -523,7 +526,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                             id="model-file"
                                             name="modelFile" 
                                             type="file" 
-                                            accept=".glb,.gltf" 
+                                            accept=".glb,.gltf,.skp,.dae" 
                                             className="hidden"
                                             onChange={handleModelFileChange}
                                         />
@@ -594,3 +597,5 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     </form>
   );
 }
+
+    
