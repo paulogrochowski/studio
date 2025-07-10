@@ -78,6 +78,14 @@ export default function AdminProductsPage() {
                     <CardDescription>Gerencie seus produtos e visualize suas vendas.</CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
+                    {selectedProductIds.length > 0 && (
+                        <Button size="sm" variant="destructive" className="h-8 gap-1" onClick={() => console.log('Deleting selected products:', selectedProductIds)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                Excluir ({selectedProductIds.length})
+                            </span>
+                        </Button>
+                    )}
                     <Button size="sm" variant="outline">
                         Exportar
                     </Button>
@@ -135,16 +143,6 @@ export default function AdminProductsPage() {
                         </TabsTrigger>
                     </TabsList>
                 </Tabs>
-                <div className="ml-auto flex items-center gap-2">
-                {selectedProductIds.length > 0 && (
-                    <Button size="sm" variant="destructive" className="h-8 gap-1" onClick={() => console.log('Deleting selected products:', selectedProductIds)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Excluir ({selectedProductIds.length})
-                        </span>
-                    </Button>
-                )}
-                </div>
             </div>
         </CardHeader>
         <CardContent>
