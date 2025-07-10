@@ -4,7 +4,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
 import { ShoppingCart } from "lucide-react";
 import { PromotionalBanner } from "./promotional-banner";
-import { UserMenu } from "./user-menu";
+import { UserMenuWrapper } from "./user-menu-wrapper";
 
 export function Header() {
   return (
@@ -35,7 +35,7 @@ export function Header() {
                 <span className="sr-only">Carrinho</span>
             </Button>
             
-            <UserMenu />
+            <UserMenuWrapper />
 
             <ThemeToggle />
           </div>
