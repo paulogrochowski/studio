@@ -3,12 +3,16 @@
 
 import * as THREE from 'three';
 import React, { Suspense, Component, ReactNode, useState, useEffect, useMemo } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Decal, useTexture, useGLTF, Environment } from '@react-three/drei';
+import { Canvas, useLoader } from '@react-three/fiber';
+import { OrbitControls, Decal, useTexture, Environment, useGLTF } from '@react-three/drei';
 import type { CupModel, GeneratedArt, ArtTransformations } from '@/lib/types';
 import { DEGRADE_HEX_COLORS, RIM_COLORS } from '@/lib/cup-data';
 import { Loader } from './loader';
 import { PackageX } from 'lucide-react';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+
 
 // Error Boundary Component
 interface ErrorBoundaryProps {
@@ -48,19 +52,38 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
 }
 
+
+const ModelLoader = ({ url }: { url: string }) => {
+  const extension = url.split('.').pop()?.toLowerCase();
+  
+  const scene = useLoader(
+    // @ts-ignore
+    extension === 'dae' ? ColladaLoader : GLTFLoader,
+    url,
+    (loader) => {
+      if (loader instanceof GLTFLoader) {
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+        loader.setDRACOLoader(dracoLoader);
+      }
+    }
+  );
+
+  return <primitive object={scene.scene || scene} />;
+};
+
+
 interface CupMeshProps {
   cupModel: CupModel;
   art: GeneratedArt | null;
   artTransformations: ArtTransformations;
-  modelUrl: string | null;
+  modelUrl: string;
 }
 
 function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) {
-  const { nodes } = useGLTF(modelUrl || cupModel.modelUrl || '/models/cup.glb');
+  const { nodes } = useGLTF(modelUrl);
   const cupNode = (nodes.Cup || nodes.cup || Object.values(nodes).find(n => n instanceof THREE.Mesh)) as THREE.Mesh;
   const rimNode = (nodes.Rim || nodes.rim) as THREE.Mesh;
-  // Always call useTexture, providing a placeholder transparent pixel if no art is available.
-  // This respects the rules of React Hooks.
   const artTexture = useTexture(art?.imageUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
   
   const wrappedCupGeometry = useMemo(() => {
@@ -83,9 +106,7 @@ function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) 
         const z = positionAttribute.getZ(i);
         const y = positionAttribute.getY(i);
         
-        // Calculate U coordinate based on angle for wrapping
         const u = 1 - ((Math.atan2(z, x) / (Math.PI * 2)) + 0.5);
-        // Calculate V coordinate based on height
         const v = (y - min.y) / height;
         
         uvAttribute.setXY(i, u, v);
@@ -100,23 +121,22 @@ function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) 
     const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
 
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 1024;
+    canvas.width = 256;
+    canvas.height = 256;
     const ctx = canvas.getContext('2d');
     if (!ctx) return new THREE.MeshStandardMaterial();
 
-    // 1. Draw Base Layer (Color or Gradient)
     if (hasDegrade) {
         const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
         const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
         const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
 
         if (cupModel.degradePosition === 'Cima') {
-             gradient.addColorStop(0, baseColor); // Bottom
-             gradient.addColorStop(1, degradeColorHex); // Top
+             gradient.addColorStop(0, baseColor); 
+             gradient.addColorStop(1, degradeColorHex); 
         } else {
-             gradient.addColorStop(0, degradeColorHex); // Bottom
-             gradient.addColorStop(1, baseColor); // Top
+             gradient.addColorStop(0, degradeColorHex);
+             gradient.addColorStop(1, baseColor);
         }
         ctx.fillStyle = gradient;
     } else {
@@ -124,7 +144,6 @@ function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) 
     }
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2. Draw Art on top only if art is available
     if (art && artTexture?.image) {
         const { scale, position, rotation } = artTransformations;
         const image = artTexture.image;
@@ -135,7 +154,6 @@ function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) 
         const drawWidth = image.width * scale[0];
         const drawHeight = image.height * scale[1];
 
-        // Position is an offset from the center in percentage of canvas size
         const drawX = canvasCenterX + (position[0] * canvas.width) - (drawWidth / 2);
         const drawY = canvasCenterY - (position[1] * canvas.height) - (drawHeight / 2);
 
@@ -159,7 +177,6 @@ function CupMesh({ cupModel, art, artTransformations, modelUrl }: CupMeshProps) 
     });
   }, [cupModel, art, artTexture, artTransformations]);
   
-  // Dispose material when it changes
   useEffect(() => {
     return () => {
       composedMaterial.map?.dispose();
@@ -215,27 +232,23 @@ interface CupPreview3DProps {
 export default function CupPreview3D({ cupModel, art, artTransformations, modelUrl }: CupPreview3DProps) {
   const [modelExists, setModelExists] = useState<boolean | null>(null);
 
+  const finalModelUrl = modelUrl || cupModel.modelUrl || '/models/cup.glb';
+
   useEffect(() => {
-    const finalModelUrl = modelUrl || cupModel.modelUrl || '/models/cup.glb';
-    
-    // If a custom model is uploaded via a blob URL, we assume it "exists" for rendering purposes.
     if (finalModelUrl.startsWith('blob:')) {
       setModelExists(true);
       return;
     }
 
-    // Check for the static model.
     fetch(finalModelUrl)
       .then(response => {
         const contentType = response.headers.get("content-type");
-        // A valid model should not return a text/html (which usually indicates a 404 page in SPAs)
         const isValid = response.ok && !contentType?.includes('text/html');
         setModelExists(isValid);
       })
       .catch(() => setModelExists(false));
-  }, [modelUrl, cupModel.modelUrl]);
+  }, [finalModelUrl]);
 
-  // Hide errors by providing a null fallback
   const GenericErrorFallback = null;
 
   if (modelExists === null) {
@@ -258,7 +271,7 @@ export default function CupPreview3D({ cupModel, art, artTransformations, modelU
   
   return (
     <ErrorBoundary fallback={GenericErrorFallback}>
-      <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }} key={modelUrl || cupModel.modelUrl}>
+      <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }} key={finalModelUrl}>
         <Suspense fallback={
              <div className="flex items-center justify-center h-full">
                 <Loader showText={false} />
@@ -266,12 +279,16 @@ export default function CupPreview3D({ cupModel, art, artTransformations, modelU
         }>
             <ambientLight intensity={0.7} />
             <directionalLight intensity={1.5} position={[5, 5, 5]} castShadow />
-            <CupMesh 
-              cupModel={cupModel} 
-              art={art} 
-              artTransformations={artTransformations}
-              modelUrl={modelUrl}
-            />
+            {finalModelUrl.toLowerCase().endsWith('.glb') || finalModelUrl.toLowerCase().endsWith('.gltf') ? (
+              <CupMesh 
+                cupModel={cupModel} 
+                art={art} 
+                artTransformations={artTransformations}
+                modelUrl={finalModelUrl}
+              />
+            ) : (
+              <ModelLoader url={finalModelUrl} />
+            )}
             <Environment preset="city" />
         </Suspense>
         <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} minPolarAngle={Math.PI / 4} maxPolarAngle={Math.PI / 1.8} />
