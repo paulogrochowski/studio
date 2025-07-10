@@ -79,26 +79,17 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
   const handleModelFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const normalizedFileName = file.name.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
-      
-      if (normalizedFileName.endsWith('.glb') || normalizedFileName.endsWith('.gltf') || normalizedFileName.endsWith('.dae')) {
+        const file = e.target.files[0];
         setModelFile(file);
         if (modelPreviewUrl) {
             URL.revokeObjectURL(modelPreviewUrl);
         }
-        setModelPreviewUrl(URL.createObjectURL(file));
+        const newPreviewUrl = URL.createObjectURL(file);
+        setModelPreviewUrl(newPreviewUrl);
         toast({
             title: "Arquivo Carregado",
             description: `O arquivo ${file.name} está pronto para ser visualizado.`
-        })
-      } else {
-        toast({
-          title: 'Arquivo Inválido',
-          description: 'Por favor, selecione um arquivo .glb, .gltf ou .dae.',
-          variant: 'destructive',
         });
-      }
     }
   };
 
@@ -510,7 +501,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                                 <>
                                                     <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
                                                     <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste e solte</p>
-                                                    <p className="text-xs text-muted-foreground">.GLB, .GLTF, ou .DAE</p>
+                                                    <p className="text-xs text-muted-foreground">Qualquer tipo de arquivo 3D</p>
                                                 </>
                                             )}
                                         </div>
@@ -518,7 +509,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                             id="model-file"
                                             name="modelFile" 
                                             type="file" 
-                                            accept=".glb,.gltf,.dae" 
                                             className="hidden"
                                             onChange={handleModelFileChange}
                                         />
