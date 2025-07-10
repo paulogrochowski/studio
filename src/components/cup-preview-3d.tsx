@@ -79,7 +79,7 @@ interface CupMeshProps {
 }
 
 function CupMesh({ cupModel, art, modelUrl }: CupMeshProps) {
-  const { nodes } = useGLTF(modelUrl, true);
+  const { nodes } = useGLTF(modelUrl);
   const cupNode = (nodes.Cup || nodes.cup || Object.values(nodes).find(n => n instanceof THREE.Mesh)) as THREE.Mesh;
   const rimNode = (nodes.Rim || nodes.rim) as THREE.Mesh;
   
