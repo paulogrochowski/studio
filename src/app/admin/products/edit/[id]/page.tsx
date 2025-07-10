@@ -82,7 +82,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       const file = e.target.files[0];
       const normalizedFileName = file.name.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
       
-      if (normalizedFileName.endsWith('.glb') || normalizedFileName.endsWith('.gltf') || normalizedFileName.endsWith('.skp') || normalizedFileName.endsWith('.dae')) {
+      if (normalizedFileName.endsWith('.glb') || normalizedFileName.endsWith('.gltf') || normalizedFileName.endsWith('.dae')) {
         setModelFile(file);
         if (modelPreviewUrl) {
             URL.revokeObjectURL(modelPreviewUrl);
@@ -95,7 +95,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       } else {
         toast({
           title: 'Arquivo Inválido',
-          description: 'Por favor, selecione um arquivo .glb, .gltf, .skp ou .dae.',
+          description: 'Por favor, selecione um arquivo .glb, .gltf ou .dae.',
           variant: 'destructive',
         });
       }
@@ -510,7 +510,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                                 <>
                                                     <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
                                                     <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste e solte</p>
-                                                    <p className="text-xs text-muted-foreground">.GLB, .GLTF, .SKP ou .DAE</p>
+                                                    <p className="text-xs text-muted-foreground">.GLB, .GLTF, ou .DAE</p>
                                                 </>
                                             )}
                                         </div>
@@ -518,7 +518,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                             id="model-file"
                                             name="modelFile" 
                                             type="file" 
-                                            accept=".glb,.gltf,.skp,.dae" 
+                                            accept=".glb,.gltf,.dae" 
                                             className="hidden"
                                             onChange={handleModelFileChange}
                                         />

@@ -57,10 +57,9 @@ const ModelLoader = ({ url }: { url: string }) => {
   const extension = url.split('.').pop()?.toLowerCase();
   
   const scene = useLoader(
-    // @ts-ignore
-    extension === 'dae' ? ColladaLoader : GLTFLoader,
+    (extension === 'dae' ? ColladaLoader : GLTFLoader) as any,
     url,
-    (loader) => {
+    (loader: any) => {
       if (loader instanceof GLTFLoader) {
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
@@ -80,7 +79,7 @@ interface CupMeshProps {
 }
 
 function CupMesh({ cupModel, art, modelUrl }: CupMeshProps) {
-  const { nodes } = useGLTF(modelUrl);
+  const { nodes } = useGLTF(modelUrl, true);
   const cupNode = (nodes.Cup || nodes.cup || Object.values(nodes).find(n => n instanceof THREE.Mesh)) as THREE.Mesh;
   const rimNode = (nodes.Rim || nodes.rim) as THREE.Mesh;
   
@@ -111,7 +110,7 @@ function CupMesh({ cupModel, art, modelUrl }: CupMeshProps) {
   const hasDegrade = !!(cupModel.degradeColor && cupModel.degradeColor !== 'Nenhum' && cupModel.degradePosition && cupModel.degradePosition !== 'Nenhum');
 
   const gradientTexture = useMemo(() => {
-    if (!hasDegrade) return null;
+    if (typeof window === 'undefined' || !hasDegrade) return null;
     const canvas = document.createElement('canvas');
     canvas.width = 2;
     canvas.height = 128; // Reduced resolution
@@ -237,6 +236,8 @@ export default function CupPreview3D({ cupModel, art, modelUrl }: CupPreview3DPr
     );
   }
   
+  const isGlb = finalModelUrl.toLowerCase().endsWith('.glb') || finalModelUrl.toLowerCase().endsWith('.gltf');
+  
   return (
     <ErrorBoundary fallback={GenericErrorFallback}>
       <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }} key={finalModelUrl}>
@@ -247,7 +248,7 @@ export default function CupPreview3D({ cupModel, art, modelUrl }: CupPreview3DPr
         }>
             <ambientLight intensity={0.7} />
             <directionalLight intensity={1.5} position={[5, 5, 5]} castShadow />
-            {finalModelUrl.toLowerCase().endsWith('.glb') || finalModelUrl.toLowerCase().endsWith('.gltf') || finalModelUrl.toLowerCase().endsWith('.dae') ? (
+            {isGlb ? (
               <CupMesh 
                 cupModel={cupModel} 
                 art={art} 
