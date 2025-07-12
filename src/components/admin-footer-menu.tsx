@@ -29,11 +29,11 @@ export function AdminFooterMenu() {
 
   return (
     <footer className="sticky bottom-0 z-50 mt-auto bg-background/95 backdrop-blur border-t">
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         <div className="container mx-auto flex h-16 items-center justify-center gap-4 px-4 sm:justify-between">
           <nav className="flex items-center justify-center gap-2 sm:gap-4">
             {menuItems.map(({ href, icon: Icon, label }) => (
-              <Tooltip key={href} delayDuration={100}>
+              <Tooltip key={href}>
                 <TooltipTrigger asChild>
                   <Button
                     asChild
@@ -59,7 +59,7 @@ export function AdminFooterMenu() {
           <div className="border-l h-10 mx-2 hidden sm:block" />
 
           <form action={handleLogout} className="flex items-center">
-             <Tooltip delayDuration={100}>
+             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"

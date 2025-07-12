@@ -4,8 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 import { AdminLoginModalProvider } from '@/components/admin-login-modal-provider';
-import { cookies } from 'next/headers';
-import { AdminFooterMenu } from '@/components/admin-footer-menu';
+import { FooterMenuWrapper } from '@/components/footer-menu-wrapper';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -27,7 +26,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isAdminLoggedIn = cookies().has('admin-session');
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
@@ -43,7 +41,7 @@ export default function RootLayout({
               <main className="flex-grow">
                 {children}
               </main>
-              {isAdminLoggedIn && <AdminFooterMenu />}
+              <FooterMenuWrapper />
             </div>
           </AdminLoginModalProvider>
           <Toaster />
