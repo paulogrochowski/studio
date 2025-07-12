@@ -2,30 +2,27 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Header } from '@/components/header';
 import { CUP_TYPES_SUMMARY } from '@/lib/cup-data';
 import { ShippingCalculator } from '@/components/shipping-calculator';
 import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
-import { Footer } from '@/components/footer';
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-body">
-      <Header />
+    <>
       <main className="flex-1">
         {/* Hero Banner Section */}
-        <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center text-center bg-black/50 text-white">
+        <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center text-center bg-card text-foreground">
             <Image
                 src="https://placehold.co/1920x1080.png"
                 alt="Banner de festa com copos personalizados"
-                layout="fill"
+                fill
                 objectFit="cover"
-                className="absolute z-[-1] opacity-50"
+                className="absolute z-[-1] opacity-20"
                 data-ai-hint="party background"
                 priority
             />
-            <div className="container mx-auto px-4">
+            <div className="container mx-auto px-4 z-10">
                 <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-wider uppercase drop-shadow-lg">Sua Ideia, Nosso Copo</h1>
                 <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl drop-shadow-md">
                     Crie copos personalizados para qualquer ocasião com designs únicos gerados por Inteligência Artificial. Ideal para festas, casamentos e eventos corporativos.
@@ -80,7 +77,6 @@ export default function LandingPage() {
         </section>
 
       </main>
-      <Footer />
-    </div>
+    </>
   );
 }

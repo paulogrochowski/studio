@@ -1,14 +1,11 @@
 
-import { Header } from '@/components/header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, Target, Users } from 'lucide-react';
 import Image from 'next/image';
-import { Footer } from '@/components/footer';
 
 export default function AboutPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-body">
-      <Header />
+    <>
       <main className="flex-1">
         {/* Page Header */}
         <section className="py-16 md:py-24 bg-secondary/50 text-center">
@@ -89,7 +86,6 @@ export default function AboutPage() {
             </div>
         </section>
       </main>
-      <Footer />
-    </div>
+    </>
   );
 }

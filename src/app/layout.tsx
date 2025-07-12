@@ -4,6 +4,10 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 import { AdminLoginModalProvider } from '@/components/admin-login-modal-provider';
+import { FooterMenuWrapper } from '@/components/footer-menu-wrapper';
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
+import { UserMenuWrapper } from '@/components/user-menu-wrapper';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -31,12 +35,19 @@ export default function RootLayout({
       <body className={`${oswald.variable} ${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
           <AdminLoginModalProvider>
-              {children}
+            <div className="flex flex-col min-h-screen">
+              <Header>
+                <UserMenuWrapper />
+              </Header>
+              <main className="flex-1">{children}</main>
+              <Footer />
+              <FooterMenuWrapper />
+            </div>
           </AdminLoginModalProvider>
           <Toaster />
         </ThemeProvider>

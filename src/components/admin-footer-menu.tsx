@@ -3,23 +3,14 @@
 
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ShoppingCart, Package, Users, Palette, Megaphone } from 'lucide-react';
-import { Button } from "./ui/button";
+import { Home, Menu, Users, LayoutDashboard, Megaphone } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-
 
 const menuItems = [
-  { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/admin/orders", icon: ShoppingCart, label: "Pedidos" },
-  { href: "/admin/products", icon: Package, label: "Produtos" },
+  { href: "/", icon: Home, label: "Início" },
+  { href: "/admin/products", icon: Menu, label: "Produto" },
   { href: "/admin/customers", icon: Users, label: "Clientes" },
-  { href: "/admin/layout", icon: Palette, label: "Layout" },
+  { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/admin/marketing", icon: Megaphone, label: "Marketing" },
 ];
 
@@ -27,33 +18,22 @@ export function AdminFooterMenu() {
   const pathname = usePathname();
 
   return (
-    <footer className="sticky bottom-0 z-50 mt-auto bg-background/95 backdrop-blur border-t sm:hidden">
-      <TooltipProvider delayDuration={0}>
+    <footer className="fixed bottom-0 z-50 w-full bg-primary text-primary-foreground border-t">
         <div className="container mx-auto flex h-16 items-center justify-around px-4">
             {menuItems.map(({ href, icon: Icon, label }) => (
-              <Tooltip key={href}>
-                <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    variant={pathname === href ? "secondary" : "ghost"}
-                    size="icon"
-                    className={cn("flex flex-col h-auto p-2 gap-1 transition-all", 
-                      pathname === href && "text-primary"
+                <Link
+                    href={href}
+                    key={href}
+                    className={cn(
+                        "flex flex-col items-center justify-center gap-1 text-xs font-medium w-16 transition-colors hover:text-primary-foreground/80",
+                        pathname === href ? "text-white font-bold" : "text-primary-foreground/70"
                     )}
-                  >
-                    <Link href={href}>
-                      <Icon className="w-5 h-5" />
-                      <span className="text-xs">{label}</span>
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{label}</p>
-                </TooltipContent>
-              </Tooltip>
+                >
+                    <Icon className="w-6 h-6" />
+                    <span>{label}</span>
+                </Link>
             ))}
         </div>
-      </TooltipProvider>
     </footer>
   );
 }

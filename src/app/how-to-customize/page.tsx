@@ -2,9 +2,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Header } from '@/components/header';
 import { CupSoda, Palette, Sparkles, ShoppingCart } from 'lucide-react';
-import { Footer } from '@/components/footer';
 
 export default function HowToCustomizePage() {
   const steps = [
@@ -31,8 +29,7 @@ export default function HowToCustomizePage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-body">
-      <Header />
+    <>
       <main className="flex-1 container mx-auto py-12 md:py-16">
         <section className="text-center mb-12">
           <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-wider uppercase">Como Funciona</h1>
@@ -65,7 +62,6 @@ export default function HowToCustomizePage() {
           </Button>
         </section>
       </main>
-      <Footer />
-    </div>
+    </>
   );
 }

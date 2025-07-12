@@ -1,10 +1,21 @@
 
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Instagram, Facebook, Youtube, Wrench } from 'lucide-react';
+import { Instagram, Facebook, Youtube } from 'lucide-react';
 import { AdminLoginButton } from '@/components/admin-login-button';
+import { useIsAdmin } from '@/hooks/use-is-admin';
 
 export function Footer() {
+    const isAdmin = useIsAdmin();
+
+    // Do not render the footer if the admin is logged in, 
+    // as the AdminFooterMenu will be displayed instead.
+    if (isAdmin) {
+        return null;
+    }
+
     return (
         <footer className="border-t bg-card">
             <div className="container mx-auto py-6 flex flex-col sm:flex-row justify-between items-center text-center text-sm">
