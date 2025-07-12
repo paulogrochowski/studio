@@ -79,7 +79,7 @@ interface CupMeshProps {
 }
 
 function CupMesh({ cupModel, art, modelUrl }: CupMeshProps) {
-  const { nodes } = useGLTF(modelUrl);
+  const { nodes } = useGLTF(modelUrl, true);
   const cupNode = (nodes.Cup || nodes.cup || Object.values(nodes).find(n => n instanceof THREE.Mesh)) as THREE.Mesh;
   const rimNode = (nodes.Rim || nodes.rim) as THREE.Mesh;
   
@@ -196,6 +196,7 @@ export default function CupPreview3D({ cupModel, art, modelUrl }: CupPreview3DPr
       setModelExists(false);
       return;
     }
+    // Assume blob URLs from createObjectURL are always valid
     if (finalModelUrl.startsWith('blob:')) {
       setModelExists(true);
       return;
@@ -204,7 +205,8 @@ export default function CupPreview3D({ cupModel, art, modelUrl }: CupPreview3DPr
     fetch(finalModelUrl)
       .then(response => {
         const contentType = response.headers.get("content-type");
-        const isValid = response.ok && !contentType?.includes('text/html');
+        // Check if the request was successful AND the content is not an HTML/XML error page
+        const isValid = response.ok && contentType && !contentType.includes('text/html') && !contentType.includes('application/xml');
         setModelExists(isValid);
       })
       .catch(() => setModelExists(false));
