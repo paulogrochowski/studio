@@ -1,7 +1,8 @@
 
 import { Header } from '@/components/header';
 import { LoginForm } from '@/components/login-form';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { AdminLoginButton } from '@/components/admin-login-button';
 
 export default function LoginPage() {
   return (
@@ -12,6 +13,9 @@ export default function LoginPage() {
             <CardContent className="p-0">
                 <LoginForm />
             </CardContent>
+             <CardFooter className="flex flex-col items-center justify-center text-center text-sm gap-4 pt-4">
+                <AdminLoginButton />
+            </CardFooter>
         </Card>
       </main>
     </div>

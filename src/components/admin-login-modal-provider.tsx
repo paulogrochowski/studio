@@ -38,5 +38,3 @@ export function AdminLoginModalProvider({ children }: { children: ReactNode }) {
         </AdminLoginContext.Provider>
     );
 }
-
-    

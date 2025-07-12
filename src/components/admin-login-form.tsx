@@ -52,17 +52,17 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
             <CardContent>
                 <form action={clientAction} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" name="email" type="email" placeholder="admin@coposmania.com" required defaultValue="admin@coposmania.com" />
+                        <Label htmlFor="email-admin">Email</Label>
+                        <Input id="email-admin" name="email" type="email" placeholder="admin@coposmania.com" required defaultValue="admin@coposmania.com" />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="password">Senha</Label>
-                        <Input id="password" name="password" type="password" required defaultValue="12345" />
+                        <Label htmlFor="password-admin">Senha</Label>
+                        <Input id="password-admin" name="password" type="password" required defaultValue="12345" />
                     </div>
                     <div className="flex items-center space-x-2">
-                        <Checkbox id="remember" name="remember" defaultChecked />
+                        <Checkbox id="remember-admin" name="remember" defaultChecked />
                         <Label
-                            htmlFor="remember"
+                            htmlFor="remember-admin"
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
                             Lembrar-me
@@ -77,5 +77,3 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
         </Card>
     );
 }
-
-    

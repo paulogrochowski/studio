@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
-import { AdminLoginButton } from './admin-login-button';
 
 export function LoginForm() {
   const { toast } = useToast();
@@ -28,7 +26,7 @@ export function LoginForm() {
                 description: "Bem-vindo de volta!",
             });
             router.push('/');
-            router.refresh(); // Refresh to update server components
+            router.refresh();
         } else {
             toast({
                 title: "Erro de Autenticação",
@@ -70,9 +68,8 @@ export function LoginForm() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col items-center justify-center text-center text-sm gap-2">
-        <p>Não tem uma conta? <Link href="/register" className="text-primary hover:underline">Cadastre-se</Link></p>
-        <AdminLoginButton />
+      <CardFooter className="text-center text-sm">
+         <p>Não tem uma conta? <Link href="/register" className="text-primary hover:underline">Cadastre-se</Link></p>
       </CardFooter>
     </Card>
   );
