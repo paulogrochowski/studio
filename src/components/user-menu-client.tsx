@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { User, LogOut, Heart, Settings } from "lucide-react";
+import { User, LogOut, Heart, Settings, ShoppingCart } from "lucide-react";
 import { handleLogout } from "@/app/actions";
 
 interface UserMenuClientProps {
@@ -32,16 +32,23 @@ export function UserMenuClient({ isLoggedIn }: UserMenuClientProps) {
           <>
             <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Meus Pedidos</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+               <Link href="/orders" className="flex items-center">
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Meus Pedidos
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/favorites" className="flex items-center">
                 <Heart className="mr-2 h-4 w-4" />
                 Meus Favoritos
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              Meu Perfil
+            <DropdownMenuItem asChild>
+              <Link href="/profile" className="flex items-center">
+                <Settings className="mr-2 h-4 w-4" />
+                Meu Perfil
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <form action={handleLogout} className="w-full">
