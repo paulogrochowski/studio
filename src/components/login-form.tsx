@@ -14,16 +14,6 @@ import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { AdminLoginButton } from './admin-login-button';
 
-function SubmitButton() {
-    const [isPending, startTransition] = useTransition();
-    return (
-        <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Entrar
-        </Button>
-    )
-}
-
 export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
@@ -38,6 +28,7 @@ export function LoginForm() {
                 description: "Bem-vindo de volta!",
             });
             router.push('/');
+            router.refresh(); // Refresh to update server components
         } else {
             toast({
                 title: "Erro de Autenticação",
