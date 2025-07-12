@@ -154,19 +154,21 @@ export async function handleAdminAddCustomer(formData: FormData) {
 export async function handleCustomerLogin(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
-  const remember = formData.get('remember');
+  const remember = formData.get('remember-customer');
 
   // Basic validation, in a real app you'd check a database
   if (email && password) {
     cookies().set('auth-token', 'customer-logged-in', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 days
+      maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 days or session
       path: '/',
     });
-    redirect('/');
+    // Don't redirect, let the client-side handle the UI update
+    return { success: true };
   } else {
-    redirect('/login?error=true');
+    // Return an error for the client-side form to handle
+    return { success: false, error: "Email ou senha inválidos." };
   }
 }
 

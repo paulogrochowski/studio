@@ -11,6 +11,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { handleCustomerLogin } from '@/app/actions';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -27,6 +30,28 @@ export function LoginForm({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const clientAction = async (formData: FormData) => {
+    startTransition(async () => {
+        const result = await handleCustomerLogin(formData);
+        if (result.success) {
+            toast({
+                title: "Login bem-sucedido!",
+                description: "Bem-vindo de volta!",
+            });
+            router.refresh(); // Refresh the page to update the header
+        } else {
+            toast({
+                title: "Erro de Autenticação",
+                description: result.error,
+                variant: "destructive",
+            });
+        }
+    });
+  };
 
   return (
     <Card className="w-full max-w-md">
@@ -44,7 +69,7 @@ export function LoginForm({
             </AlertDescription>
           </Alert>
         )}
-        <form action={handleCustomerLogin} className="space-y-4">
+        <form action={clientAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" placeholder="seu@email.com" required />
@@ -55,7 +80,7 @@ export function LoginForm({
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-                <Checkbox id="remember-customer" name="remember" defaultChecked />
+                <Checkbox id="remember-customer" name="remember-customer" defaultChecked />
                 <Label htmlFor="remember-customer">Lembrar-me</Label>
             </div>
             <Link href="#" className="text-sm text-primary hover:underline">
