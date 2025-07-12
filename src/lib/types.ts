@@ -1,3 +1,4 @@
+import { z } from 'zod';
 
 export interface ArtTransformations {
   scale: [number, number]; // [width, height]
@@ -46,3 +47,24 @@ export interface OrderDetails {
   isUrgent: boolean;
   total: number;
 }
+
+
+// Schema and types for convert-to-glb flow
+export const ConvertToGlbInputSchema = z.object({
+  modelDataUri: z
+    .string()
+    .describe(
+      "The 3D model file to convert, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
+   sourceFileName: z.string().describe('The original filename of the model, including its extension (e.g., "myModel.dae").'),
+});
+export type ConvertToGlbInput = z.infer<typeof ConvertToGlbInputSchema>;
+
+export const ConvertToGlbOutputSchema = z.object({
+  glbDataUri: z
+    .string()
+    .describe(
+      "The converted GLB model, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
+});
+export type ConvertToGlbOutput = z.infer<typeof ConvertToGlbOutputSchema>;

@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, PlusCircle, UploadCloud, Sparkles, Rocket, Loader2, FileText, Save } from 'lucide-react';
+import { ArrowLeft, PlusCircle, UploadCloud, Sparkles, Rocket, Loader2, FileText, Save, Trash2 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import type { CupModel } from '@/lib/types';
@@ -26,6 +26,8 @@ interface EditProductPageProps {
     id: string;
   };
 }
+
+const supportedModelTypes = ['model/gltf-binary', 'model/vnd.collada+xml', 'model/gltf+json'];
 
 export default function EditProductPage({ params }: EditProductPageProps) {
   const { id } = params;
@@ -83,6 +85,17 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const handleModelFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
+
+        // Validate file type
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+        if (!fileExtension || !['glb', 'gltf', 'dae'].includes(fileExtension)) {
+            toast({
+                title: "Formato de Arquivo Inválido",
+                description: "Por favor, carregue um arquivo .glb, .gltf, ou .dae.",
+                variant: "destructive",
+            });
+            return;
+        }
 
         setModelFile(file);
         if (modelPreviewUrl) URL.revokeObjectURL(modelPreviewUrl);
@@ -158,6 +171,15 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
   const combinedRimColors: Record<string, string> = { ...RIM_COLORS, ...dynamicRimColors };
   const combinedDegradeColors: Record<string, string> = { ...DEGRADE_HEX_COLORS, ...dynamicDegradeColors };
+
+  const handleRemoveOption = (type: 'rim' | 'degrade', name: string) => {
+    if (type === 'rim') {
+        setAvailableRims(prev => prev.filter(r => r !== name));
+    }
+    if (type === 'degrade') {
+        setAvailableDegrades(prev => prev.filter(d => d !== name));
+    }
+  }
 
 
   const handleAddNewOption = (type: 'rim' | 'degrade') => {
@@ -295,8 +317,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                         <Accordion type="multiple" className="w-full" defaultValue={['item-1']}>
                             <AccordionItem value="item-1">
                                 <AccordionTrigger>Acabamentos</AccordionTrigger>
-                                <AccordionContent className="space-y-4 pt-4">
-                                    <p className='text-sm text-muted-foreground'>Defina os custos adicionais para cada tipo de acabamento do copo.</p>
+                                <AccordionContent className="space-y-6 pt-4">
+                                     {/* Acabamentos Padrão */}
                                     <div className="space-y-3">
                                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 border rounded-md">
                                             <div>
@@ -319,109 +341,114 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                             </div>
                                         </div>
                                     </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                            <AccordionItem value="item-3">
-                                <AccordionTrigger>Opções de Borda</AccordionTrigger>
-                                <AccordionContent className="space-y-4 pt-4">
-                                    <p className='text-sm text-muted-foreground'>Gerencie as cores de borda disponíveis e seus custos.</p>
-                                    <div className="space-y-2">
-                                        {availableRims.filter(rim => rim !== 'Nenhuma').map(rim => (
-                                            <div key={rim} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-2 border rounded-md">
-                                                <div className="flex items-center gap-3">
-                                                    <div
-                                                        className="w-5 h-5 rounded-full border"
-                                                        style={{ backgroundColor: combinedRimColors[rim] }}
-                                                    />
-                                                    <Label>{rim}</Label>
-                                                </div>
-                                                <div className="flex items-center gap-2 w-full sm:w-auto">
-                                                    <Label htmlFor={`price-rim-${rim}`} className="text-sm whitespace-nowrap">Custo (R$)</Label>
-                                                    <Input id={`price-rim-${rim}`} type="number" step="0.01" defaultValue="0.75" className="w-full sm:w-28" />
-                                                </div>
-                                            </div>
-                                        ))}
-                                        <Dialog open={isRimDialogOpen} onOpenChange={setRimDialogOpen}>
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm" className='gap-2 w-full mt-2'>
-                                                    <PlusCircle className="h-4 w-4" /> Adicionar Cor de Borda
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Adicionar Nova Cor de Borda</DialogTitle>
-                                                    <DialogDescription>
-                                                        Esta nova cor ficará disponível para seleção nos produtos.
-                                                    </DialogDescription>
-                                                </DialogHeader>
-                                                <div className="space-y-4 py-2">
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="rim-name">Nome da Cor</Label>
-                                                        <Input id="rim-name" placeholder="Ex: Cobre Metálico" value={newRimName} onChange={(e) => setNewRimName(e.target.value)} />
+                                    <Separator />
+                                     {/* Opções de Borda */}
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold text-base">Opções de Borda</h4>
+                                        <div className="space-y-2">
+                                            {availableRims.filter(rim => rim !== 'Nenhuma').map(rim => (
+                                                <div key={rim} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-2 border rounded-md">
+                                                    <div className="flex items-center gap-3">
+                                                        <div
+                                                            className="w-5 h-5 rounded-full border"
+                                                            style={{ backgroundColor: combinedRimColors[rim] }}
+                                                        />
+                                                        <Label>{rim}</Label>
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="rim-hex">Cor (Hex)</Label>
-                                                        <Input id="rim-hex" placeholder="#B87333" value={newRimHex} onChange={(e) => setNewRimHex(e.target.value)} />
+                                                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                                                        <Label htmlFor={`price-rim-${rim}`} className="text-sm whitespace-nowrap">Custo (R$)</Label>
+                                                        <Input id={`price-rim-${rim}`} type="number" step="0.01" defaultValue="0.75" className="w-full sm:w-28" />
+                                                         <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveOption('rim', rim)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
                                                     </div>
                                                 </div>
-                                                <DialogFooter>
-                                                    <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-                                                    <Button onClick={() => handleAddNewOption('rim')}>Salvar Cor</Button>
-                                                </DialogFooter>
-                                            </DialogContent>
-                                        </Dialog>
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                            <AccordionItem value="item-4">
-                                <AccordionTrigger>Opções de Degradê</AccordionTrigger>
-                                <AccordionContent className="space-y-4 pt-4">
-                                <p className='text-sm text-muted-foreground'>Gerencie as cores de degradê disponíveis e seus custos.</p>
-                                    <div className="space-y-2">
-                                        {availableDegrades.filter(c => c !== 'Nenhum').map(color => (
-                                            <div key={color} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-2 border rounded-md">
-                                                <div className="flex items-center gap-3">
-                                                    <div
-                                                        className="w-5 h-5 rounded-full border"
-                                                        style={{ background: `linear-gradient(to bottom, ${combinedDegradeColors[color]}, hsl(var(--card)))` }}
-                                                    />
-                                                    <Label>{color}</Label>
-                                                </div>
-                                                <div className="flex items-center gap-2 w-full sm:w-auto">
-                                                    <Label htmlFor={`price-degrade-${color}`} className="text-sm whitespace-nowrap">Custo (R$)</Label>
-                                                    <Input id={`price-degrade-${color}`} type="number" step="0.01" defaultValue="1.20" className="w-full sm:w-28" />
-                                                </div>
-                                            </div>
-                                        ))}
-                                        <Dialog open={isDegradeDialogOpen} onOpenChange={setDegradeDialogOpen}>
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm" className='gap-2 w-full mt-2'>
-                                                    <PlusCircle className="h-4 w-4" /> Adicionar Cor de Degradê
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Adicionar Nova Cor de Degradê</DialogTitle>
+                                            ))}
+                                            <Dialog open={isRimDialogOpen} onOpenChange={setRimDialogOpen}>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" size="sm" className='gap-2 w-full mt-2'>
+                                                        <PlusCircle className="h-4 w-4" /> Adicionar Cor de Borda
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>Adicionar Nova Cor de Borda</DialogTitle>
                                                         <DialogDescription>
-                                                        Esta nova cor de degradê ficará disponível para seleção nos produtos.
-                                                    </DialogDescription>
-                                                </DialogHeader>
+                                                            Esta nova cor ficará disponível para seleção nos produtos.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
                                                     <div className="space-y-4 py-2">
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="degrade-name">Nome da Cor</Label>
-                                                        <Input id="degrade-name" placeholder="Ex: Verde Esmeralda" value={newDegradeName} onChange={(e) => setNewDegradeName(e.target.value)} />
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="rim-name">Nome da Cor</Label>
+                                                            <Input id="rim-name" placeholder="Ex: Cobre Metálico" value={newRimName} onChange={(e) => setNewRimName(e.target.value)} />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="rim-hex">Cor (Hex)</Label>
+                                                            <Input id="rim-hex" placeholder="#B87333" value={newRimHex} onChange={(e) => setNewRimHex(e.target.value)} />
+                                                        </div>
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="degrade-hex">Cor (Hex)</Label>
-                                                        <Input id="degrade-hex" placeholder="#50C878" value={newDegradeHex} onChange={(e) => setNewDegradeHex(e.target.value)} />
+                                                    <DialogFooter>
+                                                        <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
+                                                        <Button onClick={() => handleAddNewOption('rim')}>Salvar Cor</Button>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
+                                        </div>
+                                    </div>
+
+                                    <Separator />
+                                     {/* Opções de Degradê */}
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold text-base">Opções de Degradê</h4>
+                                        <div className="space-y-2">
+                                            {availableDegrades.filter(c => c !== 'Nenhum').map(color => (
+                                                <div key={color} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-2 border rounded-md">
+                                                    <div className="flex items-center gap-3">
+                                                        <div
+                                                            className="w-5 h-5 rounded-full border"
+                                                            style={{ background: `linear-gradient(to bottom, ${combinedDegradeColors[color]}, hsl(var(--card)))` }}
+                                                        />
+                                                        <Label>{color}</Label>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                                                        <Label htmlFor={`price-degrade-${color}`} className="text-sm whitespace-nowrap">Custo (R$)</Label>
+                                                        <Input id={`price-degrade-${color}`} type="number" step="0.01" defaultValue="1.20" className="w-full sm:w-28" />
+                                                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveOption('degrade', color)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
                                                     </div>
                                                 </div>
-                                                <DialogFooter>
-                                                    <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-                                                    <Button onClick={() => handleAddNewOption('degrade')}>Salvar Cor</Button>
-                                                </DialogFooter>
-                                            </DialogContent>
-                                        </Dialog>
+                                            ))}
+                                            <Dialog open={isDegradeDialogOpen} onOpenChange={setDegradeDialogOpen}>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" size="sm" className='gap-2 w-full mt-2'>
+                                                        <PlusCircle className="h-4 w-4" /> Adicionar Cor de Degradê
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>Adicionar Nova Cor de Degradê</DialogTitle>
+                                                            <DialogDescription>
+                                                            Esta nova cor de degradê ficará disponível para seleção nos produtos.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                        <div className="space-y-4 py-2">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="degrade-name">Nome da Cor</Label>
+                                                            <Input id="degrade-name" placeholder="Ex: Verde Esmeralda" value={newDegradeName} onChange={(e) => setNewDegradeName(e.target.value)} />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="degrade-hex">Cor (Hex)</Label>
+                                                            <Input id="degrade-hex" placeholder="#50C878" value={newDegradeHex} onChange={(e) => setNewDegradeHex(e.target.value)} />
+                                                        </div>
+                                                    </div>
+                                                    <DialogFooter>
+                                                        <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
+                                                        <Button onClick={() => handleAddNewOption('degrade')}>Salvar Cor</Button>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
+                                        </div>
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>
@@ -539,7 +566,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                                 <>
                                                     <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
                                                     <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste</p>
-                                                    <p className="text-xs text-muted-foreground">Qualquer tipo de arquivo 3D</p>
+                                                    <p className="text-xs text-muted-foreground">Arquivos .glb, .gltf, ou .dae</p>
                                                 </>
                                             )}
                                         </div>
@@ -550,6 +577,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                             className="hidden"
                                             onChange={handleModelFileChange}
                                             disabled={isConverting}
+                                            accept=".glb,.gltf,.dae"
                                         />
                                     </label>
                                 </div> 
@@ -617,6 +645,3 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     </form>
   );
 }
-
-
-      

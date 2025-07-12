@@ -16,7 +16,7 @@ import type { OptimizeAdCopyInput } from '@/ai/flows/optimize-ad-copy';
 import { analyzeMarketingQuality } from '@/ai/flows/analyze-marketing-quality';
 import type { AnalyzeMarketingQualityInput } from '@/ai/flows/analyze-marketing-quality';
 import { convertToGlb } from '@/ai/flows/convert-to-glb';
-import type { ConvertToGlbInput } from '@/ai/flows/convert-to-glb';
+import type { ConvertToGlbInput } from '@/lib/types';
 
 
 export async function handleArtGeneration(prompt: string) {
