@@ -15,6 +15,8 @@ import { optimizeAdCopy } from '@/ai/flows/optimize-ad-copy';
 import type { OptimizeAdCopyInput } from '@/ai/flows/optimize-ad-copy';
 import { analyzeMarketingQuality } from '@/ai/flows/analyze-marketing-quality';
 import type { AnalyzeMarketingQualityInput } from '@/ai/flows/analyze-marketing-quality';
+import { convertToGlb } from '@/ai/flows/convert-to-glb';
+import type { ConvertToGlbInput } from '@/ai/flows/convert-to-glb';
 
 
 export async function handleArtGeneration(prompt: string) {
@@ -226,4 +228,14 @@ export async function handleAdminLogin(formData: FormData) {
       redirect('/admin');
   }
   redirect('/admin/login?error=true');
+}
+
+export async function handleConvertModelToGlb(input: ConvertToGlbInput) {
+    try {
+        const result = await convertToGlb(input);
+        return { success: true, glbDataUri: result.glbDataUri };
+    } catch (error) {
+        console.error('Error converting model to GLB:', error);
+        return { success: false, error: 'Falha ao converter o modelo.' };
+    }
 }

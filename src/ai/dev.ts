@@ -13,4 +13,5 @@ import '@/ai/flows/optimize-product-seo';
 import '@/ai/flows/generate-ad-creative';
 import '@/ai/flows/optimize-ad-copy';
 import '@/ai/flows/analyze-marketing-quality';
+import '@/ai/flows/convert-to-glb';
 
