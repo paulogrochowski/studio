@@ -4,7 +4,6 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 import { AdminLoginModalProvider } from '@/components/admin-login-modal-provider';
-import { FooterMenuWrapper } from '@/components/footer-menu-wrapper';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -37,12 +36,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AdminLoginModalProvider>
-            <div className="flex flex-col min-h-screen">
-              <div className="flex-grow">
-                {children}
-              </div>
-              <FooterMenuWrapper />
-            </div>
+              {children}
           </AdminLoginModalProvider>
           <Toaster />
         </ThemeProvider>

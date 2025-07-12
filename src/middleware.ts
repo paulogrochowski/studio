@@ -4,8 +4,16 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const isAdminRoute = pathname.startsWith('/admin');
+  const hasAdminSession = request.cookies.has('admin-session');
 
-  // Pass headers to client components for layout decisions
+  // Protege as rotas /admin
+  if (isAdminRoute && !hasAdminSession) {
+    // Redireciona para a página inicial se não for admin
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // Pass headers to client components for layout decisions if needed
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
   requestHeaders.set('x-url', request.url);

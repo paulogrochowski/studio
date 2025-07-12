@@ -28,10 +28,10 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
                 if (result?.success) {
                     toast({
                         title: "Login de Admin bem-sucedido!",
-                        description: "Bem-vindo ao painel.",
+                        description: "Redirecionando para o painel.",
                     });
                     onLoginSuccess?.(); // Fecha o modal
-                    router.refresh(); // Atualiza a página para mostrar o menu de admin
+                    router.push('/admin'); // Redireciona para o painel
                 } else {
                     // Embora o 'else' possa não ser alcançado se o erro for lançado,
                     // é uma boa prática para segurança.
