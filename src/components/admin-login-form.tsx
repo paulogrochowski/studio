@@ -31,11 +31,8 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
                         description: "Redirecionando para o painel.",
                     });
                     onLoginSuccess?.(); // Fecha o modal
-                    router.push('/admin'); // Redireciona para o painel
-                } else {
-                    // Embora o 'else' possa não ser alcançado se o erro for lançado,
-                    // é uma boa prática para segurança.
-                    throw new Error(result.error || 'Credenciais inválidas.')
+                    router.push('/admin/dashboard'); // Redireciona para o painel
+                    router.refresh(); // Força a atualização do layout
                 }
             } catch (error: any) {
                 toast({

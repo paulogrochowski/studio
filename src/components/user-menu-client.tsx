@@ -22,7 +22,7 @@ export function UserMenuClient({ isLoggedIn }: UserMenuClientProps) {
 
   if (!isLoggedIn) {
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
             <Button variant="ghost" size="sm" asChild>
                 <Link href="/login">Entrar</Link>
             </Button>
@@ -57,7 +57,7 @@ export function UserMenuClient({ isLoggedIn }: UserMenuClientProps) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/profile" className="flex items-center cursor-pointer">
+          <Link href="#" className="flex items-center cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
             <span>Meu Perfil</span>
           </Link>
