@@ -15,7 +15,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import type { CupModel } from '@/lib/types';
 import { Textarea } from '@/components/ui/textarea';
-import { handleSeoOptimization, handleAdminUpdateProduct } from '@/app/actions';
+import { handleSeoOptimization, handleAdminUpdateProduct, handleConvertModelToGlb } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import CupPreview3D from '@/components/cup-preview-3d';
 import { Switch } from '@/components/ui/switch';
@@ -41,13 +41,16 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [productSummaryText, setProductSummaryText] = useState(productSummary?.summary || '');
   const [productDescription, setProductDescription] = useState(productSummary?.description || '');
   const [showcaseImagePreview, setShowcaseImagePreview] = useState<string | null>(productSummary?.imageUrl || null);
+  
   const [modelFile, setModelFile] = useState<File | null>(null);
   const [modelPreviewUrl, setModelPreviewUrl] = useState<string | null>(null);
+  const [convertedGlbUrl, setConvertedGlbUrl] = useState<string | null>(null);
+  const [isConverting, startConversionTransition] = useTransition();
+
   const [isCustomizable, setIsCustomizable] = useState(true);
 
-
   const [isRimDialogOpen, setRimDialogOpen] = useState(false);
-  const [isDegradeDialogOpen, setDegradeDialogOpen] = useState(false);
+  const [isDegradeDialogOpen, setDegradeDialogOpen] =useState(false);
   
   const [availableRims, setAvailableRims] = useState<string[]>([...ALL_RIMS]);
   const [availableDegrades, setAvailableDegrades] = useState<string[]>([...DEGRADE_COLORS]);
@@ -80,16 +83,42 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const handleModelFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
+
         setModelFile(file);
-        if (modelPreviewUrl) {
-            URL.revokeObjectURL(modelPreviewUrl);
-        }
+        if (modelPreviewUrl) URL.revokeObjectURL(modelPreviewUrl);
+        
         const newPreviewUrl = URL.createObjectURL(file);
         setModelPreviewUrl(newPreviewUrl);
-        toast({
-            title: "Arquivo Carregado",
-            description: `O arquivo ${file.name} está pronto para ser visualizado.`
-        });
+        setConvertedGlbUrl(null);
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            const dataUri = reader.result as string;
+            startConversionTransition(async () => {
+                const result = await handleConvertModelToGlb({ modelDataUri: dataUri, sourceFileName: file.name });
+                if (result.success && result.glbDataUri) {
+                    setConvertedGlbUrl(result.glbDataUri);
+                    toast({
+                        title: "Conversão Automática Concluída!",
+                        description: `O arquivo ${file.name} foi otimizado para GLB.`,
+                    });
+                } else {
+                    toast({
+                        title: "Falha na Conversão",
+                        description: result.error,
+                        variant: "destructive",
+                    });
+                }
+            });
+        };
+        reader.onerror = () => {
+             toast({
+                title: "Erro ao ler o arquivo",
+                description: "Não foi possível processar o arquivo selecionado.",
+                variant: "destructive",
+            });
+        }
     }
   };
 
@@ -103,8 +132,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       if (modelPreviewUrl) {
         URL.revokeObjectURL(modelPreviewUrl);
       }
+      if(convertedGlbUrl) {
+        URL.revokeObjectURL(convertedGlbUrl);
+      }
     };
-  }, [showcaseImagePreview, modelPreviewUrl]);
+  }, [showcaseImagePreview, modelPreviewUrl, convertedGlbUrl]);
 
   // Now we can safely check and exit if the product is not found.
   if (!productSummary || !productDetails) {
@@ -484,14 +516,20 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                             <CardHeader>
                                 <CardTitle className="text-lg">Modelo 3D</CardTitle>
                                 <CardDescription>
-                                    Arraste e solte ou clique para carregar o arquivo.
+                                    Arraste e solte ou clique para carregar o arquivo. A conversão para GLB é automática.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center justify-center w-full">
                                     <label htmlFor="model-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
                                         <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center">
-                                            {modelFile ? (
+                                            {isConverting ? (
+                                                <>
+                                                    <Loader2 className="w-8 h-8 mb-4 text-primary animate-spin" />
+                                                    <p className="font-semibold text-primary">Convertendo para GLB...</p>
+                                                    <p className="text-xs text-muted-foreground">Aguarde um momento.</p>
+                                                </>
+                                            ) : modelFile ? (
                                                 <>
                                                     <FileText className="w-8 h-8 mb-4 text-primary" />
                                                     <p className="font-semibold text-primary">{modelFile.name}</p>
@@ -500,7 +538,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                             ) : (
                                                 <>
                                                     <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste e solte</p>
+                                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para carregar</span> ou arraste</p>
                                                     <p className="text-xs text-muted-foreground">Qualquer tipo de arquivo 3D</p>
                                                 </>
                                             )}
@@ -511,12 +549,13 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                             type="file" 
                                             className="hidden"
                                             onChange={handleModelFileChange}
+                                            disabled={isConverting}
                                         />
                                     </label>
                                 </div> 
                             </CardContent>
                         </Card>
-                        {modelPreviewUrl && (
+                        {(modelPreviewUrl || convertedGlbUrl) && (
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="text-lg">Preview 3D</CardTitle>
@@ -529,7 +568,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                                         <CupPreview3D 
                                             cupModel={previewModel} 
                                             art={null} 
-                                            modelUrl={modelPreviewUrl}
+                                            modelUrl={convertedGlbUrl || modelPreviewUrl}
                                         />
                                     </div>
                                 </CardContent>
@@ -578,3 +617,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     </form>
   );
 }
+
+
+      
