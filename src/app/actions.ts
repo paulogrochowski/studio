@@ -164,19 +164,23 @@ export async function handleCustomerLogin(formData: FormData) {
       maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 days or session
       path: '/',
     });
-    // Don't redirect, let the client-side handle the UI update
     return { success: true };
   } else {
-    // Return an error for the client-side form to handle
     return { success: false, error: "Email ou senha inválidos." };
   }
 }
 
 export async function handleLogout() {
+  const isAdmin = cookies().has('admin-session');
   cookies().delete('auth-token');
   cookies().delete('admin-session');
-  redirect('/admin');
+  if (isAdmin) {
+      redirect('/admin');
+  } else {
+      redirect('/');
+  }
 }
+
 
 export async function handleAdminUpdateCustomer(customerId: string, formData: FormData) {
     console.log('Updating customer with ID:', customerId);
@@ -230,7 +234,7 @@ export async function handleAdminLogin(formData: FormData) {
       });
       redirect('/admin');
   }
-  redirect('/admin?error=true');
+  return { success: false, error: 'Email ou senha incorretos.' };
 }
 
 export async function handleConvertModelToGlb(input: ConvertToGlbInput) {

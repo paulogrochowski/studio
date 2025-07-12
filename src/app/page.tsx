@@ -8,6 +8,7 @@ import { CUP_TYPES_SUMMARY } from '@/lib/cup-data';
 import { ShippingCalculator } from '@/components/shipping-calculator';
 import { ArrowRight, Facebook, Instagram, Youtube } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
+import { AdminLoginButton } from '@/components/admin-login-button';
 
 export default function LandingPage() {
   return (
@@ -94,7 +95,7 @@ export default function LandingPage() {
                     <Link href="#" target="_blank"><Youtube className="h-5 w-5" /></Link>
                 </Button>
                 <span className="text-muted-foreground mx-2">|</span>
-                 <Link href="/admin" className="text-xs text-muted-foreground hover:underline">Acesso Admin</Link>
+                 <AdminLoginButton />
             </div>
         </div>
       </footer>

@@ -11,6 +11,11 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { handleAdminLogin } from '@/app/actions';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { useAdminLogin } from './admin-login-modal-provider';
+import { AdminLoginButton } from './admin-login-button';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -22,52 +27,63 @@ function SubmitButton() {
     )
 }
 
-export function AdminLoginForm({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
+interface AdminLoginFormProps {
+    onLoginSuccess?: () => void;
+}
 
-  return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Acesso Restrito</CardTitle>
-        <CardDescription>Use suas credenciais de administrador para acessar o painel.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {searchParams.error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Erro de Autenticação</AlertTitle>
-            <AlertDescription>
-              Email ou senha incorretos. Tente novamente.
-            </AlertDescription>
-          </Alert>
-        )}
-        <form action={handleAdminLogin} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="admin@coposmania.com" required defaultValue="admin@coposmania.com" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <Input id="password" name="password" type="password" required defaultValue="12345" />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="remember" name="remember" defaultChecked />
-            <Label
-                htmlFor="remember"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-                Lembrar-me
-            </Label>
-          </div>
-          <SubmitButton />
-        </form>
-      </CardContent>
-      <CardFooter className="text-center text-sm justify-center">
-        <p>É um cliente? <Link href="/login" className="text-primary hover:underline">Faça login aqui</Link></p>
-      </CardFooter>
-    </Card>
-  );
+export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
+    const [state, formAction] = useFormState(handleAdminLogin, { success: false, error: null });
+    const { toast } = useToast();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (state.success) {
+            toast({
+                title: "Login de Admin bem-sucedido!",
+                description: "Bem-vindo ao painel.",
+            });
+            onLoginSuccess?.();
+            router.push('/admin'); // Redirect to admin dashboard on success
+        }
+    }, [state.success, onLoginSuccess, router, toast]);
+
+    return (
+        <Card className="w-full max-w-md border-0 shadow-none">
+            <CardHeader className="text-center">
+                <CardTitle className="font-headline text-2xl">Acesso Restrito</CardTitle>
+                <CardDescription>Use suas credenciais de administrador para acessar o painel.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {state.error && (
+                    <Alert variant="destructive" className="mb-4">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Erro de Autenticação</AlertTitle>
+                        <AlertDescription>
+                            {state.error}
+                        </AlertDescription>
+                    </Alert>
+                )}
+                <form action={formAction} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" name="email" type="email" placeholder="admin@coposmania.com" required defaultValue="admin@coposmania.com" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Senha</Label>
+                        <Input id="password" name="password" type="password" required defaultValue="12345" />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Checkbox id="remember" name="remember" defaultChecked />
+                        <Label
+                            htmlFor="remember"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                            Lembrar-me
+                        </Label>
+                    </div>
+                    <SubmitButton />
+                </form>
+            </CardContent>
+        </Card>
+    );
 }

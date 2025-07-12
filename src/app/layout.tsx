@@ -3,6 +3,7 @@ import { Oswald, Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
+import { AdminLoginModalProvider } from '@/components/admin-login-modal-provider';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -33,7 +34,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AdminLoginModalProvider>
+            {children}
+          </AdminLoginModalProvider>
           <Toaster />
         </ThemeProvider>
       </body>

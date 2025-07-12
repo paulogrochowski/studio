@@ -1,5 +1,6 @@
 
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
@@ -14,32 +15,14 @@ import {
 import Link from 'next/link';
 import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Megaphone, Palette, Wrench, LogOut } from 'lucide-react';
 import { AdminHeader } from "@/components/admin-header";
-import { AdminLoginForm } from '@/components/admin-login-form';
-import { Button } from '@/components/ui/button';
 import { handleLogout } from '../actions';
-import { headers } from 'next/headers';
-
-function getSearchParams() {
-    const heads = headers();
-    const url = new URL(heads.get('x-url') || 'http://localhost');
-    const searchParams: { [key: string]: string | string[] | undefined } = {};
-    url.searchParams.forEach((value, key) => {
-        searchParams[key] = value;
-    });
-    return searchParams;
-}
-
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const adminCookie = cookies().get('admin-session');
-    const searchParams = getSearchParams();
 
     if (!adminCookie) {
-        return (
-            <div className="flex min-h-screen w-full items-center justify-center bg-muted/40 p-4">
-                <AdminLoginForm searchParams={searchParams} />
-            </div>
-        )
+        // O middleware já deve ter redirecionado, mas como uma segunda camada de segurança.
+        redirect('/');
     }
 
   return (

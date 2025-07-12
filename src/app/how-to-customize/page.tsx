@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/header';
 import { CupSoda, Palette, Sparkles, ShoppingCart, Instagram, Facebook, Youtube } from 'lucide-react';
+import { AdminLoginButton } from '@/components/admin-login-button';
 
 export default function HowToCustomizePage() {
   const steps = [
@@ -78,7 +79,7 @@ export default function HowToCustomizePage() {
                     <Link href="#" target="_blank"><Youtube className="h-5 w-5" /></Link>
                 </Button>
                 <span className="text-muted-foreground mx-2">|</span>
-                 <Link href="/admin" className="text-xs text-muted-foreground hover:underline">Acesso Admin</Link>
+                 <AdminLoginButton />
             </div>
         </div>
       </footer>

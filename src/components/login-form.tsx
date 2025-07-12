@@ -1,20 +1,19 @@
 
-
 'use client';
 
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { handleCustomerLogin } from '@/app/actions';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useTransition, useEffect } from 'react';
+import { AdminLoginButton } from './admin-login-button';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -43,8 +42,8 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                 title: "Login bem-sucedido!",
                 description: "Bem-vindo de volta!",
             });
-            router.refresh(); // Refresh the page to update the header
-            onLoginSuccess?.(); // Close the dialog
+            onLoginSuccess?.(); 
+            router.refresh(); 
         } else {
             toast({
                 title: "Erro de Autenticação",
@@ -85,7 +84,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
       </CardContent>
       <CardFooter className="flex flex-col items-center justify-center text-center text-sm gap-2">
         <p>Não tem uma conta? <Link href="/register" className="text-primary hover:underline">Cadastre-se</Link></p>
-        <p><Link href="/admin" className="text-xs text-muted-foreground hover:underline">Acessar painel de administrador</Link></p>
+        <AdminLoginButton />
       </CardFooter>
     </Card>
   );
