@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link";
@@ -22,32 +23,14 @@ export function UserMenuClient({ isLoggedIn, notificationCount = 0 }: UserMenuCl
 
   if (!isLoggedIn) {
     return (
-      <>
-        {/* Desktop Buttons */}
-        <div className="hidden sm:flex items-center gap-2">
-            <Button variant="ghost" asChild>
+        <div className="flex items-center gap-2">
+            <Button variant="ghost" asChild size="sm">
                 <Link href="/login">Entrar</Link>
             </Button>
-            <Button asChild>
+            <Button asChild size="sm">
                 <Link href="/register">Registrar</Link>
             </Button>
         </div>
-        {/* Mobile Dropdown */}
-        <div className="sm:hidden">
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                        <User className="h-[1.2rem] w-[1.2rem]" />
-                        <span className="sr-only">Menu do Usuário</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild><Link href="/login">Fazer Login</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/register">Cadastrar</Link></DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </>
     );
   }
 
