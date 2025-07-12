@@ -30,8 +30,9 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
                         title: "Login de Admin bem-sucedido!",
                         description: "Bem-vindo ao painel.",
                     });
-                    onLoginSuccess?.();
-                    router.refresh();
+                    onLoginSuccess?.(); // This will close the modal
+                    router.push('/'); // Redirect to home to see the admin panel
+                    router.refresh(); // Refresh to ensure server components update
                 }
             } catch (error: any) {
                 toast({
