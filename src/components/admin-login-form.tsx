@@ -31,7 +31,6 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
                         description: "Bem-vindo ao painel.",
                     });
                     onLoginSuccess?.(); // This will close the modal
-                    router.push('/'); // Redirect to home to see the admin panel
                     router.refresh(); // Refresh to ensure server components update
                 }
             } catch (error: any) {
@@ -78,3 +77,5 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
         </Card>
     );
 }
+
+    

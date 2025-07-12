@@ -74,6 +74,7 @@ export async function handleShippingCalculation(cep: string) {
         return { success: false, error: 'CEP inválido. Por favor, digite um CEP com 8 dígitos.' };
     }
     
+    // Simulação: Custo e tempo de entrega aleatórios
     const randomCost = 15 + Math.random() * 30;
     const randomTime = 3 + Math.floor(Math.random() * 10);
 
@@ -93,6 +94,7 @@ export async function handleAdminAddProduct(formData: FormData) {
         return { success: false, error: "Todos os campos são obrigatórios." };
     }
     
+    // Simulação: Log do novo produto
     console.log('New Product to be added:', {
       name,
       basePrice: parseFloat(basePrice),
@@ -140,6 +142,7 @@ export async function handleAdminAddCustomer(formData: FormData) {
         return { success: false, error: "Nome e Email são obrigatórios." };
     }
 
+    // Simulação: Log do novo cliente
     console.log('New Customer to be added:', {
       name,
       email,
@@ -178,6 +181,7 @@ export async function handleLogout() {
 
 
 export async function handleAdminUpdateCustomer(customerId: string, formData: FormData) {
+    // Simulação de atualização
     console.log('Updating customer with ID:', customerId);
     console.log('Form data received:', {
         name: formData.get('name'),
@@ -190,6 +194,7 @@ export async function handleAdminUpdateCustomer(customerId: string, formData: Fo
 }
 
 export async function handleAdminUpdateProduct(productId: string, formData: FormData) {
+    // Simulação de atualização
     console.log('Updating product with ID:', productId);
     console.log('Form data received:', {
         name: formData.get('name'),
@@ -201,6 +206,7 @@ export async function handleAdminUpdateProduct(productId: string, formData: Form
 }
 
 export async function handleAdminUpdateLayout(formData: FormData) {
+    // Simulação de atualização
     console.log('Updating layout settings:');
     console.log('Form data received:', {
         primaryColor: formData.get('primaryColor'),
@@ -220,11 +226,12 @@ export async function handleAdminLogin(formData: FormData) {
   const password = formData.get('password') as string;
   const remember = formData.get('remember');
 
+  // Simulação: credenciais fixas para o administrador
   if (email === 'admin@coposmania.com' && password === '12345') {
       cookies().set('admin-session', 'admin-logged-in', {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 days
+          maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 dias
           path: '/',
       });
       return { success: true };
@@ -242,3 +249,5 @@ export async function handleConvertModelToGlb(input: ConvertToGlbInput) {
         return { success: false, error: 'Falha ao converter o modelo.' };
     }
 }
+
+    
