@@ -25,11 +25,11 @@ function SubmitButton() {
     )
 }
 
-export function LoginForm({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
+interface LoginFormProps {
+  onLoginSuccess?: () => void;
+}
+
+export function LoginForm({ onLoginSuccess }: LoginFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -43,6 +43,7 @@ export function LoginForm({
                 description: "Bem-vindo de volta!",
             });
             router.refresh(); // Refresh the page to update the header
+            onLoginSuccess?.(); // Close the dialog
         } else {
             toast({
                 title: "Erro de Autenticação",
@@ -54,21 +55,12 @@ export function LoginForm({
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full border-0 shadow-none">
       <CardHeader>
         <CardTitle className="font-headline text-2xl">Login</CardTitle>
         <CardDescription>Acesse sua conta para ver seus pedidos e favoritos.</CardDescription>
       </CardHeader>
       <CardContent>
-        {searchParams.error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Erro de Autenticação</AlertTitle>
-            <AlertDescription>
-              Email ou senha incorretos. Tente novamente.
-            </AlertDescription>
-          </Alert>
-        )}
         <form action={clientAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -92,7 +84,7 @@ export function LoginForm({
       </CardContent>
       <CardFooter className="flex flex-col items-center justify-center text-center text-sm gap-2">
         <p>Não tem uma conta? <Link href="/register" className="text-primary hover:underline">Cadastre-se</Link></p>
-        <p><Link href="/admin" className="text-xs text-muted-foreground hover:underline">Acessar painel de administrador</Link></p>
+        <p><Link href="/admin/login" className="text-xs text-muted-foreground hover:underline">Acessar painel de administrador</Link></p>
       </CardFooter>
     </Card>
   );

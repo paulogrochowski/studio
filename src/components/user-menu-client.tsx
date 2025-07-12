@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -10,9 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
 import { User, LogOut, Heart, Settings, ShoppingCart } from "lucide-react";
 import { handleLogout } from "@/app/actions";
+import { LoginForm } from "./login-form";
 
 interface UserMenuClientProps {
   isLoggedIn: boolean;
@@ -20,13 +23,20 @@ interface UserMenuClientProps {
 }
 
 export function UserMenuClient({ isLoggedIn, notificationCount = 0 }: UserMenuClientProps) {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   if (!isLoggedIn) {
     return (
         <div className="flex items-center gap-2">
-            <Button variant="ghost" asChild size="sm">
-                <Link href="/login">Entrar</Link>
-            </Button>
+            <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm">Entrar</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md p-0">
+                   <LoginForm onLoginSuccess={() => setIsLoginOpen(false)} />
+                </DialogContent>
+            </Dialog>
+
             <Button asChild size="sm">
                 <Link href="/register">Registrar</Link>
             </Button>
