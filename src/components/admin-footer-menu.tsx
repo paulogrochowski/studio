@@ -26,7 +26,7 @@ export function AdminFooterMenu() {
                     key={href}
                     className={cn(
                         "flex flex-col items-center justify-center gap-1 text-xs font-medium w-16 transition-colors hover:text-primary-foreground/80",
-                        pathname === href ? "text-white font-bold" : "text-primary-foreground/70"
+                        pathname === href ? "text-primary-foreground font-bold opacity-100" : "text-primary-foreground/70 opacity-70"
                     )}
                 >
                     <Icon className="w-6 h-6" />

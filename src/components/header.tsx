@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
-import { LogOut, ShoppingCart } from "lucide-react";
+import { LogOut, ShoppingCart, User } from "lucide-react";
 import { PromotionalBanner } from "./promotional-banner";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useEffect, useState, type ReactNode } from "react";
@@ -43,7 +43,7 @@ export function Header({children}: {children: ReactNode}) {
             </Link>
             <div className="flex items-center gap-4 bg-card p-2 rounded-lg shadow-md">
               <div className="bg-primary text-primary-foreground rounded-full p-2">
-                <Icons.logo className="h-6 w-6" />
+                <User className="h-6 w-6" />
               </div>
               <div>
                 <p className="font-bold">Administrador</p>

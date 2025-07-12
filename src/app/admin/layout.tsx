@@ -2,11 +2,6 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import { handleLogout } from '@/app/actions';
-import { Button } from '@/components/ui/button';
-import { AdminFooterMenu } from '@/components/admin-footer-menu';
-import { Home, LogOut } from 'lucide-react';
-import Link from 'next/link';
 import { useTheme } from 'next-themes';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

@@ -44,7 +44,7 @@ export default function RootLayout({
               <Header>
                 <UserMenuWrapper />
               </Header>
-              <main className="flex-1">{children}</main>
+              <main className="flex-1 pb-20">{children}</main>
               <Footer />
               <FooterMenuWrapper />
             </div>
