@@ -13,7 +13,7 @@ import { Wrench, LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Megap
 import { Button } from "./ui/button";
 import { handleLogout } from "@/app/actions";
 import { Separator } from "./ui/separator";
-import { useAdminLogin } from "./admin-login-modal-provider";
+import { AdminPlaceholder } from "./admin-placeholder";
 
 const AdminToolButton = ({ icon: Icon, label, children }: { icon: React.ElementType, label: string, children: React.ReactNode }) => (
   <Dialog>
@@ -36,17 +36,28 @@ const AdminToolButton = ({ icon: Icon, label, children }: { icon: React.ElementT
 );
 
 export function AdminFloatingPanel() {
-  const AdminPlaceholder = ({ title }: { title: string }) => (
-    <div className="flex flex-col items-center justify-center text-center py-16 bg-muted/50 rounded-lg border-2 border-dashed">
-      <Wrench className="w-12 h-12 text-muted-foreground mb-4" />
-      <h3 className="text-xl font-bold">{title}</h3>
-      <p className="text-muted-foreground">Esta funcionalidade está em desenvolvimento.</p>
-    </div>
-  );
 
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
       <div className="flex items-center gap-2 bg-background border rounded-full shadow-2xl p-2">
+        <AdminToolButton label="Dashboard" icon={LayoutDashboard}>
+          <AdminPlaceholder title="Dashboard Principal" />
+        </AdminToolButton>
+        <AdminToolButton label="Pedidos" icon={ShoppingCart}>
+          <AdminPlaceholder title="Gerenciamento de Pedidos" />
+        </AdminToolButton>
+        <AdminToolButton label="Produtos" icon={Package}>
+          <AdminPlaceholder title="Gerenciamento de Produtos" />
+        </AdminToolButton>
+        <AdminToolButton label="Clientes" icon={Users}>
+          <AdminPlaceholder title="Gerenciamento de Clientes" />
+        </AdminToolButton>
+        <AdminToolButton label="Análises" icon={BarChart3}>
+          <AdminPlaceholder title="Análises e Relatórios" />
+        </AdminToolButton>
+        
+        <Separator orientation="vertical" className="h-10 mx-1" />
+        
         <AdminToolButton label="Layout" icon={Palette}>
           <AdminPlaceholder title="Editor de Layout da Loja" />
         </AdminToolButton>
