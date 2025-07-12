@@ -9,15 +9,17 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
+        protocol: "https,"
         hostname: "placehold.co",
         port: "",
         pathname: "/**",
       },
     ],
   },
-  serverActions: {
-    bodySizeLimit: '8mb',
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '8mb',
+    },
   },
   allowedDevOrigins: ["https://*.cloudworkstations.dev"],
 };
