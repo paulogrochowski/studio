@@ -5,24 +5,10 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
-  // Rule 1: Protect all /admin routes
-  if (pathname.startsWith('/admin')) {
-    const adminCookie = request.cookies.get('admin-session');
-    
-    // If trying to access any admin page (except login) without a cookie, redirect to login
-    if (!adminCookie && pathname !== '/admin/login') {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
-    
-    // If already logged in and trying to access the login page, redirect to the dashboard
-    if (adminCookie && pathname === '/admin/login') {
-      return NextResponse.redirect(new URL('/admin', request.url));
-    }
-  }
-
-  // Pass pathname to client components for layout decisions
+  // Pass headers to client components for layout decisions
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
+  requestHeaders.set('x-url', request.url);
   
   return NextResponse.next({
     request: {

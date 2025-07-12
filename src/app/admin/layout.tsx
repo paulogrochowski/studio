@@ -1,4 +1,5 @@
 
+import { cookies } from 'next/headers';
 import {
   SidebarProvider,
   Sidebar,
@@ -11,11 +12,36 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import Link from 'next/link';
-import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Megaphone, Palette, Wrench, Heart } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Megaphone, Palette, Wrench, LogOut } from 'lucide-react';
 import { AdminHeader } from "@/components/admin-header";
+import { AdminLoginForm } from '@/components/admin-login-form';
+import { Button } from '@/components/ui/button';
+import { handleLogout } from '../actions';
+import { headers } from 'next/headers';
+
+function getSearchParams() {
+    const heads = headers();
+    const url = new URL(heads.get('x-url') || 'http://localhost');
+    const searchParams: { [key: string]: string | string[] | undefined } = {};
+    url.searchParams.forEach((value, key) => {
+        searchParams[key] = value;
+    });
+    return searchParams;
+}
+
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  // Always return the full admin layout with sidebar
+    const adminCookie = cookies().get('admin-session');
+    const searchParams = getSearchParams();
+
+    if (!adminCookie) {
+        return (
+            <div className="flex min-h-screen w-full items-center justify-center bg-muted/40 p-4">
+                <AdminLoginForm searchParams={searchParams} />
+            </div>
+        )
+    }
+
   return (
     <SidebarProvider>
         <div className="flex min-h-screen w-full bg-muted/40">
@@ -73,6 +99,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <SidebarMenuButton asChild>
                                 <Link href="/admin/settings"><Wrench />Configurações</Link>
                             </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <form action={handleLogout} className="w-full">
+                                <SidebarMenuButton className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive">
+                                    <LogOut /> Sair
+                                </SidebarMenuButton>
+                            </form>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarFooter>

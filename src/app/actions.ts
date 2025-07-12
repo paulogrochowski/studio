@@ -174,6 +174,7 @@ export async function handleCustomerLogin(formData: FormData) {
 
 export async function handleLogout() {
   cookies().delete('auth-token');
+  cookies().delete('admin-session');
   redirect('/');
 }
 
@@ -229,7 +230,7 @@ export async function handleAdminLogin(formData: FormData) {
       });
       redirect('/admin');
   }
-  redirect('/admin/login?error=true');
+  redirect('/admin?error=true');
 }
 
 export async function handleConvertModelToGlb(input: ConvertToGlbInput) {
