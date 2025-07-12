@@ -51,21 +51,21 @@ export function UserMenuClient({ isLoggedIn, notificationCount = 0 }: UserMenuCl
         <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-           <Link href="/orders" className="flex items-center">
+           <Link href="/admin/orders" className="flex items-center cursor-pointer">
             <ShoppingCart className="mr-2 h-4 w-4" />
-            Meus Pedidos
+            <span>Meus Pedidos</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/favorites" className="flex items-center">
+          <Link href="#" className="flex items-center cursor-pointer">
             <Heart className="mr-2 h-4 w-4" />
-            Meus Favoritos
+            <span>Meus Favoritos</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/profile" className="flex items-center">
+          <Link href="#" className="flex items-center cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
-            Meu Perfil
+            <span>Meu Perfil</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -76,7 +76,7 @@ export function UserMenuClient({ isLoggedIn, notificationCount = 0 }: UserMenuCl
               className="w-full cursor-pointer flex items-center text-destructive focus:text-destructive"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Sair
+              <span>Sair</span>
             </button>
           </DropdownMenuItem>
         </form>

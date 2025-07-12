@@ -231,7 +231,7 @@ export async function handleAdminLogin(formData: FormData) {
       cookies().set('admin-session', 'admin-logged-in', {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 dias
+          maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 dias ou sessão
           path: '/',
       });
       return { success: true };
@@ -249,5 +249,3 @@ export async function handleConvertModelToGlb(input: ConvertToGlbInput) {
         return { success: false, error: 'Falha ao converter o modelo.' };
     }
 }
-
-    

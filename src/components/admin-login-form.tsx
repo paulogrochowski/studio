@@ -2,7 +2,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
@@ -11,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
 interface AdminLoginFormProps {
     onLoginSuccess?: () => void;
@@ -30,8 +30,8 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
                         title: "Login de Admin bem-sucedido!",
                         description: "Bem-vindo ao painel.",
                     });
-                    onLoginSuccess?.(); // This will close the modal
-                    router.refresh(); // Refresh to ensure server components update
+                    onLoginSuccess?.(); // Fecha o modal
+                    router.refresh(); // Atualiza a página para mostrar o menu de admin
                 }
             } catch (error: any) {
                 toast({

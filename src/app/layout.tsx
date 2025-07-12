@@ -30,19 +30,19 @@ export default function RootLayout({
   const isAdminLoggedIn = cookies().has('admin-session');
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${oswald.variable} ${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
           <AdminLoginModalProvider>
             <div className="flex flex-col min-h-screen">
-              <div className="flex-grow">
+              <main className="flex-grow">
                 {children}
-              </div>
+              </main>
               {isAdminLoggedIn && <AdminFooterMenu />}
             </div>
           </AdminLoginModalProvider>
