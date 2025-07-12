@@ -12,7 +12,7 @@ export default function LoginPage() {
       <Header />
       <main className="flex-1 flex items-center justify-center container mx-auto p-4 md:p-8">
         <Card className="w-full max-w-md">
-            <CardHeader>
+            <CardHeader className="text-center">
                 <CardTitle className="font-headline text-2xl">Login de Cliente</CardTitle>
                 <CardDescription>Acesse sua conta para ver seus pedidos e favoritos.</CardDescription>
             </CardHeader>
