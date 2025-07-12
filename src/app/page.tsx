@@ -2,13 +2,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/header';
 import { CUP_TYPES_SUMMARY } from '@/lib/cup-data';
 import { ShippingCalculator } from '@/components/shipping-calculator';
-import { ArrowRight, Facebook, Instagram, Youtube } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
-import { AdminLoginButton } from '@/components/admin-login-button';
+import { Footer } from '@/components/footer';
 
 export default function LandingPage() {
   return (
@@ -81,24 +80,7 @@ export default function LandingPage() {
         </section>
 
       </main>
-      <footer className="border-t bg-card">
-        <div className="container mx-auto py-6 flex flex-col sm:flex-row justify-between items-center text-center text-sm">
-            <p className="text-muted-foreground">&copy; {new Date().getFullYear()} Copos Mania. Todos os direitos reservados.</p>
-            <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href="#" target="_blank"><Instagram className="h-5 w-5" /></Link>
-                </Button>
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href="#" target="_blank"><Facebook className="h-5 w-5" /></Link>
-                </Button>
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href="#" target="_blank"><Youtube className="h-5 w-5" /></Link>
-                </Button>
-                <span className="text-muted-foreground mx-2">|</span>
-                 <AdminLoginButton />
-            </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
