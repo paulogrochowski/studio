@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { Footer } from '@/components/footer';
 
 export default function RegisterPage() {
   return (
@@ -37,6 +38,7 @@ export default function RegisterPage() {
           </CardFooter>
         </Card>
       </main>
+      <Footer />
     </div>
   );
 }

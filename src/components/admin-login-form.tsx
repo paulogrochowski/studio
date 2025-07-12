@@ -32,6 +32,10 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
                     });
                     onLoginSuccess?.(); // Fecha o modal
                     router.refresh(); // Atualiza a página para mostrar o menu de admin
+                } else {
+                    // Embora o 'else' possa não ser alcançado se o erro for lançado,
+                    // é uma boa prática para segurança.
+                    throw new Error(result.error || 'Credenciais inválidas.')
                 }
             } catch (error: any) {
                 toast({

@@ -221,7 +221,7 @@ export async function handleAdminUpdateLayout(formData: FormData) {
     return { success: true, message: 'Tema salvo com sucesso (simulação)!' };
 }
 
-export async function handleAdminLogin(formData: FormData) {
+export async function handleAdminLogin(formData: FormData): Promise<{success: true} | {success: false, error: string}> {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const remember = formData.get('remember');
@@ -237,6 +237,7 @@ export async function handleAdminLogin(formData: FormData) {
       return { success: true };
   }
   
+  // Lançar um erro é mais idiomático para o try/catch no formulário
   throw new Error("Credenciais inválidas. Verifique o email e a senha.");
 }
 
