@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Instagram, Facebook, Youtube } from 'lucide-react';
 import { AdminLoginButton } from '@/components/admin-login-button';
 import { useIsAdmin } from '@/hooks/use-is-admin';
+import { useIsCustomer } from '@/hooks/use-is-customer';
 
 export function Footer() {
     const isAdmin = useIsAdmin();
+    const isCustomer = useIsCustomer();
 
-    // Do not render the footer if the admin is logged in, 
-    // as the AdminFooterMenu will be displayed instead.
-    if (isAdmin) {
+    // Do not render the footer if a special menu will be displayed instead.
+    if (isAdmin || isCustomer) {
         return null;
     }
 
