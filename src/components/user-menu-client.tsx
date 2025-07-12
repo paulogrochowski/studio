@@ -20,6 +20,37 @@ interface UserMenuClientProps {
 
 export function UserMenuClient({ isLoggedIn, notificationCount = 0 }: UserMenuClientProps) {
 
+  if (!isLoggedIn) {
+    return (
+      <>
+        {/* Desktop Buttons */}
+        <div className="hidden sm:flex items-center gap-2">
+            <Button variant="ghost" asChild>
+                <Link href="/login">Entrar</Link>
+            </Button>
+            <Button asChild>
+                <Link href="/register">Registrar</Link>
+            </Button>
+        </div>
+        {/* Mobile Dropdown */}
+        <div className="sm:hidden">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <User className="h-[1.2rem] w-[1.2rem]" />
+                        <span className="sr-only">Menu do Usuário</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild><Link href="/login">Fazer Login</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/register">Cadastrar</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+      </>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -34,53 +65,38 @@ export function UserMenuClient({ isLoggedIn, notificationCount = 0 }: UserMenuCl
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {isLoggedIn ? (
-          <>
-            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-               <Link href="/orders" className="flex items-center">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Meus Pedidos
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/favorites" className="flex items-center">
-                <Heart className="mr-2 h-4 w-4" />
-                Meus Favoritos
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/profile" className="flex items-center">
-                <Settings className="mr-2 h-4 w-4" />
-                Meu Perfil
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <form action={handleLogout} className="w-full">
-              <DropdownMenuItem asChild>
-                <button
-                  type="submit"
-                  className="w-full cursor-pointer flex items-center text-destructive focus:text-destructive"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sair
-                </button>
-              </DropdownMenuItem>
-            </form>
-          </>
-        ) : (
-          <>
-            <DropdownMenuLabel>Acesse sua conta ou cadastre-se</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/login">Fazer Login</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/register">Cadastrar</Link>
-            </DropdownMenuItem>
-          </>
-        )}
+        <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+           <Link href="/orders" className="flex items-center">
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            Meus Pedidos
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/favorites" className="flex items-center">
+            <Heart className="mr-2 h-4 w-4" />
+            Meus Favoritos
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/profile" className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            Meu Perfil
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <form action={handleLogout} className="w-full">
+          <DropdownMenuItem asChild>
+            <button
+              type="submit"
+              className="w-full cursor-pointer flex items-center text-destructive focus:text-destructive"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </button>
+          </DropdownMenuItem>
+        </form>
       </DropdownMenuContent>
     </DropdownMenu>
   );
