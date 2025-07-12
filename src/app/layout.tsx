@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 import { AdminLoginModalProvider } from '@/components/admin-login-modal-provider';
 import { cookies } from 'next/headers';
-import { AdminFloatingPanel } from '@/components/admin-floating-panel';
+import { AdminFooterMenu } from '@/components/admin-footer-menu';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -39,8 +39,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AdminLoginModalProvider>
-            {children}
-            {isAdminLoggedIn && <AdminFloatingPanel />}
+            <div className="flex flex-col min-h-screen">
+              <div className="flex-grow">
+                {children}
+              </div>
+              {isAdminLoggedIn && <AdminFooterMenu />}
+            </div>
           </AdminLoginModalProvider>
           <Toaster />
         </ThemeProvider>
