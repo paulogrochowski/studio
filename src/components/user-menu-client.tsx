@@ -15,15 +15,21 @@ import { handleLogout } from "@/app/actions";
 
 interface UserMenuClientProps {
   isLoggedIn: boolean;
+  notificationCount?: number;
 }
 
-export function UserMenuClient({ isLoggedIn }: UserMenuClientProps) {
+export function UserMenuClient({ isLoggedIn, notificationCount = 0 }: UserMenuClientProps) {
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="relative">
           <User className="h-[1.2rem] w-[1.2rem]" />
+          {notificationCount > 0 && (
+            <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] ring-2 ring-background">
+              {notificationCount}
+            </span>
+          )}
           <span className="sr-only">Menu do Usuário</span>
         </Button>
       </DropdownMenuTrigger>
