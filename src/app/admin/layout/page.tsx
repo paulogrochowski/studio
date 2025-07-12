@@ -1,3 +1,4 @@
+'use client';
 import { AdminPlaceholder } from "@/components/admin-placeholder";
 import { Palette } from "lucide-react";
 

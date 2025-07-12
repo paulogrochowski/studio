@@ -1,16 +1,15 @@
-
 'use client';
 
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
-import { Home, Menu, Users, LayoutDashboard, Megaphone } from 'lucide-react';
+import { Home, Package, Users, LayoutDashboard, Megaphone } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 const menuItems = [
   { href: "/", icon: Home, label: "Início" },
-  { href: "/admin/products", icon: Menu, label: "Produto" },
+  { href: "/admin/products", icon: Package, label: "Produtos" },
   { href: "/admin/customers", icon: Users, label: "Clientes" },
-  { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/admin/marketing", icon: Megaphone, label: "Marketing" },
 ];
 
