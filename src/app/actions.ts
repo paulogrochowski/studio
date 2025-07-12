@@ -175,7 +175,7 @@ export async function handleCustomerLogin(formData: FormData) {
 export async function handleLogout() {
   cookies().delete('auth-token');
   cookies().delete('admin-session');
-  redirect('/');
+  redirect('/admin');
 }
 
 export async function handleAdminUpdateCustomer(customerId: string, formData: FormData) {
