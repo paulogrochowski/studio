@@ -1,27 +1,16 @@
 
 'use client';
 
-import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { handleAdminLogin } from '@/app/actions';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-
-function SubmitButton() {
-    const { pending } = useFormStatus();
-    return (
-        <Button type="submit" className="w-full" disabled={pending}>
-            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Entrar
-        </Button>
-    )
-}
 
 interface AdminLoginFormProps {
     onLoginSuccess?: () => void;
@@ -42,7 +31,6 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
                         description: "Bem-vindo ao painel.",
                     });
                     onLoginSuccess?.();
-                    router.push('/admin'); // Redirect to admin dashboard on success
                     router.refresh();
                 }
             } catch (error: any) {
@@ -89,5 +77,3 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
         </Card>
     );
 }
-
-    

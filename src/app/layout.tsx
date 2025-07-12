@@ -4,6 +4,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 import { AdminLoginModalProvider } from '@/components/admin-login-modal-provider';
+import { cookies } from 'next/headers';
+import { AdminFloatingPanel } from '@/components/admin-floating-panel';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -25,6 +27,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isAdminLoggedIn = cookies().has('admin-session');
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${oswald.variable} ${inter.variable} font-sans antialiased`}>
@@ -36,6 +40,7 @@ export default function RootLayout({
         >
           <AdminLoginModalProvider>
             {children}
+            {isAdminLoggedIn && <AdminFloatingPanel />}
           </AdminLoginModalProvider>
           <Toaster />
         </ThemeProvider>

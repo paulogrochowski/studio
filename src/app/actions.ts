@@ -171,14 +171,9 @@ export async function handleCustomerLogin(formData: FormData) {
 }
 
 export async function handleLogout() {
-  const isAdmin = cookies().has('admin-session');
   cookies().delete('auth-token');
   cookies().delete('admin-session');
-  if (isAdmin) {
-      redirect('/admin');
-  } else {
-      redirect('/');
-  }
+  redirect('/');
 }
 
 
@@ -232,11 +227,9 @@ export async function handleAdminLogin(formData: FormData) {
           maxAge: remember ? 60 * 60 * 24 * 7 : undefined, // 7 days
           path: '/',
       });
-      // On success, the client side will handle the redirect.
       return { success: true };
   }
   
-  // On failure, throw an error to be caught by the client.
   throw new Error("Credenciais inválidas. Verifique o email e a senha.");
 }
 
@@ -249,5 +242,3 @@ export async function handleConvertModelToGlb(input: ConvertToGlbInput) {
         return { success: false, error: 'Falha ao converter o modelo.' };
     }
 }
-
-    
