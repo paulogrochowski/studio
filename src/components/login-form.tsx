@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,24 +11,20 @@ import { handleCustomerLogin } from '@/app/actions';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { useTransition, useEffect } from 'react';
+import { useTransition } from 'react';
 import { AdminLoginButton } from './admin-login-button';
 
 function SubmitButton() {
-    const { pending } = useFormStatus();
+    const [isPending, startTransition] = useTransition();
     return (
-        <Button type="submit" className="w-full" disabled={pending}>
-            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Entrar
         </Button>
     )
 }
 
-interface LoginFormProps {
-  onLoginSuccess?: () => void;
-}
-
-export function LoginForm({ onLoginSuccess }: LoginFormProps) {
+export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -42,8 +37,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                 title: "Login bem-sucedido!",
                 description: "Bem-vindo de volta!",
             });
-            onLoginSuccess?.(); 
-            router.refresh(); 
+            router.push('/');
         } else {
             toast({
                 title: "Erro de Autenticação",
@@ -79,7 +73,10 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                 Esqueceu a senha?
             </Link>
           </div>
-          <SubmitButton />
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Entrar
+          </Button>
         </form>
       </CardContent>
       <CardFooter className="flex flex-col items-center justify-center text-center text-sm gap-2">
