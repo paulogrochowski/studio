@@ -11,7 +11,7 @@ import { Loader } from './loader';
 import { PackageX } from 'lucide-react';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 
 // Error Boundary Component
@@ -118,7 +118,7 @@ function CupMesh({ cupModel, art, modelUrl }: CupMeshProps) {
     if (!context) return null;
     
     const degradeColorHex = DEGRADE_HEX_COLORS[cupModel.degradeColor!];
-    const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.0)' : '#FFFFFF';
+    const baseColor = isTransparent ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF';
     
     const gradient = context.createLinearGradient(0, 0, 0, 128);
     if (cupModel.degradePosition === 'Cima') {
@@ -240,12 +240,12 @@ export default function CupPreview3D({ cupModel, art, modelUrl }: CupPreview3DPr
   
   return (
     <ErrorBoundary fallback={GenericErrorFallback}>
-      <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }} key={finalModelUrl}>
-        <Suspense fallback={
-             <div className="flex items-center justify-center h-full">
-                <Loader showText={false} />
+      <Suspense fallback={
+            <div className="flex items-center justify-center h-full">
+            <Loader showText={false} />
             </div>
-        }>
+      }>
+        <Canvas shadows camera={{ position: [0, 0.2, 3], fov: 50 }} key={finalModelUrl}>
             <ambientLight intensity={0.7} />
             <directionalLight intensity={1.5} position={[5, 5, 5]} castShadow />
             {isGlb ? (
@@ -258,9 +258,9 @@ export default function CupPreview3D({ cupModel, art, modelUrl }: CupPreview3DPr
               <ModelLoader url={finalModelUrl} />
             )}
             <Environment preset="city" />
-        </Suspense>
-        <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} minPolarAngle={Math.PI / 4} maxPolarAngle={Math.PI / 1.8} />
-      </Canvas>
+            <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} minPolarAngle={Math.PI / 4} maxPolarAngle={Math.PI / 1.8} />
+        </Canvas>
+      </Suspense>
     </ErrorBoundary>
   );
 }
