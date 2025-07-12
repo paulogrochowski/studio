@@ -25,7 +25,7 @@ export function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) {
         startTransition(async () => {
             try {
                 const result = await handleAdminLogin(formData);
-                if (result.success) {
+                if (result?.success) {
                     toast({
                         title: "Login de Admin bem-sucedido!",
                         description: "Bem-vindo ao painel.",

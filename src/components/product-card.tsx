@@ -4,10 +4,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Heart } from 'lucide-react';
-import { useState } from 'react';
+import { Heart, Pencil } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import Cookies from 'js-cookie';
 
 // This mirrors the structure of items in CUP_TYPES_SUMMARY
 interface Product {
@@ -27,7 +28,14 @@ interface ProductCardProps {
 
 export function ProductCard({ product, priority = false }: ProductCardProps) {
     const [isFavorite, setIsFavorite] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const { toast } = useToast();
+
+    useEffect(() => {
+        // Check for admin cookie on mount
+        const adminCookie = Cookies.get('admin-session');
+        setIsAdmin(!!adminCookie);
+    }, []);
 
     const toggleFavorite = () => {
         setIsFavorite(!isFavorite);
@@ -53,15 +61,30 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             />
           </div>
         </Link>
-        <Button 
-            variant="secondary" 
-            size="icon" 
-            className="absolute top-3 right-3 rounded-full h-9 w-9 bg-background/60 backdrop-blur-sm hover:bg-background/80"
-            onClick={toggleFavorite}
-            aria-label="Adicionar aos favoritos"
-        >
-            <Heart className={cn("h-5 w-5", isFavorite ? "text-red-500 fill-current" : "text-foreground")} />
-        </Button>
+        <div className="absolute top-3 right-3 flex flex-col gap-2">
+            <Button 
+                variant="secondary" 
+                size="icon" 
+                className="rounded-full h-9 w-9 bg-background/60 backdrop-blur-sm hover:bg-background/80"
+                onClick={toggleFavorite}
+                aria-label="Adicionar aos favoritos"
+            >
+                <Heart className={cn("h-5 w-5", isFavorite ? "text-red-500 fill-current" : "text-foreground")} />
+            </Button>
+            {isAdmin && (
+                <Button 
+                    asChild
+                    variant="secondary" 
+                    size="icon" 
+                    className="rounded-full h-9 w-9 bg-primary/80 backdrop-blur-sm hover:bg-primary text-primary-foreground"
+                    aria-label="Editar Produto"
+                >
+                    <Link href={`/edit-product/${product.id}`}>
+                        <Pencil className="h-5 w-5" />
+                    </Link>
+                </Button>
+            )}
+        </div>
       </CardHeader>
       <CardContent className="p-4 flex-1">
         <CardTitle className="text-lg font-bold font-headline leading-tight">

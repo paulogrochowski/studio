@@ -13,6 +13,7 @@ import { Wrench, LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Megap
 import { Button } from "./ui/button";
 import { handleLogout } from "@/app/actions";
 import { Separator } from "./ui/separator";
+import { useAdminLogin } from "./admin-login-modal-provider";
 
 const AdminToolButton = ({ icon: Icon, label, children }: { icon: React.ElementType, label: string, children: React.ReactNode }) => (
   <Dialog>
@@ -46,23 +47,11 @@ export function AdminFloatingPanel() {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
       <div className="flex items-center gap-2 bg-background border rounded-full shadow-2xl p-2">
-        <AdminToolButton label="Dashboard" icon={LayoutDashboard}>
-          <AdminPlaceholder title="Dashboard" />
-        </AdminToolButton>
-        <AdminToolButton label="Produtos" icon={Package}>
-          <AdminPlaceholder title="Gerenciador de Produtos" />
-        </AdminToolButton>
-        <AdminToolButton label="Pedidos" icon={ShoppingCart}>
-          <AdminPlaceholder title="Gerenciador de Pedidos" />
-        </AdminToolButton>
-        <AdminToolButton label="Clientes" icon={Users}>
-          <AdminPlaceholder title="Gerenciador de Clientes" />
+        <AdminToolButton label="Layout" icon={Palette}>
+          <AdminPlaceholder title="Editor de Layout da Loja" />
         </AdminToolButton>
         <AdminToolButton label="Marketing" icon={Megaphone}>
           <AdminPlaceholder title="Ferramentas de Marketing" />
-        </AdminToolButton>
-        <AdminToolButton label="Layout" icon={Palette}>
-          <AdminPlaceholder title="Editor de Layout da Loja" />
         </AdminToolButton>
         
         <Separator orientation="vertical" className="h-10 mx-1" />
